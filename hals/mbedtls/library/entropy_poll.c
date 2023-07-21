@@ -26,14 +26,12 @@
 #include "mbedtls/entropy.h"
 #include "entropy_poll.h"
 
-#if defined(MBEDTLS_ENTROPY_HARDWARE_ALT)
+#if defined(MBEDTLS_TEST_NULL_ENTROPY)
 #include "stdlib.h"
-#include "hal_trace.h"
 #include "hal_trng.h"
-int mbedtls_hardware_poll( void *data,
+int mbedtls_null_entropy_poll( void *data,
                     unsigned char *output, size_t len, size_t *olen )
 {
-    TRACE(0,"%s %d start",__func__,__LINE__);
     ((void) data);
     ((void) output);
     int ret;
@@ -48,7 +46,6 @@ int mbedtls_hardware_poll( void *data,
     }
 
     *olen = len;
-    TRACE(0,"%s %d done",__func__,__LINE__);
     return( 0 );
 }
 #endif
