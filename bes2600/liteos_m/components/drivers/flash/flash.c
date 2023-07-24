@@ -25,6 +25,8 @@
 #include "pmu.h"
 #include "crc32_c.h"
 
+#define NORFLASH_API_WRAP(x)    x
+
 #if BES_HAL_DEBUG
 #define ENTER_FUNCTION() printf("%s enter ->\n", __FUNCTION__)
 #define LEAVE_FUNCTION() printf("%s <- leave\n", __FUNCTION__)

@@ -1,21 +1,49 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/**
+ * @file
+ * Ethernet Interface Skeleton
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
-#include "hal_trace.h"
-#include "lwip/opt.h"
+/*
+ * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. The name of the author may not be used to endorse or promote products
+ *    derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+ * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+ * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
+ * OF SUCH DAMAGE.
+ *
+ * This file is part of the lwIP TCP/IP stack.
+ *
+ * Author: Adam Dunkels <adam@sics.se>
+ *
+ */
 
+/*
+ * This file is a skeleton for developing Ethernet network interface
+ * drivers for lwIP. Add code to the low_level functions and do a
+ * search-and-replace for the word "ethernetif" to replace it with
+ * something that better describes your network interface.
+ */
+
+#include "lwip/opt.h"
 #include "lwip/def.h"
 #include "lwip/mem.h"
 #include "lwip/pbuf.h"
@@ -29,10 +57,10 @@
 #include "lwip/sys.h"
 #include "netif/etharp.h"
 #include "hal_trace.h"
-typedef unsigned short  uint16;
-typedef short  int16;
-typedef unsigned char  uint8;
-
+#include "bwifi_interface.h"
+#if LWIP_IPV6
+#include "lwip/ethip6.h"
+#endif
 
 /* Define those to better describe your network interface. */
 #define IFNAME0 'e'
@@ -47,12 +75,25 @@ struct netif          if_wifi_ap;
 
 extern void   *mymemcpy(void *dst, const void *src, size_t num);
 extern void   hw_checksum_init(void);
-extern uint16 hw_checksum(void *data, int16 len, uint32_t src, uint32_t dest, uint8_t proto);
-extern uint8 **wifi_agent_get_tx_buf(void);
-extern int wifi_agent_send_tx_buf(uint8 devnum, uint8 **tx_buf, uint16 tx_len);
+extern uint16_t hw_checksum(void *data, int16_t len, uint32_t src, uint32_t dest, uint8_t proto);
 
 static sys_mutex_t hw_checksum_mutex;
 
+#if WIFI_NET_TOOL_SUPPORT
+bwifi_tcpdump_callback net_tool_tcpdump_hook = NULL;
+void net_tool_tcpdump(unsigned char *buf, int len)
+{
+    struct eth_hdr *ethhdr = (struct eth_hdr *)buf;
+    if (htons(ethhdr->type) == ETHTYPE_IP) {
+        struct ip_hdr *ip_hdr = (struct ip_hdr *)(buf + SIZEOF_ETH_HDR);
+        if (ip_hdr->_proto == IP_PROTO_TCP) {
+            if (net_tool_tcpdump_hook) {
+                (*net_tool_tcpdump_hook)(buf + ETH_PAD_SIZE, len);
+            }
+        }
+    }
+}
+#endif
 /* Forward declarations. */
 
 /**
@@ -78,6 +119,9 @@ low_level_init(struct netif *netif)
     /* don't set NETIF_FLAG_ETHARP if this device is not an ethernet one */
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_IGMP;
 
+#if LWIP_IPV6_MLD
+    netif->flags |= NETIF_FLAG_MLD6;
+#endif
     /* Do whatever else is needed to initialize interface. */
 }
 
@@ -90,26 +134,60 @@ eth_hw_checksum_init(void)
     return 0;
 }
 
-uint16
-eth_hw_checksum(void *data, int16 len, uint32_t src, uint32_t dest, uint8_t proto)
+uint16_t
+eth_hw_checksum(void *data, int16_t len, uint32_t src, uint32_t dest, uint8_t proto)
 {
-    uint16 sum = 0;
-
+    uint16_t sum = 0;
     sys_mutex_lock(&hw_checksum_mutex);
     sum = hw_checksum(data, len, src, dest, proto);
     sys_mutex_unlock(&hw_checksum_mutex);
-    TRACE(0, "%s %d: %d", __func__, __LINE__, sum);
     return sum;
 }
 
 void
-lwip_netif_mac_addr_init(struct netif *netif, uint8 *mac, int mac_len)
+lwip_netif_mac_addr_init(struct netif *netif, uint8_t *mac, int mac_len)
 {
     memcpy(netif->hwaddr, mac, mac_len);
 }
 
+#ifdef CHECKSUM_BY_HARDWARE
+#if LWIP_IPV6
+/** Split an u32_t in two u16_ts and add them up */
+#ifndef FOLD_U32T
+#define FOLD_U32T(u)          ((u32_t)(((u) >> 16) + ((u) & 0x0000ffffUL)))
+#endif
+/*copy from ip6_chksum_pseudo_partial() which is included in inet_chksum.c*/
+static void
+ipv6_addr_adapt(ip6_addr_t *p_src, ip6_addr_t *p_dest, u32_t *src, u32_t *dst)
+{
+    u32_t addr_src =0;
+    u32_t addr_dst = 0;
+    u32_t tmp_src = 0;
+    u32_t tmp_dst = 0;
+
+    for (u8_t addr_part = 0; addr_part < 4; addr_part++) {
+        addr_src = p_src->addr[addr_part];
+        tmp_src = (u32_t)(tmp_src + (addr_src & 0xffffUL));
+        tmp_src = (u32_t)(tmp_src + ((addr_src >> 16) & 0xffffUL));
+        addr_dst = p_dest->addr[addr_part];
+        tmp_dst = (u32_t)(tmp_dst + (addr_dst & 0xffffUL));
+        tmp_dst = (u32_t)(tmp_dst + ((addr_dst >> 16) & 0xffffUL));
+    }
+
+    /* fold down to 16 bits */
+    tmp_src = FOLD_U32T(tmp_src);
+    tmp_src = FOLD_U32T(tmp_src);
+    tmp_dst = FOLD_U32T(tmp_dst);
+    tmp_dst = FOLD_U32T(tmp_dst);
+
+    *src = tmp_src;
+    *dst = tmp_dst;
+}
+#endif
+#endif
+
 int
-mac_data_xmit(uint8 devnum, struct pbuf *p)
+mac_data_xmit(uint8_t devnum, struct pbuf *p)
 {
     unsigned char **tx_buf;
     unsigned char *p802x_hdr;
@@ -117,8 +195,8 @@ mac_data_xmit(uint8 devnum, struct pbuf *p)
     struct pbuf *q;
     int ret;
 
-    tx_buf = wifi_agent_get_tx_buf();
-    if (tx_buf == NULL)
+    tx_buf = bwifi_get_data_buf();
+    if (tx_buf == NULL || (int)tx_buf == -1)
         return -1;
     p802x_hdr = *tx_buf;
 
@@ -132,33 +210,69 @@ mac_data_xmit(uint8 devnum, struct pbuf *p)
 #ifdef CHECKSUM_BY_HARDWARE
 #if (!(CHECKSUM_GEN_TCP) || !(CHECKSUM_GEN_UDP))
     struct eth_hdr *ethhdr = (struct eth_hdr *)(p802x_hdr -  ETH_PAD_SIZE);
+
+#if LWIP_IPV6
+    if (htons(ethhdr->type) == ETHTYPE_IP || htons(ethhdr->type) == ETHTYPE_IPV6) {
+#else
     if (htons(ethhdr->type) == ETHTYPE_IP) {
-        uint32_t dst, src;
-        struct ip_hdr *ip_hdr;
-        ip_hdr = (struct ip_hdr *)(p802x_hdr + LWIP_ETH_HDR_LEN);
-        memcpy(&dst, &ip_hdr->dest, 4);
-        memcpy(&src, &ip_hdr->src, 4);
+#endif
+        uint32_t dst = 0;
+        uint32_t src = 0;
+        uint32_t proto = 0;
+        uint32_t ip_hdr_size = 0;
+        unsigned char *ip_hdr = NULL;
+
+        if (htons(ethhdr->type) == ETHTYPE_IP) {
+            struct ip_hdr *ip_hdr_tmp;
+            ip_hdr_tmp = (struct ip_hdr *)(p802x_hdr + LWIP_ETH_HDR_LEN);
+
+            memcpy(&dst, &ip_hdr_tmp->dest, 4);
+            memcpy(&src, &ip_hdr_tmp->src, 4);
+
+            proto = ip_hdr_tmp->_proto;
+            ip_hdr_size = sizeof(struct ip_hdr);
+            ip_hdr = (unsigned char *)ip_hdr_tmp;
+        } else {
+#if LWIP_IPV6
+            ip6_addr_t dst_tmp, src_tmp;
+            struct ip6_hdr *ip_hdr_tmp;
+
+            ip_hdr_tmp = (struct ip6_hdr *)(p802x_hdr + LWIP_ETH_HDR_LEN);
+
+            ip6_addr_copy_to_packed(dst_tmp, ip_hdr_tmp->dest);
+            ip6_addr_copy_to_packed(src_tmp, ip_hdr_tmp->src);
+            /*convert ipv6 address to adapt eth_hw_checksum function */
+            ipv6_addr_adapt(&src_tmp, &dst_tmp, &src, &dst);
+
+            proto = ip_hdr_tmp->_nexth;
+            ip_hdr_size = sizeof(struct ip6_hdr);
+            ip_hdr = (unsigned char *)ip_hdr_tmp;
+#endif
+        }
+
 #if !(CHECKSUM_GEN_TCP)
-        if (ip_hdr->_proto == IP_PROTO_TCP) {
-            struct tcp_hdr *tcphdr = (struct tcp_hdr *)((unsigned char *)ip_hdr + sizeof(struct ip_hdr));
+        if (proto == IP_PROTO_TCP) {
+            struct tcp_hdr *tcphdr = (struct tcp_hdr *)((unsigned char *)ip_hdr + ip_hdr_size);
             tcphdr->chksum = 0;
-            tcphdr->chksum = eth_hw_checksum((void *)tcphdr, p->tot_len - sizeof(struct ip_hdr) - LWIP_ETH_HDR_LEN, src, dst, IP_PROTO_TCP);
+            tcphdr->chksum = eth_hw_checksum((void *)tcphdr, p->tot_len - ip_hdr_size - LWIP_ETH_HDR_LEN, src, dst, IP_PROTO_TCP);
         }
 #endif
 
 #if !(CHECKSUM_GEN_UDP)
-        if (ip_hdr->_proto == IP_PROTO_UDP) {
-            struct udp_hdr *udphdr = (struct udp_hdr *)((unsigned char *)ip_hdr + sizeof(struct ip_hdr));
+        if (proto == IP_PROTO_UDP) {
+            struct udp_hdr *udphdr = (struct udp_hdr *)((unsigned char *)ip_hdr + ip_hdr_size);
             udphdr->chksum = 0;
-            udphdr->chksum = eth_hw_checksum((void *)udphdr, p->tot_len - sizeof(struct ip_hdr) - LWIP_ETH_HDR_LEN, src, dst, IP_PROTO_UDP);
+            udphdr->chksum = eth_hw_checksum((void *)udphdr, p->tot_len - ip_hdr_size - LWIP_ETH_HDR_LEN, src, dst, IP_PROTO_UDP);
         }
 #endif
      }
+
 #endif /* !(CHECKSUM_GEN_TCP) || !(CHECKSUM_GEN_UDP) */
 #endif /* CHECKSUM_BY_HARDWARE */
-
-
-    ret = wifi_agent_send_tx_buf(devnum, tx_buf, p->tot_len);
+#if WIFI_NET_TOOL_SUPPORT
+    net_tool_tcpdump(p802x_hdr - ETH_PAD_SIZE, p->tot_len);
+#endif
+    ret = bwifi_send_data_buf(devnum, tx_buf, p->tot_len);
     if (ret < 0)
         return -1;
 
@@ -166,6 +280,11 @@ mac_data_xmit(uint8 devnum, struct pbuf *p)
 }
 
 #define LWIP_ETH_HDR_LEN	(SIZEOF_ETH_HDR - ETH_PAD_SIZE)
+#if IPSEC_SUPPORT
+extern err_t ipsecdev_input_ip6_lwip_wifi(struct pbuf *p, struct netif *inp);
+extern err_t ipsecdev_output_ip6_lwip_wifi(struct netif *, struct pbuf *,struct pbuf **send_p);
+#endif
+
 /**
  * This function should do the actual transmission of the packet. The packet is
  * contained in the pbuf that is passed to the function. This pbuf
@@ -185,9 +304,24 @@ mac_data_xmit(uint8 devnum, struct pbuf *p)
 static err_t
 low_level_output(struct netif *netif, struct pbuf *p)
 {
-    uint8 RetryCnt = 2, devnum;
+    uint8_t RetryCnt = 20, devnum;
     int xmit;
     err_t ret;
+
+#if IPSEC_SUPPORT
+    struct eth_hdr *ethhdr;
+    struct pbuf *send_p = NULL;
+    ethhdr = p->payload;
+    switch (htons(ethhdr->type)) {
+    case ETHTYPE_IPV6:
+        if (ipsecdev_output_ip6_lwip_wifi(netif, p, &send_p) == ERR_OK && send_p != NULL) {
+            p = send_p;
+        }
+        break;
+    default:
+        break;
+    }
+#endif
 
 #if ETH_PAD_SIZE
     /* Note:hmos tx should not drop the paddiing word */
@@ -197,8 +331,8 @@ low_level_output(struct netif *netif, struct pbuf *p)
 #endif
     (netif == &if_wifi) ? (devnum = 0) : (devnum = 1);
 
-    while (xmit = mac_data_xmit(devnum, p) < 0 && (RetryCnt--)) {
-        osDelay(10);
+    while ((xmit = mac_data_xmit(devnum, p)) < 0 && (RetryCnt--)) {
+        osDelay(1);
     }
 
 #if ETH_PAD_SIZE
@@ -206,6 +340,11 @@ low_level_output(struct netif *netif, struct pbuf *p)
 #ifndef LITEOS_LWIP
     pbuf_header(p, ETH_PAD_SIZE); /* reclaim the padding word */
 #endif
+#endif
+
+#if IPSEC_SUPPORT
+    if(send_p != NULL)
+        pbuf_free(send_p);
 #endif
 
     (xmit == 0) ? (ret = ERR_OK) : (ret = ERR_MEM);
@@ -225,8 +364,9 @@ struct pbuf *
 low_level_input(struct netif *netif, void *p_buf, int size)
 {
     struct pbuf *p, *q;
-    u16_t len;
+    uint16_t len;
     int rem_len;
+    static int drop_cnt = 0;
 
     /* Obtain the size of the packet and put it into the "len"
      * variable. */
@@ -236,7 +376,7 @@ low_level_input(struct netif *netif, void *p_buf, int size)
     len += ETH_PAD_SIZE; /* allow room for Ethernet padding */
 #endif
 
-    p = pbuf_alloc(PBUF_RAW, len, PBUF_RAM);
+    p = pbuf_alloc(PBUF_RAW, len, PBUF_POOL/*PBUF_RAM*/);  //rx should use pbuf_pool. to avoid alloc failed in tcp server(rx mostly)
 
     if (p != NULL && (p->tot_len >= len)) {
 
@@ -257,11 +397,11 @@ low_level_input(struct netif *netif, void *p_buf, int size)
              * pbuf is the sum of the chained pbuf len members.
              */
             if (rem_len > 0) {
-                //printk(KERN_DEBUG, "low_level_input: 0x%x, 0x%x.\n", (uint32)q->payload, (uint32)((char*)p_buf + (p->tot_len - rem_len)));
+                //printk(KERN_DEBUG, "low_level_input: 0x%x, 0x%x.\n", (uint32_t)q->payload, (uint32_t)((char*)p_buf + (p->tot_len - rem_len)));
                 mymemcpy(q->payload, (char *)p_buf + (p->tot_len - rem_len), q->len);
                 rem_len -= q->len;
             } else
-                printf("low_level_input memcpy err\n");
+                LWIP_DEBUGF(NETIF_DEBUG, ("low_level_input memcpy err\n"));
         }
 
 #if ETH_PAD_SIZE
@@ -269,7 +409,8 @@ low_level_input(struct netif *netif, void *p_buf, int size)
 #endif
         LINK_STATS_INC(link.recv);
     } else {
-        printf("low_level_input alloc failed, drop frame!\n");
+        ++drop_cnt;
+        LWIP_DEBUGF(NETIF_DEBUG, ("low_level_input alloc failed, drop frame count=%d!\n", drop_cnt));
         LINK_STATS_INC(link.memerr);
         LINK_STATS_INC(link.drop);
     }
@@ -284,6 +425,8 @@ liteos_low_level_output(struct netif *netif, struct pbuf *p)
     low_level_output(netif, p);
 }
 #endif
+
+extern int netdev_wifi_low_power(int lowpoer);
 /**
  * This function should be called when a packet is ready to be read
  * from the interface. It uses the function low_level_input() that
@@ -294,10 +437,8 @@ liteos_low_level_output(struct netif *netif, struct pbuf *p)
  * @param netif the lwip network interface structure for this ethernetif
  */
 void
-ethernetif_input(u16_t devnum, void *p_buf, int size)
+ethernetif_input(uint8_t devnum, void *p_buf, int size)
 {
-    TRACE(0, "%s %d, %d", __func__, __LINE__, size);
-
     struct eth_hdr *ethhdr;
     struct netif *netif;
     struct pbuf *p;
@@ -319,29 +460,66 @@ ethernetif_input(u16_t devnum, void *p_buf, int size)
     ethhdr = p->payload;
 
     switch (htons(ethhdr->type)) {
+    case ETHTYPE_LLDP:
     /* IP or ARP packet? */
+    /* fall through */
     case ETHTYPE_IP:
+#if LWIP_IPV6
+    /* IPv6 packet? */
+    /* fall through */
+    case ETHTYPE_IPV6:
+#endif /* IPv6 packet */
 #if defined(CHECKSUM_BY_HARDWARE) && (!(CHECKSUM_CHECK_TCP) || !(CHECKSUM_CHECK_UDP))
     {
         char *trpkt;
         uint16_t trpkt_len;
         uint16_t chksum_cal = 0;
-        uint32_t dst, src;
-        struct ip_hdr *ip_hdr = (struct ip_hdr *)((char *)ethhdr + SIZEOF_ETH_HDR);
+        uint32_t ip_hdr_size = 0;
+        uint32_t proto = 0;
+        uint32_t dst = 0, src = 0;
+        unsigned char *ip_hdr = NULL;
 
-        LWIP_ASSERT("eth input invalid size", (size >= (sizeof(struct ip_hdr) + LWIP_ETH_HDR_LEN)));
+        if (htons(ethhdr->type) == ETHTYPE_IP) {
+            struct ip_hdr *ip_hdr_tmp;
+
+            ip_hdr_tmp = (struct ip_hdr *)((char *)ethhdr + SIZEOF_ETH_HDR);
+
+            memcpy(&dst, &ip_hdr_tmp->dest, 4);
+            memcpy(&src, &ip_hdr_tmp->src, 4);
+
+            proto = ip_hdr_tmp->_proto;
+            ip_hdr_size = sizeof(struct ip_hdr);
+            ip_hdr = (unsigned char *)ip_hdr_tmp;
+        } else {
+#if LWIP_IPV6
+            ip6_addr_t dst_tmp, src_tmp;
+            struct ip6_hdr *ip_hdr_tmp;
+
+            ip_hdr_tmp = (struct ip6_hdr *)((char *)ethhdr + SIZEOF_ETH_HDR);
+
+            ip6_addr_copy_to_packed(dst_tmp, ip_hdr_tmp->dest);
+            ip6_addr_copy_to_packed(src_tmp, ip_hdr_tmp->src);
+            /*convert ipv6 address to adapt eth_hw_checksum function */
+            ipv6_addr_adapt(&src_tmp, &dst_tmp, &src, &dst);
+
+            proto = ip_hdr_tmp->_nexth;
+            ip_hdr_size = sizeof(struct ip6_hdr);
+            ip_hdr = (unsigned char *)ip_hdr_tmp;
+#endif
+	}
+
+        LWIP_ASSERT("eth input invalid size", (size >= (ip_hdr_size + LWIP_ETH_HDR_LEN)));
 #if(SKB_SRAM == 2)
         trpkt = (struct pbuf *)p_buf->payload;
 #else
         trpkt = (char *)p_buf;
 #endif
-        trpkt += (SIZEOF_ETH_HDR - ETH_PAD_SIZE) + sizeof(struct ip_hdr);
-        trpkt_len = size - sizeof(struct ip_hdr) - (SIZEOF_ETH_HDR - ETH_PAD_SIZE);
-        memcpy(&dst, &ip_hdr->dest, 4);
-        memcpy(&src, &ip_hdr->src, 4);
+        trpkt += (SIZEOF_ETH_HDR - ETH_PAD_SIZE) + ip_hdr_size;
+        trpkt_len = size - ip_hdr_size - (SIZEOF_ETH_HDR - ETH_PAD_SIZE);
+
 #if !(CHECKSUM_CHECK_TCP)
-        if ((IP_HDR_GET_VERSION(ip_hdr) != 6) && ip_hdr->_proto == IP_PROTO_TCP) {
-            struct tcp_hdr *tcphdr = (struct tcp_hdr *)((char *)ip_hdr + sizeof(struct ip_hdr));
+        if (proto == IP_PROTO_TCP) {
+            struct tcp_hdr *tcphdr = (struct tcp_hdr *)((char *)ip_hdr + ip_hdr_size);
             if (tcphdr->chksum)
                 chksum_cal = eth_hw_checksum((void *)trpkt, trpkt_len, src, dst, IP_PROTO_TCP);
             if (chksum_cal != 0) {
@@ -351,8 +529,8 @@ ethernetif_input(u16_t devnum, void *p_buf, int size)
 #endif
 
 #if !(CHECKSUM_CHECK_UDP)
-        if ((IP_HDR_GET_VERSION(ip_hdr) != 6) && ip_hdr->_proto == IP_PROTO_UDP) {
-            struct udp_hdr *udphdr = (struct udp_hdr *)((char *)ip_hdr + sizeof(struct ip_hdr));
+        if (proto == IP_PROTO_UDP) {
+            struct udp_hdr *udphdr = (struct udp_hdr *)((char *)ip_hdr + ip_hdr_size);
             if (udphdr->chksum) {
                 chksum_cal = eth_hw_checksum((void *)trpkt, trpkt_len, src, dst, IP_PROTO_UDP);
                 if (chksum_cal != 0) {
@@ -364,17 +542,63 @@ ethernetif_input(u16_t devnum, void *p_buf, int size)
     }
 #endif
 
+#if LWIP_IPV6_SUPPORT
+#if IPSEC_SUPPORT
+    if(htons(ethhdr->type) == ETHTYPE_IPV6){
+        if (ipsecdev_input_ip6_lwip_wifi(p, netif) != ERR_OK) {
+            pbuf_free(p);
+            p = NULL;
+        }
+        /*don't need to remove header,ipsecdev_input_ip6 have done*/
+    }
+#endif
+#endif
+    /* fall through */
     case ETHTYPE_ARP:
 #if PPPOE_SUPPORT
     /* PPPoE packet? */
     case ETHTYPE_PPPOEDISC:
     case ETHTYPE_PPPOE:
 #endif /* PPPOE_SUPPORT */
+#ifdef __NET_WIFI_SET_TCP_WAKEUP_PORT__
+        /* filter tcp port */
+        if (htons(ethhdr->type) == ETHTYPE_IP) {
+            u16 *port;
+            u16 port_dst, port_src;
+            port = (u16 *)((char *)ethhdr + SIZEOF_ETH_HDR + sizeof(struct ip_hdr));
+
+            port_dst = ntohs(*port);
+            port_src = ntohs(*(port+1));
+            //printf("%s %d %d\n\r", __func__, port_dst, port_src);
+            if (port_src == NET_WIFI_SET_TCP_WAKEUP_PORT_NUM || port_dst == NET_WIFI_SET_TCP_WAKEUP_PORT_NUM) {
+               netdev_wifi_low_power(WIFI_LOW_POWER_DISABLE);
+            }
+        }
+#if LWIP_IPV6_SUPPORT
+        else if(htons(ethhdr->type) == ETHTYPE_IPV6) {
+            u16 *port;
+            u16 port_dst, port_src;
+            port = (u16 *)((char *)ethhdr + SIZEOF_ETH_HDR + sizeof(struct ip6_hdr));
+
+            port_dst = ntohs(*port);
+            port_src = ntohs(*(port+1));
+            if (port_src == NET_WIFI_SET_TCP_WAKEUP_PORT_NUM || port_dst == NET_WIFI_SET_TCP_WAKEUP_PORT_NUM) {
+               netdev_wifi_low_power(WIFI_LOW_POWER_DISABLE);
+            }
+        }
+#endif
+#endif
         /* full packet send to tcpip_thread to process */
         if (netif->input(p, netif) != ERR_OK) {
             LWIP_DEBUGF(NETIF_DEBUG, ("ethernetif_input: IP input error\n"));
             pbuf_free(p);
             p = NULL;
+#if WIFI_NET_TOOL_SUPPORT
+        } else {
+            unsigned char *p802x_hdrs = (unsigned char *)p->payload;
+            int p802x_len = p->tot_len - ETH_PAD_SIZE;
+            net_tool_tcpdump(p802x_hdrs, p802x_len);
+#endif
         }
         break;
 
@@ -400,8 +624,11 @@ ethernetif_input(u16_t devnum, void *p_buf, int size)
 err_t
 ethernetif_init(struct netif *netif)
 {
-
-    TRACE(0, "%s %d", __func__, __LINE__);
+    uint32_t localCap = 0;
+    if (0 != bwifi_check_capability(&localCap)) {
+        printf("capability error, localCap:0x%02x\n", localCap);
+        assert(0 == bwifi_check_capability(&localCap));
+    }
 
     LWIP_ASSERT("netif != NULL", (netif != NULL));
 

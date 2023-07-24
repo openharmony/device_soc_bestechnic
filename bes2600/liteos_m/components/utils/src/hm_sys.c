@@ -22,7 +22,7 @@
 #include "hal_trace.h"
 #include "los_memory.h"
 #include "los_task.h"
-#include "console.h"
+// #include "console.h"
 #include "hiview_util.h"
 #include "hiview_output_log.h"
 #include "hiview_log.h"
@@ -35,7 +35,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include "ohos_init.h"
-
+#if 0
 void OsShowInfo(void)
 {
     static uint32_t last_pool_total_used_size = 0;
@@ -110,7 +110,7 @@ void RegisterCustomATCmd()
     }
 }
 SYS_SERVICE_INIT(RegisterCustomATCmd);
-
+#endif
 void HAL_NVIC_SystemReset(void)
 {
 }
