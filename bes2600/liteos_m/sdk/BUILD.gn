@@ -100,7 +100,7 @@ config("public") {
     "bsp/net/wifi",
     "bsp/platform/hal/best2003",
   ]
-  ldflags = [ "-Wl,-T" + rebase_path("bsp/out/best2600w_liteos/_best2001.lds") ]
+  ldflags = [ "-Wl,-T" + rebase_path("bsp/out/best2600w_liteos/_best2003.lds") ]
   libs = [
     "bspbest2600w_liteos",
     "c",

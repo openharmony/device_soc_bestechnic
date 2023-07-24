@@ -129,7 +129,7 @@ fi
 
 
 cd bsp
-
+cp -rf prebuild/ bsp/
 chmod a+x tools/build_best2600w_ohos_into_lib.sh
 
 tools/build_best2600w_ohos_into_lib.sh \
@@ -141,6 +141,6 @@ tools/build_best2600w_ohos_into_lib.sh \
 -x="$OPT_LITEOS_BOOT1 $build_type $flash_config " \
 -y="$OPT_LITEOS_BOOT2A $build_type $flash_config " \
 -d=" BUILD_SE=$build_trustzone BUILD_MINI=$build_mini_sys $rel_branch BUILD_PIECE=$BUILD_PIECE" \
-GEN_LIB=1 $rel
+GEN_LIB=1 $rel GX6D=1
 
 cd ../
