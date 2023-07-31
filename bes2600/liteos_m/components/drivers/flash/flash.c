@@ -18,7 +18,6 @@
 #include "cmsis_os.h"
 #include "cmsis_os2.h"
 #include "hal_trace.h"
-#include "hal_norflash.h"
 #include "hal_cache.h"
 #include "hal_cmu.h"
 #include "cmsis.h"
@@ -26,7 +25,7 @@
 #include "crc32_c.h"
 
 #define NORFLASH_API_WRAP(x)    x
-
+#define TO_FLASH_NC_ADDR(addr)          (((addr) & HAL_NORFLASH_ADDR_MASK) | FLASH_NC_BASE)
 #if BES_HAL_DEBUG
 #define ENTER_FUNCTION() printf("%s enter ->\n", __FUNCTION__)
 #define LEAVE_FUNCTION() printf("%s <- leave\n", __FUNCTION__)
@@ -67,31 +66,31 @@ struct RW_BLOCK_INFO {
 struct HAL_FLASH_BAD_INFO {
     bool flag;
     enum FLASH_OPTIONS option;
-    hal_partition_t partition;
+    enum NORFLASH_API_MODULE_ID_T partition;
     uint32_t offset;
     uint32_t blocknum;
 };
 
 struct HAL_FLASH_RW_INFO {
-    hal_partition_t partition;
+    enum NORFLASH_API_MODULE_ID_T partition;
     struct RW_BLOCK_INFO blockInfo[RW_MAX_BLOCK];
 };
 
 typedef struct {
     char *bin_name;
-    hal_partition_t partition;
+    enum NORFLASH_API_MODULE_ID_T partition;
 } user_writeable_flash_info;
 
 user_writeable_flash_info user_writeable_partitions[] = {
-    {"boot", HAL_PARTITION_BOOTLOADER},
-    {"data", HAL_PARTITION_DATA},
-    {"log", HAL_PARTITION_LOG},
-    {"littlefs", HAL_PARTITION_RESOURCE},
-    {"secure", HAL_PARTITION_TRUSTZONEA},
-    {"misc", HAL_PARTITION_MISC},
-    {"factory", HAL_PARTITION_ENV},
-    {"factory_backup", HAL_PARTITION_ENV_REDUND},
-    {"system_mini", HAL_PARTITION_SYSTEM_MINI},
+    {"boot", NORFLASH_API_MODULE_ID_BOOTLOADER},
+    {"data", NORFLASH_API_MODULE_ID_DATA},
+    {"log", NORFLASH_API_MODULE_ID_LOG_DUMP},
+    {"littlefs", NORFLASH_API_MODULE_ID_LITTLEFS},
+    {"secure", NORFLASH_API_MODULE_ID_PROMPT},
+    {"misc", NORFLASH_API_MODULE_ID_AUDIO},
+    {"factory", NORFLASH_API_MODULE_ID_FACTORY},
+    {"factory_backup", NORFLASH_API_MODULE_ID_FACTORY_BACKUP},
+    {"system_mini", NORFLASH_API_MODULE_ID_MINISYSTEM},
 };
 
 struct HAL_FLASH_BAD_INFO g_flashBadInfo[BLOCK_MAX_INFO];
@@ -99,13 +98,13 @@ struct HAL_FLASH_BAD_INFO g_normalFlashBadInfo;
 static bool g_rwFlashInitFlag = false;
 struct HAL_FLASH_RW_INFO g_flashRwInfo[RW_MAX_PARTITION] = {
     {
-        .partition = HAL_PARTITION_DATA,
+        .partition = NORFLASH_API_MODULE_ID_DATA,
     },
     {
-        .partition = HAL_PARTITION_LOG,
+        .partition = NORFLASH_API_MODULE_ID_LOG_DUMP,
     },
     {
-        .partition = HAL_PARTITION_RESOURCE,
+        .partition = NORFLASH_API_MODULE_ID_LITTLEFS,
     }};
 
 static void FlashOptionStructInit(void)
@@ -141,7 +140,7 @@ int bes_check_user_write_flash_addr(const uint32_t addr, const uint32_t size)
     }
     return ret;
 }
-
+#if 0
 osMutexId FlashMutex = NULL;
 osMutexDef_t os_mutex_def_flash;
 static void FlashosMutexWait(void)
@@ -198,13 +197,13 @@ int flash_read(const uint32_t addr, uint8_t *dst, const uint32_t size)
         goto RETURN;
     }
 
-    FlashosMutexWait();
-    pmu_flash_write_config();
-    lock = int_lock_global();
+    //FlashosMutexWait();
+    //pmu_flash_write_config();
+    //lock = int_lock_global();
     ret = NORFLASH_API_WRAP(hal_norflash_read)(HAL_FLASH_ID_0, addr, dst, size);
-    int_unlock_global(lock);
-    pmu_flash_read_config();
-    osMutexRelease(FlashMutex);
+    //int_unlock_global(lock);
+    //pmu_flash_read_config();
+    //osMutexRelease(FlashMutex);
 
 RETURN:
     return ret;
@@ -220,14 +219,14 @@ int flash_write(const uint32_t addr, const uint8_t *src, const uint32_t size)
         return ret;
     }
 
-    FlashosMutexWait();
-    pmu_flash_write_config();
-    lock = int_lock_global();
+    //FlashosMutexWait();
+    //pmu_flash_write_config();
+    //lock = int_lock_global();
     ret = NORFLASH_API_WRAP(hal_norflash_write)(HAL_FLASH_ID_0, addr, src, size);
-    int_unlock_global(lock);
-    pmu_flash_read_config();
+    //int_unlock_global(lock);
+    //pmu_flash_read_config();
     hal_cache_invalidate_all(HAL_CACHE_ID_I_CACHE);
-    osMutexRelease(FlashMutex);
+    //osMutexRelease(FlashMutex);
 
     return ret;
 }
@@ -243,24 +242,24 @@ int flash_erase(const uint32_t addr, const uint32_t size)
         return ret;
     }
 
-    FlashosMutexWait();
-    pmu_flash_write_config();
-    lock = int_lock_global();
+    //FlashosMutexWait();
+    //pmu_flash_write_config();
+    //lock = int_lock_global();
     ret = NORFLASH_API_WRAP(hal_norflash_erase)(HAL_FLASH_ID_0, addr, size);
-    int_unlock_global(lock);
+    //int_unlock_global(lock);
 
-    pmu_flash_read_config();
+    //pmu_flash_read_config();
     hal_cache_invalidate_all(HAL_CACHE_ID_I_CACHE);
-    osMutexRelease(FlashMutex);
+    //osMutexRelease(FlashMutex);
 
     return ret;
 }
-
-static int32_t SetFlashOptionInfo(hal_partition_t partition, uint32_t size, uint32_t option)
+#endif
+static int32_t SetFlashOptionInfo(enum NORFLASH_API_MODULE_ID_T partition, uint32_t size, uint32_t option)
 {
     uint32_t blockNum;
 
-    if (((partition != HAL_PARTITION_DATA) && (partition != HAL_PARTITION_LOG) && (partition != HAL_PARTITION_RESOURCE)) || (option >= MAX_FLASH_OPTIONS)) {
+    if (((partition != NORFLASH_API_MODULE_ID_DATA) && (partition != NORFLASH_API_MODULE_ID_LOG_DUMP) && (partition != NORFLASH_API_MODULE_ID_LITTLEFS)) || (option >= MAX_FLASH_OPTIONS)) {
         TRACE(0, "%s---%d----%d-----%d\r\n", __FUNCTION__, partition, size, option);
         return -1;
     }
@@ -292,9 +291,9 @@ static int32_t SetFlashOptionInfo(hal_partition_t partition, uint32_t size, uint
     return 0;
 }
 
-static int32_t SetFlashBadOptionInfo(hal_partition_t partition, uint32_t size, uint32_t option)
+static int32_t SetFlashBadOptionInfo(enum NORFLASH_API_MODULE_ID_T partition, uint32_t size, uint32_t option)
 {
-    if (((partition != HAL_PARTITION_DATA) && (partition != HAL_PARTITION_LOG) && (partition != HAL_PARTITION_RESOURCE)) || (option >= MAX_FLASH_OPTIONS)) {
+    if (((partition != NORFLASH_API_MODULE_ID_DATA) && (partition != NORFLASH_API_MODULE_ID_LOG_DUMP) && (partition != NORFLASH_API_MODULE_ID_LITTLEFS)) || (option >= MAX_FLASH_OPTIONS)) {
         return -1;
     }
 
@@ -333,11 +332,11 @@ static struct HAL_FLASH_BAD_INFO *GetFlashBadOptionInfo(void)
  *
  * @return  0: On success， otherwise is error
  */
-int32_t hal_flash_info_get(hal_partition_t in_partition, hal_logic_partition_t *partition)
+int32_t hal_flash_info_get(enum NORFLASH_API_MODULE_ID_T in_partition, hal_logic_partition_t *partition)
 {
     hal_logic_partition_t *logic_partition;
 
-    if (in_partition >= HAL_PARTITION_MAX || partition == NULL) {
+    if (in_partition >= NORFLASH_API_MODULE_ID_COUNT || partition == NULL) {
         return -1;
     }
 
@@ -363,7 +362,7 @@ int32_t hal_flash_info_get(hal_partition_t in_partition, hal_logic_partition_t *
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t size)
+int32_t hal_flash_erase(enum NORFLASH_API_MODULE_ID_T in_partition, uint32_t off_set, uint32_t size)
 {
     uint32_t start_addr;
     hal_logic_partition_t info;
@@ -377,12 +376,12 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
     }
 
     start_addr = off_set;
-    ret = SetFlashOptionInfo(in_partition, start_addr, FLASH_ERASE);
-    if (ret < 0) {
-        TRACE(0, "SetFlashOptionInfo FAIL\r\n");
-    }
+    // ret = SetFlashOptionInfo(in_partition, start_addr, FLASH_ERASE);
+    // if (ret < 0) {
+    //     TRACE(0, "SetFlashOptionInfo FAIL\r\n");
+    // }
 
-    ret = flash_erase(start_addr, size);
+    ret = norflash_api_erase(in_partition, TO_FLASH_NC_ADDR(start_addr), size, false);
     if (!ret) {
         goto RETURN;
     } else {
@@ -407,7 +406,7 @@ RETURN:
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const void *in_buf, uint32_t in_buf_len)
+int32_t hal_flash_write(enum NORFLASH_API_MODULE_ID_T in_partition, uint32_t *off_set, const void *in_buf, uint32_t in_buf_len)
 {
     int32_t ret = 0;
     uint32_t start_addr;
@@ -434,12 +433,12 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set, const v
         TRACE(0, "flash over write, new len is %d\r\n", in_buf_len);
     }
 
-    ret = SetFlashOptionInfo(in_partition, start_addr, FLASH_WRITE);
-    if (ret < 0) {
-        TRACE(0, "SetFlashOptionInfo FAIL\r\n");
-    }
+    // ret = SetFlashOptionInfo(in_partition, start_addr, FLASH_WRITE);
+    // if (ret < 0) {
+    //     TRACE(0, "SetFlashOptionInfo FAIL\r\n");
+    // }
 
-    ret = flash_write(start_addr, in_buf, in_buf_len);
+    ret = norflash_api_write(in_partition, TO_FLASH_NC_ADDR(start_addr), in_buf, in_buf_len, false);
     if (!ret) {
         *off_set += in_buf_len;
     } else {
@@ -464,7 +463,7 @@ RETURN:
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_erase_write(hal_partition_t in_partition, uint32_t *off_set, const void *in_buf, uint32_t in_buf_len)
+int32_t hal_flash_erase_write(enum NORFLASH_API_MODULE_ID_T in_partition, uint32_t *off_set, const void *in_buf, uint32_t in_buf_len)
 {
     int32_t ret = 0;
     uint32_t start_addr;
@@ -492,12 +491,12 @@ int32_t hal_flash_erase_write(hal_partition_t in_partition, uint32_t *off_set, c
         TRACE(0, "flash over write, new len is %d\r\n", in_buf_len);
     }
 
-    ret = SetFlashOptionInfo(in_partition, start_addr, FLASH_ERASE);
-    if (ret < 0) {
-        TRACE(0, "SetFlashOptionInfo FAIL\r\n");
-    }
+    // ret = SetFlashOptionInfo(in_partition, start_addr, FLASH_ERASE);
+    // if (ret < 0) {
+    //     TRACE(0, "SetFlashOptionInfo FAIL\r\n");
+    // }
 
-    ret = flash_erase(start_addr, in_buf_len);
+    ret = norflash_api_erase(in_partition, TO_FLASH_NC_ADDR(start_addr), in_buf_len, false);
     if (ret) {
         TRACE(0, "flash erase fail\r\n");
         ret = -1;
@@ -505,12 +504,12 @@ int32_t hal_flash_erase_write(hal_partition_t in_partition, uint32_t *off_set, c
         goto RETURN;
     }
 
-    ret = SetFlashOptionInfo(in_partition, start_addr, FLASH_WRITE);
-    if (ret < 0) {
-        TRACE(0, "SetFlashOptionInfo FAIL\r\n");
-    }
+    // ret = SetFlashOptionInfo(in_partition, start_addr, FLASH_WRITE);
+    // if (ret < 0) {
+    //     TRACE(0, "SetFlashOptionInfo FAIL\r\n");
+    // }
 
-    ret = flash_write(start_addr, in_buf, in_buf_len);
+    ret = norflash_api_write(in_partition, TO_FLASH_NC_ADDR(start_addr), in_buf, in_buf_len, false);
     if (!ret) {
         *off_set += in_buf_len;
     } else {
@@ -535,7 +534,7 @@ RETURN:
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_read(hal_partition_t in_partition, uint32_t *off_set, void *out_buf, uint32_t in_buf_len)
+int32_t hal_flash_read(enum NORFLASH_API_MODULE_ID_T in_partition, uint32_t *off_set, void *out_buf, uint32_t in_buf_len)
 {
     int32_t ret = 0;
     uint32_t start_addr;
@@ -549,12 +548,12 @@ int32_t hal_flash_read(hal_partition_t in_partition, uint32_t *off_set, void *ou
     }
 
     start_addr = *off_set;
-    ret = SetFlashOptionInfo(in_partition, start_addr, FLASH_READ);
-    if (ret < 0) {
-        TRACE(0, "SetFlashOptionInfo FAIL\r\n");
-    }
+    // ret = SetFlashOptionInfo(in_partition, start_addr, FLASH_READ);
+    // if (ret < 0) {
+    //     TRACE(0, "SetFlashOptionInfo FAIL\r\n");
+    // }
 
-    ret = flash_read(start_addr, out_buf, in_buf_len);
+    ret = norflash_sync_read(in_partition, TO_FLASH_NC_ADDR(start_addr), out_buf, in_buf_len);
     if (!ret) {
         goto RETURN;
     } else {
@@ -578,7 +577,7 @@ RETURN:
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_enable_secure(hal_partition_t partition, uint32_t off_set, uint32_t size)
+int32_t hal_flash_enable_secure(enum NORFLASH_API_MODULE_ID_T partition, uint32_t off_set, uint32_t size)
 {
     FAIL_FUNCTION();
     return 0;
@@ -596,7 +595,7 @@ int32_t hal_flash_enable_secure(hal_partition_t partition, uint32_t off_set, uin
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_dis_secure(hal_partition_t partition, uint32_t off_set, uint32_t size)
+int32_t hal_flash_dis_secure(enum NORFLASH_API_MODULE_ID_T partition, uint32_t off_set, uint32_t size)
 {
     FAIL_FUNCTION();
     return 0;
@@ -611,7 +610,7 @@ int32_t hal_flash_dis_secure(hal_partition_t partition, uint32_t off_set, uint32
  *
  * @return 0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_addr2offset(hal_partition_t *in_partition, uint32_t *off_set, uint32_t addr)
+int32_t hal_flash_addr2offset(enum NORFLASH_API_MODULE_ID_T *in_partition, uint32_t *off_set, uint32_t addr)
 {
     FAIL_FUNCTION();
     return 0;
@@ -680,33 +679,33 @@ int ota_write_bootinfo_to_flash(MiscDataInfo *info, bootinfo_block block, bootin
         next_addr = BOOT_INFO_B_ADDR + next_zone * FLASH_SECTOR_SIZE_IN_BYTES;
     }
 
-    pmu_flash_write_config();
+    //pmu_flash_write_config();
     memcpy(buffer, (uint8_t *)info, sizeof(MiscDataInfo));
 
     //erase current sector
-    lock = int_lock_global();
-    ret = NORFLASH_API_WRAP(hal_norflash_erase)(HAL_FLASH_ID_0, cur_addr, FLASH_SECTOR_SIZE_IN_BYTES);
-    int_unlock_global(lock);
+    //lock = int_lock_global();
+    ret = norflash_api_erase(NORFLASH_API_MODULE_ID_AUDIO, cur_addr, FLASH_SECTOR_SIZE_IN_BYTES, false);
+    //int_unlock_global(lock);
     if (ret != HAL_NORFLASH_OK) {
-        SetFlashBadOptionInfo(HAL_PARTITION_MISC, cur_addr, FLASH_ERASE);
+        SetFlashBadOptionInfo(NORFLASH_API_MODULE_ID_AUDIO, cur_addr, FLASH_ERASE);
         goto end;
     }
 
     // erase next sector
-    lock = int_lock_global();
-    ret = NORFLASH_API_WRAP(hal_norflash_erase)(HAL_FLASH_ID_0, next_addr, FLASH_SECTOR_SIZE_IN_BYTES);
-    int_unlock_global(lock);
+    //lock = int_lock_global();
+    ret = norflash_api_erase(NORFLASH_API_MODULE_ID_AUDIO, next_addr, FLASH_SECTOR_SIZE_IN_BYTES, false);
+    //int_unlock_global(lock);
     if (ret != HAL_NORFLASH_OK) {
-        SetFlashBadOptionInfo(HAL_PARTITION_MISC, next_addr, FLASH_ERASE);
+        SetFlashBadOptionInfo(NORFLASH_API_MODULE_ID_AUDIO, next_addr, FLASH_ERASE);
         goto end;
     }
 
     // write next sector
-    lock = int_lock_global();
-    ret = NORFLASH_API_WRAP(hal_norflash_write)(HAL_FLASH_ID_0, next_addr, buffer, FLASH_SECTOR_SIZE_IN_BYTES);
-    int_unlock_global(lock);
+    //lock = int_lock_global();
+    ret = norflash_api_write(NORFLASH_API_MODULE_ID_AUDIO, next_addr, buffer, FLASH_SECTOR_SIZE_IN_BYTES,false);
+    //int_unlock_global(lock);
     if (ret != HAL_NORFLASH_OK) {
-        SetFlashBadOptionInfo(HAL_PARTITION_MISC, next_addr, FLASH_WRITE);
+        SetFlashBadOptionInfo(NORFLASH_API_MODULE_ID_AUDIO, next_addr, FLASH_WRITE);
         goto end;
     }
 
@@ -714,7 +713,7 @@ int ota_write_bootinfo_to_flash(MiscDataInfo *info, bootinfo_block block, bootin
     ret = ota_set_bootinfo_zone_num(block, next_zone);
 
 end:
-    pmu_flash_read_config();
+    //pmu_flash_read_config();
     return ret;
 }
 
@@ -848,11 +847,11 @@ int ota_get_bootinfo(MiscDataInfo *info, bootinfo_block block, bootinfo_zone zon
         start_addr = BOOT_INFO_B_ADDR + zone * FLASH_SECTOR_SIZE_IN_BYTES;
     }
 
-    pmu_flash_write_config();
-    lock = int_lock_global();
+    //pmu_flash_write_config();
+    //lock = int_lock_global();
     NORFLASH_API_WRAP(hal_norflash_read)(HAL_FLASH_ID_0, start_addr, (uint8_t *)info, sizeof(MiscDataInfo));
-    int_unlock_global(lock);
-    pmu_flash_read_config();
+    //int_unlock_global(lock);
+    //pmu_flash_read_config();
 
     return ERR_OK;
 }
@@ -863,12 +862,12 @@ int SetMiscData(MiscDataType type, const void *data, uint32_t dataLen)
     int ret = 0;
     bootinfo_block block = BOOTINFO_INVALID;
 
-    FlashosMutexWait();
+    //FlashosMutexWait();
     block = ota_get_valid_bootinfo_block();
 
     ret = ota_get_bootinfo(&ctrl, block, ota_get_bootinfo_zone_num(block));
     if (ret) {
-        osMutexRelease(FlashMutex);
+        //osMutexRelease(FlashMutex);
         return ret;
     }
 
@@ -897,7 +896,7 @@ int SetMiscData(MiscDataType type, const void *data, uint32_t dataLen)
     }
 
     ret = ota_set_bootinfo_to_zoneAB(&ctrl);
-    osMutexRelease(FlashMutex);
+    //osMutexRelease(FlashMutex);
 
     return ret;
 }
@@ -912,14 +911,14 @@ int GetMiscData(MiscDataType type, void *data, uint32_t dataLen)
         return ERR_PARAMETER;
     }
 
-    FlashosMutexWait();
+    //FlashosMutexWait();
     block = ota_get_valid_bootinfo_block();
     ret = ota_get_bootinfo(&ctrl, block, ota_get_bootinfo_zone_num(block));
     if (ret) {
-        osMutexRelease(FlashMutex);
+        //osMutexRelease(FlashMutex);
         return ret;
     }
-    osMutexRelease(FlashMutex);
+    //osMutexRelease(FlashMutex);
 
     switch (type) {
     case MISC_CRC_VALUE:
@@ -953,7 +952,7 @@ int GetMiscData(MiscDataType type, void *data, uint32_t dataLen)
     return ERR_OK;
 }
 
-int ota_flash_read(const hal_partition_t partition, const uint32_t addr, uint8_t *dst, const uint32_t size)
+int ota_flash_read(const enum NORFLASH_API_MODULE_ID_T partition, const uint32_t addr, uint8_t *dst, const uint32_t size)
 {
     int ret = 0;
     uint32_t lock = 0;
@@ -972,13 +971,13 @@ int ota_flash_read(const hal_partition_t partition, const uint32_t addr, uint8_t
 
     flash_offset = addr + partitionInfo.partition_start_addr;
 
-    FlashosMutexWait();
-    pmu_flash_write_config();
-    lock = int_lock_global();
-    ret = NORFLASH_API_WRAP(hal_norflash_read)(HAL_FLASH_ID_0, flash_offset, dst, size);
-    int_unlock_global(lock);
-    pmu_flash_read_config();
-    osMutexRelease(FlashMutex);
+    //FlashosMutexWait();
+    //pmu_flash_write_config();
+    //lock = int_lock_global();
+    ret = norflash_sync_read(partition, addr, dst, size);
+    //int_unlock_global(lock);
+    //pmu_flash_read_config();
+    //osMutexRelease(FlashMutex);
 
 RETURN:
     return ret;
@@ -991,51 +990,51 @@ static void ota_feed_watchdog(void)
 #endif
 }
 
-static int ota_partition_common_erase_write(const hal_partition_t partition, uint32_t start_addr, uint32_t erase_len, uint8_t *src_buf, uint32_t src_len)
+static int ota_partition_common_erase_write(const enum NORFLASH_API_MODULE_ID_T partition, uint32_t start_addr, uint32_t erase_len, uint8_t *src_buf, uint32_t src_len)
 {
     int ret = 0;
     uint32_t lock = 0;
 
-    lock = int_lock_global();
+    //lock = int_lock_global();
 
-    ret = NORFLASH_API_WRAP(hal_norflash_erase)(HAL_FLASH_ID_0, start_addr, erase_len);
+    ret = norflash_api_erase(partition, TO_FLASH_NC_ADDR(start_addr), erase_len, false);
     if (ret != HAL_NORFLASH_OK) {
         SetFlashBadOptionInfo(partition, start_addr, FLASH_ERASE);
-        int_unlock_global(lock);
+        //int_unlock_global(lock);
         return ERR_RETURN;
     }
 
-    ret = NORFLASH_API_WRAP(hal_norflash_write)(HAL_FLASH_ID_0, start_addr, src_buf, src_len);
+    ret = norflash_api_write(partition, TO_FLASH_NC_ADDR(start_addr), src_buf, src_len, false);
     if (ret != HAL_NORFLASH_OK) {
         SetFlashBadOptionInfo(partition, start_addr, FLASH_WRITE);
-        int_unlock_global(lock);
+        //int_unlock_global(lock);
         ret = ERR_RETURN;
     }
 
-    int_unlock_global(lock);
+    //int_unlock_global(lock);
 
     return ret;
 }
 
-static int ota_partition_erase_write(const hal_partition_t partition, uint32_t *start_addr, uint8_t *src_buf, uint32_t src_len)
+static int ota_partition_erase_write(const enum NORFLASH_API_MODULE_ID_T partition, uint32_t *start_addr, uint8_t *src_buf, uint32_t src_len)
 {
     int ret = 0;
     uint32_t lock = 0, num = 0;
 
-    lock = int_lock_global();
+    //lock = int_lock_global();
 
     for (num = 0; num < src_len / OTA_MALLOC_BUF_SIZE; num++) {
-        ret = NORFLASH_API_WRAP(hal_norflash_erase)(HAL_FLASH_ID_0, *start_addr, OTA_MALLOC_BUF_SIZE);
+        ret = norflash_api_erase(partition, TO_FLASH_NC_ADDR(*start_addr), OTA_MALLOC_BUF_SIZE, false);
         if (ret != HAL_NORFLASH_OK) {
             SetFlashBadOptionInfo(partition, *start_addr, FLASH_ERASE);
-            int_unlock_global(lock);
+            //int_unlock_global(lock);
             return ERR_RETURN;
         }
 
-        ret = NORFLASH_API_WRAP(hal_norflash_write)(HAL_FLASH_ID_0, *start_addr, src_buf, OTA_MALLOC_BUF_SIZE);
+        ret = norflash_api_write(partition, TO_FLASH_NC_ADDR(*start_addr), src_buf, OTA_MALLOC_BUF_SIZE, false);
         if (ret != HAL_NORFLASH_OK) {
             SetFlashBadOptionInfo(partition, *start_addr, FLASH_WRITE);
-            int_unlock_global(lock);
+            //int_unlock_global(lock);
             ret = ERR_RETURN;
         }
 
@@ -1043,19 +1042,19 @@ static int ota_partition_erase_write(const hal_partition_t partition, uint32_t *
         src_buf += OTA_MALLOC_BUF_SIZE;
     }
 
-    int_unlock_global(lock);
+    //int_unlock_global(lock);
 
     return ret;
 }
 
-static int ota_partition_read_erase_write(const hal_partition_t partition, uint32_t start_addr, uint8_t *dst_buf, uint32_t dst_buf_len, uint32_t dst_offset, uint8_t *src_buf, uint32_t src_len)
+static int ota_partition_read_erase_write(const enum NORFLASH_API_MODULE_ID_T partition, uint32_t start_addr, uint8_t *dst_buf, uint32_t dst_buf_len, uint32_t dst_offset, uint8_t *src_buf, uint32_t src_len)
 {
     int ret = 0;
     uint32_t lock;
 
-    lock = int_lock_global();
-    ret = NORFLASH_API_WRAP(hal_norflash_read)(HAL_FLASH_ID_0, start_addr, dst_buf, dst_buf_len);
-    int_unlock_global(lock);
+    //lock = int_lock_global();
+    ret = norflash_sync_read(partition, TO_FLASH_NC_ADDR(start_addr), dst_buf, dst_buf_len);
+    //int_unlock_global(lock);
     if (ret != HAL_NORFLASH_OK) {
         SetFlashBadOptionInfo(partition, start_addr, FLASH_READ);
         return ret;
@@ -1067,13 +1066,13 @@ static int ota_partition_read_erase_write(const hal_partition_t partition, uint3
     return ret;
 }
 
-static int ota_partition_check_magic(const hal_partition_t partition, const uint32_t addr)
+static int ota_partition_check_magic(const enum NORFLASH_API_MODULE_ID_T partition, const uint32_t addr)
 {
     int ret;
     uint32_t num;
     hal_logic_partition_t partition_info;
-    uint8_t ota_partition[6] = {HAL_PARTITION_BOOT2A, HAL_PARTITION_BOOT2B, HAL_PARTITION_TRUSTZONEA,
-                                HAL_PARTITION_TRUSTZONEB, HAL_PARTITION_CM33_MAIN, HAL_PARTITION_SYSTEM_MINI};
+    uint8_t ota_partition[6] = {NORFLASH_API_MODULE_ID_2ND_BOOT, NORFLASH_API_MODULE_ID_2ND_BOOTB, NORFLASH_API_MODULE_ID_TRUSTZONE,
+                                NORFLASH_API_MODULE_ID_2ND_TRUSTZONE, NORFLASH_API_MODULE_ID_RTOSA, NORFLASH_API_MODULE_ID_MINISYSTEM};
     uint8_t read_buf[FLASH_SECTOR_SIZE_IN_BYTES] = {0};
     uint8_t magic_buf[4] = {0};
 
@@ -1101,7 +1100,7 @@ static int ota_partition_check_magic(const hal_partition_t partition, const uint
     return ret;
 }
 
-int ota_flash_write(const hal_partition_t partition, const uint32_t addr, const uint8_t *src, const uint32_t size)
+int ota_flash_write(const enum NORFLASH_API_MODULE_ID_T partition, const uint32_t addr, const uint8_t *src, const uint32_t size)
 {
     int ret = -1;
     uint32_t left_len = 0, align_len = 0, fill_len = 0, flash_offset = 0, lengthToBurn = size;
@@ -1123,8 +1122,8 @@ int ota_flash_write(const hal_partition_t partition, const uint32_t addr, const 
 
     ota_feed_watchdog();
 
-    FlashosMutexWait();
-    pmu_flash_write_config();
+    //FlashosMutexWait();
+    //pmu_flash_write_config();
 
     if (flash_offset % OTA_MALLOC_BUF_SIZE != 0) {
         left_len = OTA_MALLOC_BUF_SIZE - flash_offset % OTA_MALLOC_BUF_SIZE;
@@ -1152,12 +1151,12 @@ int ota_flash_write(const hal_partition_t partition, const uint32_t addr, const 
     ota_partition_check_magic(partition, addr);
 
 end:
-    pmu_flash_read_config();
+    //pmu_flash_read_config();
     if ((addr % OTA_MALLOC_BUF_SIZE != 0) || (lengthToBurn % OTA_MALLOC_BUF_SIZE != 0))
         free(buf);
 
     hal_cache_invalidate_all(HAL_CACHE_ID_I_CACHE);
-    osMutexRelease(FlashMutex);
+    //osMutexRelease(FlashMutex);
 
     return ret;
 }
@@ -1166,7 +1165,7 @@ end:
  * 获取当前是那个区间：partition
  * 获取具体那个坏块号
  */
-int32_t GetFlashBadBlockNum(hal_partition_t partition, uint32_t *blockNum)
+int32_t GetFlashBadBlockNum(enum NORFLASH_API_MODULE_ID_T partition, uint32_t *blockNum)
 {
     struct HAL_FLASH_BAD_INFO *flashbadinfo = NULL;
     if (blockNum == NULL) {
@@ -1189,7 +1188,7 @@ int32_t GetFlashBadBlockNum(hal_partition_t partition, uint32_t *blockNum)
  * 获取区间上偏移（算出具体物理地址）：offset
  * 获取具体那个坏块号：
  */
-int32_t GetFlashBadBlock(hal_partition_t *partition, uint32_t *offset, uint32_t *blockNum)
+int32_t GetFlashBadBlock(enum NORFLASH_API_MODULE_ID_T *partition, uint32_t *offset, uint32_t *blockNum)
 {
     struct HAL_FLASH_BAD_INFO *flashbadinfo = NULL;
     if (partition == NULL || offset == NULL || blockNum == NULL) {
@@ -1232,7 +1231,7 @@ int32_t GetFlashType(int32_t *factoryID, int32_t *deviceID)
  * 读或者写：op
  * 获取该块号的写或者擦的次数：times
  */
-int32_t GetFlashRewriteCycle(hal_partition_t partition, uint32_t blockNum, uint32_t op, uint32_t *times)
+int32_t GetFlashRewriteCycle(enum NORFLASH_API_MODULE_ID_T partition, uint32_t blockNum, uint32_t op, uint32_t *times)
 {
     struct HAL_FLASH_RW_INFO *FlashRwInfo = NULL;
 
@@ -1255,7 +1254,7 @@ int32_t GetFlashRewriteCycle(hal_partition_t partition, uint32_t blockNum, uint3
     return 0;
 }
 
-int32_t GetFlashRewriteCycleCount(hal_partition_t partition, uint32_t op, uint32_t *count)
+int32_t GetFlashRewriteCycleCount(enum NORFLASH_API_MODULE_ID_T partition, uint32_t op, uint32_t *count)
 {
     uint32_t tempTimes = 0;
     uint32_t countTimes = 0;
@@ -1292,7 +1291,7 @@ int32_t GetFlashRewriteCycleCount(hal_partition_t partition, uint32_t op, uint32
  * 读或者写：op
  * 获取该块号的写或者擦的次数：blockTimes
  */
-int32_t GetFlashStatisticInfo(hal_partition_t partition, uint32_t blockNum, uint32_t op, uint32_t *blockTimes)
+int32_t GetFlashStatisticInfo(enum NORFLASH_API_MODULE_ID_T partition, uint32_t blockNum, uint32_t op, uint32_t *blockTimes)
 {
     struct HAL_FLASH_BAD_INFO *flashBadInfo = NULL;
     uint32_t blockcount = 0;

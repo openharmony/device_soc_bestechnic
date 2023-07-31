@@ -20,6 +20,7 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#include "norflash_api.h"
 
 #define PAR_OPT_READ_POS (0)
 #define PAR_OPT_WRITE_POS (1)
@@ -32,6 +33,8 @@ extern "C" {
 #define PAR_OPT_WRITE_DIS (0x0u << PAR_OPT_WRITE_POS)
 #define PAR_OPT_WRITE_EN (0x1u << PAR_OPT_WRITE_POS)
 
+#define TO_FLASH_NC_ADDR(addr)          (((addr) & HAL_NORFLASH_ADDR_MASK) | FLASH_NC_BASE)
+#if  0
 typedef enum {
     HAL_PARTITION_ERROR = -1,
     HAL_PARTITION_BOOTLOADER = 2,
@@ -51,7 +54,7 @@ typedef enum {
     HAL_PARTITION_ENV_REDUND = 16,
     HAL_PARTITION_MAX,
 } hal_partition_t;
-
+#endif
 typedef enum {
     HAL_FLASH_EMBEDDED,
     HAL_FLASH_SPI,
@@ -183,7 +186,7 @@ typedef enum {
  *
  * @return  0: On success， otherwise is error
  */
-int32_t hal_flash_info_get(hal_partition_t in_partition, hal_logic_partition_t *partition);
+int32_t hal_flash_info_get(enum NORFLASH_API_MODULE_ID_T in_partition, hal_logic_partition_t *partition);
 
 /**
  * Erase an area on a Flash logical partition
@@ -199,7 +202,7 @@ int32_t hal_flash_info_get(hal_partition_t in_partition, hal_logic_partition_t *
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t size);
+int32_t hal_flash_erase(enum NORFLASH_API_MODULE_ID_T in_partition, uint32_t off_set, uint32_t size);
 
 /**
  * Write data to an area on a flash logical partition without erase
@@ -214,7 +217,7 @@ int32_t hal_flash_erase(hal_partition_t in_partition, uint32_t off_set, uint32_t
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set,
+int32_t hal_flash_write(enum NORFLASH_API_MODULE_ID_T in_partition, uint32_t *off_set,
                         const void *in_buf, uint32_t in_buf_len);
 
 /**
@@ -230,7 +233,7 @@ int32_t hal_flash_write(hal_partition_t in_partition, uint32_t *off_set,
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_erase_write(hal_partition_t in_partition, uint32_t *off_set,
+int32_t hal_flash_erase_write(enum NORFLASH_API_MODULE_ID_T in_partition, uint32_t *off_set,
                               const void *in_buf, uint32_t in_buf_len);
 
 /**
@@ -246,7 +249,7 @@ int32_t hal_flash_erase_write(hal_partition_t in_partition, uint32_t *off_set,
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_read(hal_partition_t in_partition, uint32_t *off_set,
+int32_t hal_flash_read(enum NORFLASH_API_MODULE_ID_T in_partition, uint32_t *off_set,
                        void *out_buf, uint32_t in_buf_len);
 
 /**
@@ -261,7 +264,7 @@ int32_t hal_flash_read(hal_partition_t in_partition, uint32_t *off_set,
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_enable_secure(hal_partition_t partition, uint32_t off_set, uint32_t size);
+int32_t hal_flash_enable_secure(enum NORFLASH_API_MODULE_ID_T partition, uint32_t off_set, uint32_t size);
 
 /**
  * Disable security options on a logical partition
@@ -275,7 +278,7 @@ int32_t hal_flash_enable_secure(hal_partition_t partition, uint32_t off_set, uin
  *
  * @return  0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_dis_secure(hal_partition_t partition, uint32_t off_set, uint32_t size);
+int32_t hal_flash_dis_secure(enum NORFLASH_API_MODULE_ID_T partition, uint32_t off_set, uint32_t size);
 
 /**
  * Convert physical address to logic partition id and offset in partition
@@ -286,25 +289,25 @@ int32_t hal_flash_dis_secure(hal_partition_t partition, uint32_t off_set, uint32
  *
  * @return 0 : On success, EIO : If an error occurred with any step
  */
-int32_t hal_flash_addr2offset(hal_partition_t *in_partition, uint32_t *off_set, uint32_t addr);
+int32_t hal_flash_addr2offset(enum NORFLASH_API_MODULE_ID_T *in_partition, uint32_t *off_set, uint32_t addr);
 
 int SetMiscData(MiscDataType type, const void *data, uint32_t dataLen);
 
 int GetMiscData(MiscDataType type, void *data, uint32_t dataLen);
 
-int ota_flash_read(const hal_partition_t partition, const uint32_t addr, uint8_t *dst, const uint32_t size);
+int ota_flash_read(const enum NORFLASH_API_MODULE_ID_T partition, const uint32_t addr, uint8_t *dst, const uint32_t size);
 
-int ota_flash_write(const hal_partition_t partition, const uint32_t addr, const uint8_t *src, const uint32_t size);
+int ota_flash_write(const enum NORFLASH_API_MODULE_ID_T partition, const uint32_t addr, const uint8_t *src, const uint32_t size);
 
-int32_t GetFlashBadBlock(hal_partition_t *partition, uint32_t *offset, uint32_t *blockNum);
+int32_t GetFlashBadBlock(enum NORFLASH_API_MODULE_ID_T *partition, uint32_t *offset, uint32_t *blockNum);
 
 int32_t GetFlashType(int32_t *factoryID, int32_t *deviceID);
 
-int32_t GetFlashStatisticInfo(hal_partition_t partition, uint32_t blockNum, uint32_t op, uint32_t *blockTimes);
+int32_t GetFlashStatisticInfo(enum NORFLASH_API_MODULE_ID_T partition, uint32_t blockNum, uint32_t op, uint32_t *blockTimes);
 
-int32_t GetFlashRewriteCycle(hal_partition_t partition, uint32_t blockNum, uint32_t op, uint32_t *times);
+int32_t GetFlashRewriteCycle(enum NORFLASH_API_MODULE_ID_T partition, uint32_t blockNum, uint32_t op, uint32_t *times);
 
-int32_t GetFlashBadBlockNum(hal_partition_t partition, uint32_t *blockNum);
+int32_t GetFlashBadBlockNum(enum NORFLASH_API_MODULE_ID_T partition, uint32_t *blockNum);
 
 #ifdef __cplusplus
 }
