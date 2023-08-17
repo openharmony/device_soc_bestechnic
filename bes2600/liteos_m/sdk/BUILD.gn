@@ -99,6 +99,7 @@ config("public") {
     "bsp/utils/kfifo",
     "bsp/net/wifi",
     "bsp/platform/hal/best2003",
+    "bsp/services/norflash_api/",
   ]
   ldflags = [ "-Wl,-T" + rebase_path("bsp/out/best2600w_liteos/_best2003.lds") ]
   libs = [
