@@ -127,9 +127,10 @@ else
     OPT_LITEOS_BOOT2A="${temp_cmd} ${temp_extra_cmd} "
 fi
 
+cp -rf prebuild/ bsp/
 
 cd bsp
-cp -rf prebuild/ bsp/
+rm -rf bsp/out/best2600w_liteos/
 chmod a+x tools/build_best2600w_ohos_into_lib.sh
 
 tools/build_best2600w_ohos_into_lib.sh \
