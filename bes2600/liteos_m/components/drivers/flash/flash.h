@@ -34,7 +34,7 @@ extern "C" {
 #define PAR_OPT_WRITE_EN (0x1u << PAR_OPT_WRITE_POS)
 
 #define TO_FLASH_NC_ADDR(addr)          (((addr) & HAL_NORFLASH_ADDR_MASK) | FLASH_NC_BASE)
-#if  0
+#if  1
 typedef enum {
     HAL_PARTITION_ERROR = -1,
     HAL_PARTITION_BOOTLOADER = 2,
@@ -70,6 +70,19 @@ typedef struct {
     uint32_t partition_length;
     uint32_t partition_options;
 } hal_logic_partition_t;
+
+
+
+#define    NORFLASH_API_MODULE_ID_BOOTLOADER        (NORFLASH_API_MODULE_ID_COUNT+10)
+#define    NORFLASH_API_MODULE_ID_BOOT              (NORFLASH_API_MODULE_ID_COUNT+9)
+#define    NORFLASH_API_MODULE_ID_2ND_BOOT          (NORFLASH_API_MODULE_ID_COUNT+8)
+#define    NORFLASH_API_MODULE_ID_2ND_BOOTB         (NORFLASH_API_MODULE_ID_COUNT+7)
+#define    NORFLASH_API_MODULE_ID_DATA              (NORFLASH_API_MODULE_ID_COUNT+6)
+#define    NORFLASH_API_MODULE_ID_RTOSA             (NORFLASH_API_MODULE_ID_COUNT+5)
+#define    NORFLASH_API_MODULE_ID_MINISYSTEM        (NORFLASH_API_MODULE_ID_COUNT+4)
+#define    NORFLASH_API_MODULE_ID_TRUSTZONE         (NORFLASH_API_MODULE_ID_COUNT+3)
+#define    NORFLASH_API_MODULE_ID_2ND_TRUSTZONE     (NORFLASH_API_MODULE_ID_COUNT+2)
+#define    NORFLASH_API_MODULE_ID_TRUSTZONE_INFO    (NORFLASH_API_MODULE_ID_COUNT+1)
 
 #define BOOT_INFO_A_ADDR 0xFD0000
 #define BOOT_INFO_A_B_SIZE 0x6000
@@ -177,6 +190,10 @@ typedef enum {
     /** software exception error.  */
     ERR_SWEXCEPTION = -3,
 } err_enum;
+
+
+
+
 
 /**
  * Get the information of the specified flash area

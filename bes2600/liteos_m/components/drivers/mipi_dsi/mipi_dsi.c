@@ -40,7 +40,13 @@ enum BUF_STATE {
     READY,
     BUSY,
 };
-
+void hal_lcdc_update_addr(uint8_t layerId, uint8_t channel, uint32_t addr){}
+void hal_dsi_init_v2(uint16_t h_res, enum DsiMode mode, uint8_t lane_number, uint32_t dsi_bitclk, uint32_t dsi_pclk){}
+void hal_lcdc_init(const struct HAL_DSI_CFG_T *cfg, const uint8_t *layer0,
+    const uint8_t *layer1, const uint8_t *layer2){}
+void hal_lcdc_start(void){}
+typedef void (*HAL_DSI_XFER_COMPLETE_CALLBACK_T)(uint8_t layerId, uint8_t channel, uint32_t addr);
+void hal_lcdc_set_callback(HAL_DSI_XFER_COMPLETE_CALLBACK_T callback){}
 struct MipiDsiDevice {
     uint32_t buffers[BUF_NUM];
     uint32_t buf_size;
