@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __HAL_IOMUX_BEST2003_H__
 #define __HAL_IOMUX_BEST2003_H__
 
@@ -172,16 +173,16 @@ enum HAL_IOMUX_FUNCTION_T {
     HAL_IOMUX_FUNC_PWM5,
     HAL_IOMUX_FUNC_PWM6,
     HAL_IOMUX_FUNC_PWM7,
-    HAL_IOMUX_FUNC_SDMMC_CLK,
-    HAL_IOMUX_FUNC_SDMMC_CMD,
-    HAL_IOMUX_FUNC_SDMMC_DATA0,
-    HAL_IOMUX_FUNC_SDMMC_DATA1,
-    HAL_IOMUX_FUNC_SDMMC_DATA2,
-    HAL_IOMUX_FUNC_SDMMC_DATA3,
-    HAL_IOMUX_FUNC_SDMMC_DATA4,
-    HAL_IOMUX_FUNC_SDMMC_DATA5,
-    HAL_IOMUX_FUNC_SDMMC_DATA6,
-    HAL_IOMUX_FUNC_SDMMC_DATA7,
+    HAL_IOMUX_FUNC_SDMMC0_CLK,
+    HAL_IOMUX_FUNC_SDMMC0_CMD,
+    HAL_IOMUX_FUNC_SDMMC0_DATA0,
+    HAL_IOMUX_FUNC_SDMMC0_DATA1,
+    HAL_IOMUX_FUNC_SDMMC0_DATA2,
+    HAL_IOMUX_FUNC_SDMMC0_DATA3,
+    HAL_IOMUX_FUNC_SDMMC0_DATA4,
+    HAL_IOMUX_FUNC_SDMMC0_DATA5,
+    HAL_IOMUX_FUNC_SDMMC0_DATA6,
+    HAL_IOMUX_FUNC_SDMMC0_DATA7,
     HAL_IOMUX_FUNC_SPDIF0_DI,
     HAL_IOMUX_FUNC_SPDIF0_DO,
     HAL_IOMUX_FUNC_SPI_CLK,//spi0
@@ -265,17 +266,11 @@ enum HAL_IOMUX_ISPI_ACCESS_T {
     HAL_IOMUX_ISPI_MCU_ANA          = (1 << 5),
 };
 
-void hal_iomux_set_i2s_mclk(void);
-
-void hal_iomux_set_i2s1(void);
-
 void hal_iomux_set_mcu_clock_out(void);
 
 void hal_iomux_set_bt_clock_out(void);
 
 uint32_t hal_iomux_set_io_drv(enum HAL_IOMUX_PIN_T pin, uint32_t val);
-
-void hal_iomux_set_dsi_te(void);
 
 void hal_iomux_set_wf_fem(int rf_switch);
 

@@ -1,17 +1,3 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 #ifndef  _NORFLASH_ASYNC_API_H_
 #define _NORFLASH_ASYNC_API_H_
 
@@ -20,25 +6,23 @@ extern "C" {
 #endif
 
 #include "hal_norflash.h"
-
-#define FLASH_SECTOR_SIZE               4096
-
-#if defined(FLASH_API_SIMPLE)
-#define NORFLASH_API_WRITE_BUFF_LEN     (0)
+#ifdef FLASH_DUAL_CHIP
+#define NORFLASH_API_BLOCK_MAX_SIZE     0x10000
+#define NORFLASH_API_SECTOR_MAX_SIZE    0x2000
+#define NORFLASH_API_PAGE_MAX_SIZE      0x200
+#else
+#define NORFLASH_API_BLOCK_MAX_SIZE     0x8000
+#define NORFLASH_API_SECTOR_MAX_SIZE    0x1000
+#define NORFLASH_API_PAGE_MAX_SIZE      0x100
 #endif
-#if defined(FLASH_API_HIGHPERFORMANCE)
-#define NORFLASH_API_WRITE_BUFF_LEN     (8)
-#endif
-#if defined(FLASH_API_NORMAL)
-#define NORFLASH_API_WRITE_BUFF_LEN     (4)
-#endif
-#define NORFLASH_API_OPRA_LIST_LEN      ((NORFLASH_API_WRITE_BUFF_LEN + 1) * 3)
-#define NORFLASH_API_SECTOR_SIZE        FLASH_SECTOR_SIZE
 
-#define TO_FLASH_NC_ADDR(addr)          (((addr) & HAL_NORFLASH_ADDR_MASK) | FLASH_NC_BASE)
+#define GET_FLASH_DEV_ID(addr)          norflash_api_get_dev_id_by_addr(addr)
 
 enum NORFLASH_API_MODULE_ID_T
 {
+#ifdef OS_WITH_FILESYSTEM
+    NORFLASH_API_MODULE_ID_OS_FS,
+#else
     NORFLASH_API_MODULE_ID_LOG_DUMP,
     NORFLASH_API_MODULE_ID_USERDATA,
     NORFLASH_API_MODULE_ID_BOOTUP_INFO,
@@ -52,23 +36,21 @@ enum NORFLASH_API_MODULE_ID_T
 #endif
     NORFLASH_API_MODULE_ID_CRASH_DUMP,
     NORFLASH_API_MODULE_ID_COREDUMP,
+    NORFLASH_API_MODULE_ID_RAMDUMP,
     NORFLASH_API_MODULE_ID_FACTORY,
+    NORFLASH_API_MODULE_ID_FACTORY_BACKUP,
     NORFLASH_API_MODULE_ID_HOTWORD_MODEL,
     NORFLASH_API_MODULE_ID_INTERACTION_OTA,
     NORFLASH_API_MODULE_ID_GMA_OTA,
+    NORFLASH_API_MODULE_ID_AUDIO,
+    NORFLASH_API_MODULE_ID_PROMPT,
     NORFLASH_API_MODULE_ID_TEST1,
     NORFLASH_API_MODULE_ID_TEST2,
-    NORFLASH_API_MODULE_ID_CUSTOM,
-    NORFLASH_API_MODULE_ID_CUSTOM_BACKUP,
-    NORFLASH_API_MODULE_ID_CUSTOM1,
-    NORFLASH_API_MODULE_ID_CUSTOM2,
-    NORFLASH_API_MODULE_ID_CUSTOM3,
-    NORFLASH_API_MODULE_ID_CUSTOM4,
-    NORFLASH_API_MODULE_ID_CUSTOM5,
-    NORFLASH_API_MODULE_ID_CUSTOM6,
-    NORFLASH_API_MODULE_ID_CUSTOM7,
-    NORFLASH_API_MODULE_ID_CUSTOM8,
-    NORFLASH_API_MODULE_ID_CUSTOM9,
+    NORFLASH_API_MODULE_ID_BOOT_INFO,
+    NORFLASH_API_MODULE_ID_LITTLEFS,
+    NORFLASH_API_MODULE_ID_KV,
+    NORFLASH_API_MODULE_ID_MULTI_BIN,
+#endif
     NORFLASH_API_MODULE_ID_COUNT,
 };
 
@@ -83,6 +65,9 @@ enum NORFLASH_API_RET_T
     NORFLASH_API_BAD_LEN,
     NORFLASH_API_ERR_UNINIT,
     NORFLASH_API_ERR_HASINIT,
+    NORFLASH_API_ERR_REMAP,
+    NORFLASH_API_ERR_PROTECTION,
+    NORFLASH_API_ERR_REGISTRATION,
     NORFLASH_API_ERR,
 };
 
@@ -124,57 +109,40 @@ enum NORFLASH_API_USER
 
 typedef void (* NORFLASH_API_OPERA_CB)(void* opera_result);
 typedef bool (*NOFLASH_API_FLUSH_ALLOWED_CB)(void);
+typedef int (*NORFLASH_API_HOOK_HANDLE)(void);
 
-typedef struct _opera_info
+#define FLASH_BP_MAP_LEN_MAX   64
+
+typedef struct{
+    uint32_t bp;
+    uint32_t start_addr;
+    uint32_t end_addr;
+}FLASH_BP_MAP_T;
+
+
+enum FLASH_BP_PORTION_T{
+    FLASH_PORTION_UPPER,
+    FLASH_PORTION_LOWER,
+    FLASH_PORTION_TOP,
+    FLASH_PORTION_BOTTOM,
+};
+
+typedef struct{
+    uint32_t bp;
+    enum FLASH_BP_PORTION_T portion;
+    uint32_t numerator;
+    uint32_t denominator;
+}FLASH_BP_MAP_T1;
+
+enum NORFLASH_API_HOOK_USER_T
 {
-    enum NORFLASH_API_OPRATION_TYPE type;
-    uint32_t addr;
-    uint32_t len;
-    uint32_t w_offs;
-    uint32_t w_len;
-    uint8_t *buff;
-    bool lock;
-    struct _opera_info *next;
-}OPRA_INFO;
-
-
-typedef struct
-{
-    bool is_inited;
-    enum HAL_FLASH_ID_T dev_id;
-    enum NORFLASH_API_MODULE_ID_T mod_id;
-    uint32_t mod_base_addr;
-    uint32_t mod_len;
-    uint32_t mod_block_len;
-    uint32_t mod_sector_len;
-    uint32_t mod_page_len;
-    uint32_t buff_len;
-    NORFLASH_API_OPERA_CB cb_func;
-    OPRA_INFO *opera_info;
-    OPRA_INFO *cur_opera_info;
-    enum NORFLASH_API_STATE state;
-}MODULE_INFO;
-
-typedef struct
-{
-    bool is_inited;
-    MODULE_INFO mod_info[NORFLASH_API_MODULE_ID_COUNT];
-    enum NORFLASH_API_MODULE_ID_T cur_mod_id;
-    MODULE_INFO* cur_mod;
-    NOFLASH_API_FLUSH_ALLOWED_CB allowed_cb[NORFLASH_API_USER_COUNTS];
-}NORFLASH_API_INFO;
-
-typedef struct
-{
-    bool is_used;
-    OPRA_INFO opera_info;
-}OPERA_INFO_LIST;
-
-typedef struct
-{
-    bool is_used;
-    uint8_t buffer[NORFLASH_API_SECTOR_SIZE];
-}DATA_LIST;
+    NORFLASH_API_HOOK_USER_0,
+    NORFLASH_API_HOOK_USER_USERDATA,
+#if defined(DUMP_LOG_ENABLE)
+    NORFLASH_API_HOOK_USER_LOG_DUMP,
+#endif
+    NORFLASH_API_HOOK_USER_QTY,
+};
 
 enum NORFLASH_API_RET_T norflash_api_init(void);
 
@@ -189,7 +157,9 @@ enum NORFLASH_API_RET_T norflash_api_register(
                 uint32_t buffer_len,
                 NORFLASH_API_OPERA_CB cb_func
                 );
-
+enum HAL_FLASH_ID_T norflash_api_get_dev_id_by_addr(
+                uint32_t addr
+                );
 // read flash buffer or flash,priority read flash buffer.
 enum NORFLASH_API_RET_T norflash_api_read(
                 enum NORFLASH_API_MODULE_ID_T mod_id,
@@ -232,22 +202,31 @@ uint32_t norflash_api_get_used_buffer_count(
                 );
 
 uint32_t norflash_api_get_free_buffer_count(
+                enum HAL_FLASH_ID_T dev_id,
                 enum NORFLASH_API_OPRATION_TYPE type
                 );
-void norflash_api_flush_all(void);
+void norflash_api_flush_all(bool force);
 void norflash_api_flush_disable(enum NORFLASH_API_USER user_id,uint32_t cb);
 void norflash_api_flush_enable(enum NORFLASH_API_USER user_id);
 void norflash_api_flush_enable_all(void);
 enum NORFLASH_API_STATE norflash_api_get_state(enum NORFLASH_API_MODULE_ID_T mod_id);
 
-void norflash_flush_all_pending_op(void);
-
 enum NORFLASH_API_RET_T norflash_api_get_base_addr(
                 enum NORFLASH_API_MODULE_ID_T mod_id,
                 uint32_t *addr);
+enum NORFLASH_API_RET_T norflash_api_get_dev_id(
+                enum NORFLASH_API_MODULE_ID_T mod_id,
+                enum HAL_FLASH_ID_T *dev_id);
 
-enum NORFLASH_API_RET_T norflash_api_get_sector_size(
-                enum NORFLASH_API_MODULE_ID_T mod_id, uint32_t *s_size);
+uint32_t norflash_api_get_total_size(enum HAL_FLASH_ID_T dev_id);
+
+
+uint32_t norflash_api_get_block_size(enum HAL_FLASH_ID_T dev_id);
+
+
+uint32_t norflash_api_get_sector_size(enum HAL_FLASH_ID_T dev_id);
+
+uint32_t norflash_api_get_page_size(enum HAL_FLASH_ID_T dev_id);
 
 enum NORFLASH_API_RET_T norflash_api_remap_start(
                          enum NORFLASH_API_MODULE_ID_T mod_id,
@@ -257,10 +236,32 @@ enum NORFLASH_API_RET_T norflash_api_remap_done(
                          enum NORFLASH_API_MODULE_ID_T mod_id,
                          uint32_t start_addr,
                          uint32_t len);
+enum NORFLASH_API_RET_T norflash_api_get_remap_info(
+                         enum NORFLASH_API_MODULE_ID_T mod_id,
+                         uint8_t *remap_opened,
+                         uint8_t *remap_status,
+                         uint32_t *remap_addr,
+                         uint32_t *remap_len);
+void norflash_api_protection_bp_init(
+                         enum HAL_FLASH_ID_T id,
+                         uint32_t total_size);
+void norflash_api_get_pb_map(
+                         enum HAL_FLASH_ID_T id,
+                         FLASH_BP_MAP_T **pb_map,
+                         uint32_t       *pb_count);
+uint32_t noflash_api_to_nc_addr(enum HAL_FLASH_ID_T id,
+                                        uint32_t addr);
+bool norflash_api_flush_is_in_task(void);
 
-#ifdef FLASH_API_GUARD_THREAD
-void norflash_suspend_guard_wake(void);
-#endif
+enum NORFLASH_API_RET_T norflash_api_security_register_lock(enum HAL_FLASH_ID_T id, uint32_t start_address, uint32_t len);
+enum NORFLASH_API_RET_T norflash_api_security_register_erase(enum HAL_FLASH_ID_T id, uint32_t start_address, uint32_t len);
+enum NORFLASH_API_RET_T norflash_api_security_register_write(enum HAL_FLASH_ID_T id, uint32_t start_address, const uint8_t *buffer, uint32_t len);
+enum NORFLASH_API_RET_T norflash_api_security_register_read(enum HAL_FLASH_ID_T id, uint32_t start_address, uint8_t *buffer, uint32_t len);
+
+void norflash_api_set_hook(enum NORFLASH_API_HOOK_USER_T user_id, NORFLASH_API_HOOK_HANDLE hook_handle);
+int norflash_api_hook_activate(void);
+
+
 #ifdef __cplusplus
 }
 #endif

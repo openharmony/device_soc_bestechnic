@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __HAL_UART_H__
 #define __HAL_UART_H__
 
@@ -19,11 +20,12 @@
 extern "C" {
 #endif
 
-#ifdef CHIP_HAS_UART
+#include "plat_addr_map.h"
 
 #include "plat_types.h"
 #include "stdbool.h"
 #include "stdint.h"
+#include "hal_cmu.h"
 #include "hal_dma.h"
 
 //#define BT_UART
@@ -36,14 +38,16 @@ extern "C" {
 #endif
 
 enum HAL_UART_ID_T {
-    HAL_UART_ID_0 = 0,
-#if (CHIP_HAS_UART >= 2)
+#ifdef UART0_BASE
+    HAL_UART_ID_0,
+#endif
+#ifdef UART1_BASE
     HAL_UART_ID_1,
 #endif
-#if (CHIP_HAS_UART >= 3)
+#ifdef UART2_BASE
     HAL_UART_ID_2,
 #endif
-#if (CHIP_HAS_UART >= 4)
+#ifdef UART3_BASE
     HAL_UART_ID_3,
 #endif
 #ifdef BT_UART
@@ -169,9 +173,9 @@ int hal_uart_close(enum HAL_UART_ID_T id);
 
 int hal_uart_opened(enum HAL_UART_ID_T id);
 
-void hal_uart_sleep(void);
+void hal_uart_sleep(enum HAL_CMU_LPU_SLEEP_MODE_T mode);
 
-void hal_uart_wakeup(void);
+void hal_uart_wakeup(enum HAL_CMU_LPU_SLEEP_MODE_T mode);
 
 int hal_uart_change_baud_rate(enum HAL_UART_ID_T id, uint32_t rate);
 
@@ -252,16 +256,11 @@ uint32_t hal_uart_stop_dma_send(enum HAL_UART_ID_T id);
 
 int hal_uart_printf_init(void);
 
+int hal_uart_printf_busy(void);
+
 void hal_uart_printf_output(const uint8_t *buf, uint32_t len);
 
-static inline void hal_uart_output(const uint8_t *buf, uint32_t len)
-{
-    return hal_uart_printf_output(buf, len);
-}
-
 void hal_uart_printf(const char *fmt, ...);
-
-#endif // CHIP_HAS_UART
 
 #ifdef __cplusplus
 }

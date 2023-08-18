@@ -1,32 +1,25 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2021 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ *  2021-02-22     tanwenchen    New document.
+ ****************************************************************************/
 #ifndef __HAL_IR_H__
 #define __HAL_IR_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-enum HAL_IR_TX_CLK_DUTY_T {
-    HAL_IR_TX_CLK_DUTY_1_1 = 0,
-    HAL_IR_TX_CLK_DUTY_1_2,
-    HAL_IR_TX_CLK_DUTY_1_3,
-    HAL_IR_TX_CLK_DUTY_1_4,
-    HAL_IR_TX_CLK_DUTY_1_5,
-    HAL_IR_TX_CLK_DUTY_1_6,
-};
 
 enum HAL_IR_RX_DEFAULT_LEVEL_T {
     HAL_IR_RX_DEFAULT_LEVEL_LOW = 0,
@@ -60,7 +53,7 @@ typedef void (*HAL_IR_INT_HANDLER_T)(const uint8_t *buf, uint32_t len, bool rxtx
 
 struct HAL_IR_CFG_T {
     uint32_t tx_clk;
-    enum HAL_IR_TX_CLK_DUTY_T tx_clk_duty;
+    uint8_t tx_clk_duty; // (0,100)
     uint32_t rx_clk;
     uint16_t rec_period_single;
     uint16_t rec_duty_single;

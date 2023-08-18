@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __HAL_OVERLAY_H__
 #define __HAL_OVERLAY_H__
 
@@ -27,6 +28,10 @@ extern "C" {
 #define HAL_OVERLAY_TEXT5_LOC       __attribute__((section(".overlay_text5")))
 #define HAL_OVERLAY_TEXT6_LOC       __attribute__((section(".overlay_text6")))
 #define HAL_OVERLAY_TEXT7_LOC       __attribute__((section(".overlay_text7")))
+#define HAL_OVERLAY_TEXT8_LOC       __attribute__((section(".overlay_text8")))
+#define HAL_OVERLAY_TEXT9_LOC       __attribute__((section(".overlay_text9")))
+#define HAL_OVERLAY_TEXT10_LOC      __attribute__((section(".overlay_text10")))
+#define HAL_OVERLAY_TEXT11_LOC      __attribute__((section(".overlay_text11")))
 
 #define HAL_OVERLAY_RODATA0_LOC     __attribute__((section(".overlay_rodata0")))
 #define HAL_OVERLAY_RODATA1_LOC     __attribute__((section(".overlay_rodata1")))
@@ -36,6 +41,10 @@ extern "C" {
 #define HAL_OVERLAY_RODATA5_LOC     __attribute__((section(".overlay_rodata5")))
 #define HAL_OVERLAY_RODATA6_LOC     __attribute__((section(".overlay_rodata6")))
 #define HAL_OVERLAY_RODATA7_LOC     __attribute__((section(".overlay_rodata7")))
+#define HAL_OVERLAY_RODATA8_LOC     __attribute__((section(".overlay_rodata8")))
+#define HAL_OVERLAY_RODATA9_LOC     __attribute__((section(".overlay_rodata9")))
+#define HAL_OVERLAY_RODATA10_LOC    __attribute__((section(".overlay_rodata10")))
+#define HAL_OVERLAY_RODATA11_LOC    __attribute__((section(".overlay_rodata11")))
 
 #define HAL_OVERLAY_DATA0_LOC       __attribute__((section(".overlay_data0")))
 #define HAL_OVERLAY_DATA1_LOC       __attribute__((section(".overlay_data1")))
@@ -45,6 +54,10 @@ extern "C" {
 #define HAL_OVERLAY_DATA5_LOC       __attribute__((section(".overlay_data5")))
 #define HAL_OVERLAY_DATA6_LOC       __attribute__((section(".overlay_data6")))
 #define HAL_OVERLAY_DATA7_LOC       __attribute__((section(".overlay_data7")))
+#define HAL_OVERLAY_DATA8_LOC       __attribute__((section(".overlay_data8")))
+#define HAL_OVERLAY_DATA9_LOC       __attribute__((section(".overlay_data9")))
+#define HAL_OVERLAY_DATA10_LOC      __attribute__((section(".overlay_data10")))
+#define HAL_OVERLAY_DATA11_LOC      __attribute__((section(".overlay_data11")))
 
 #define  INVALID_OVERLAY_ADDR 0xffffffff
 enum HAL_OVERLAY_ID_T {
@@ -56,6 +69,10 @@ enum HAL_OVERLAY_ID_T {
     HAL_OVERLAY_ID_5,
     HAL_OVERLAY_ID_6,
     HAL_OVERLAY_ID_7,
+    HAL_OVERLAY_ID_8,
+    HAL_OVERLAY_ID_9,
+    HAL_OVERLAY_ID_10,
+    HAL_OVERLAY_ID_11,
 
     HAL_OVERLAY_ID_QTY,
     HAL_OVERLAY_ID_IN_CFG,
@@ -67,6 +84,14 @@ enum HAL_OVERLAY_RET_T {
     HAL_OVERLAY_RET_IN_CFG,
     HAL_OVERLAY_RET_IN_USE,
 };
+
+#define CHECK_OVERLAY_ID(id) \
+    do {\
+        if ((id < 0) || (id >= HAL_OVERLAY_ID_QTY)) { \
+            ASSERT(0, "overlay id error %d", id); \
+        } \
+    } while (0)
+
 
 #ifndef NO_OVERLAY
 enum HAL_OVERLAY_RET_T hal_overlay_load(enum HAL_OVERLAY_ID_T id);

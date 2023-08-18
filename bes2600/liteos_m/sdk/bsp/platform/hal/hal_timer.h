@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __HAL_TIMER_H__
 #define __HAL_TIMER_H__
 
@@ -25,7 +26,9 @@ extern "C" {
 //=============================================================================
 // Slow Timer (Default Timer)
 
-#ifdef FPGA
+#ifdef CONFIG_SYSTICK_HZ_NOMINAL
+#define SLOW_TIMER_USE_EXT_XTAL
+#elif defined(FPGA)
 #define CONFIG_SYSTICK_HZ_NOMINAL   (32000)
 #else
 #define CONFIG_SYSTICK_HZ_NOMINAL   (16000)
@@ -35,7 +38,11 @@ extern "C" {
 //#error "Bad CONFIG_SYSTICK_HZ_NOMINAL configuration"
 //#endif
 
-#ifdef CALIB_SLOW_TIMER
+#define __SLIM_MS_TO_TICKS(ms)      ((ms) * ((uint32_t)CONFIG_SYSTICK_HZ_NOMINAL / 1000))
+
+#define __SLIM_TICKS_TO_MS(tick)    ((tick) / ((uint32_t)CONFIG_SYSTICK_HZ_NOMINAL / 1000))
+
+#if defined(CALIB_SLOW_TIMER) && !defined(SLOW_TIMER_USE_EXT_XTAL)
 
 #define CONFIG_SYSTICK_HZ           hal_sys_timer_systick_hz()
 
@@ -47,8 +54,6 @@ extern "C" {
 
 #define __TICKS_TO_MS(tick)         hal_sys_timer_ticks_to_ms(tick)
 
-#define __SLIM_TICKS_TO_MS(tick)    ((tick) / ((uint32_t)CONFIG_SYSTICK_HZ / 1000))
-
 #define __TICKS_TO_US(tick)         hal_sys_timer_ticks_to_us(tick)
 
 #else
@@ -57,13 +62,11 @@ extern "C" {
 
 #define CONFIG_SYSTICK_HZ_FLOAT     ((float)CONFIG_SYSTICK_HZ_NOMINAL)
 
-#define __MS_TO_TICKS(ms)           ((ms) * ((uint32_t)CONFIG_SYSTICK_HZ / 1000))
+#define __MS_TO_TICKS(ms)           __SLIM_MS_TO_TICKS(ms)
 
 #define __US_TO_TICKS(us)           (((us) * ((uint32_t)CONFIG_SYSTICK_HZ / 1000) + 1000 - 1) / 1000 + 1)
 
-#define __TICKS_TO_MS(tick)         ((tick) / ((uint32_t)CONFIG_SYSTICK_HZ / 1000))
-
-#define __SLIM_TICKS_TO_MS(tick)    ((tick) / ((uint32_t)CONFIG_SYSTICK_HZ / 1000))
+#define __TICKS_TO_MS(tick)         __SLIM_TICKS_TO_MS(tick)
 
 #define __TICKS_TO_US(tick)         ((tick) * 1000 / ((uint32_t)CONFIG_SYSTICK_HZ / 1000))
 
@@ -119,6 +122,8 @@ void hal_sys_timer_wakeup(void);
 
 uint32_t hal_sys_timer_get(void);
 
+uint64_t hal_sys_timer64_get(void);
+
 uint32_t hal_aco_timer_get(void);
 
 uint32_t hal_sys_timer_get_in_sleep(void);
@@ -133,7 +138,7 @@ void hal_sys_timer_delay_us(uint32_t us);
 
 void hal_sys_timer_delay_ns(uint32_t ns);
 
-uint32_t hal_sys_timer_calc_cpu_freq(uint32_t interval_ms, int high_res);
+uint32_t hal_sys_timer_calc_cpu_freq(uint32_t osc_intvl_ms, int high_res);
 
 uint32_t flash_hal_sys_timer_get(void);
 
@@ -174,7 +179,30 @@ uint32_t hal_sys_timer_ticks_to_us(uint32_t tick);
 
 #define FAST_TICKS_TO_NS(tick)      ((uint32_t)(tick) * 10 * 1000 / (CONFIG_FAST_SYSTICK_HZ / 1000 / 100))
 
+#define US_TO_FAST_TICKS64(us)      ((uint32_t)((uint64_t)(us) * (CONFIG_FAST_SYSTICK_HZ / 1000 / 100) / 10))
+
+#define NS_TO_FAST_TICKS64(ns)      ((uint32_t)((uint64_t)(ns) * (CONFIG_FAST_SYSTICK_HZ / 1000 / 100) / 10 / 1000))
+
+#define FAST_TICKS_TO_US64(tick)    ((uint32_t)((uint64_t)(tick) * 10 / (CONFIG_FAST_SYSTICK_HZ / 1000 / 100)))
+
+#define FAST_TICKS_TO_NS64(tick)    ((uint32_t)((uint64_t)(tick) * 10 * 1000 / (CONFIG_FAST_SYSTICK_HZ / 1000 / 100)))
+
+// 26M / 4 / 1000 / 100 = 65
+#define US_TO_FAST_TICKS_SAFE(us)   (((us) > UINT32_MAX / 65) ? US_TO_FAST_TICKS64(us) : US_TO_FAST_TICKS(us))
+
+#define NS_TO_FAST_TICKS_SAFE(ns)   (((ns) > UINT32_MAX / 65) ? NS_TO_FAST_TICKS64(ns) : NS_TO_FAST_TICKS(ns))
+
+#define FAST_TICKS_TO_US_SAFE(tick) (((tick) > UINT32_MAX / 10) ? FAST_TICKS_TO_US64(tick) : FAST_TICKS_TO_US(tick))
+
+#define FAST_TICKS_TO_NS_SAFE(tick) (((tick) > UINT32_MAX / (10 * 1000)) ? FAST_TICKS_TO_NS64(tick) : FAST_TICKS_TO_NS(tick))
+
 uint32_t hal_fast_sys_timer_get(void);
+
+uint64_t hal_fast_sys_timer64_get(void);
+
+void hal_fast_sys_timer_set(uint32_t val);
+
+void hal_fast_sys_timer64_set(uint64_t val);
 
 void hal_fast_timer_sleep();
 

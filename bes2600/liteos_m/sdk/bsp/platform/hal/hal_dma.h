@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __HAL_DMA_H__
 #define __HAL_DMA_H__
 
@@ -21,6 +22,7 @@ extern "C" {
 
 #include "stdint.h"
 #include "stdbool.h"
+#include "hal_cmu.h"
 
 #define HAL_DMA_CHAN_NONE               0xFF
 
@@ -68,48 +70,70 @@ enum HAL_DMA_BSIZE_T {
     HAL_DMA_BSIZE_64          = 5,    /* Burst size = 64 */
     HAL_DMA_BSIZE_128         = 6,    /* Burst size = 128 */
     HAL_DMA_BSIZE_256         = 7,    /* Burst size = 256 */
+#ifdef DMA_BSIZE_HALF_FIFO
+    HAL_DMA_BSIZE_HALF_FIFO   = 8,    /* Burst size = DMA_FIFO_SIZE / 2 */
+#endif
 };
 
 // Width in Source transfer width and Destination transfer width definitions
-enum HAL_DMA_WDITH_T {
+enum HAL_DMA_WIDTH_T {
     HAL_DMA_WIDTH_BYTE        = 0,    /* Width = 1 byte */
     HAL_DMA_WIDTH_HALFWORD    = 1,    /* Width = 2 bytes */
     HAL_DMA_WIDTH_WORD        = 2,    /* Width = 4 bytes */
 };
 
+enum HAL_DMA_MASTER_T {
+    HAL_DMA_MASTER_DEFAULT,
+    HAL_DMA_MASTER_0,
+    HAL_DMA_MASTER_1,
+    HAL_DMA_MASTER_SRC1_DST0,     /* source select master1, destination select master 0 */
+    HAL_DMA_MASTER_SRC0_DST1,     /* source select master0, destination select master 1 */
+};
+
 enum HAL_DMA_PERIPH_T {
     HAL_DMA_PERIPH_NULL         = 0,
-    HAL_GPDMA_MEM               = 1,
-    HAL_AUDMA_MEM               = 2,
+    HAL_DMA0_MEM                = 1,
+    HAL_DMA1_MEM                = 2,
+    HAL_DMA2_MEM                = 3,
+    HAL_DMA3_MEM                = 4,
+
+    HAL_AUDMA_MEM               = HAL_DMA0_MEM,
+    HAL_GPDMA_MEM               = HAL_DMA1_MEM,
 
     HAL_GPDMA_SDIO              = 10,
-    HAL_GPDMA_SDMMC             = 11,
-    HAL_GPDMA_I2C0_RX           = 12,
-    HAL_GPDMA_I2C0_TX           = 13,
-    HAL_GPDMA_SPI_RX            = 14,
-    HAL_GPDMA_SPI_TX            = 15,
-    HAL_GPDMA_SPILCD_RX         = 16,
-    HAL_GPDMA_SPILCD_TX         = 17,
-    HAL_GPDMA_UART0_RX          = 18,
-    HAL_GPDMA_UART0_TX          = 19,
-    HAL_GPDMA_UART1_RX          = 20,
-    HAL_GPDMA_UART1_TX          = 21,
-    HAL_GPDMA_ISPI_RX           = 22,
-    HAL_GPDMA_ISPI_TX           = 23,
-    HAL_GPDMA_UART2_RX          = 24,
-    HAL_GPDMA_UART2_TX          = 25,
-    HAL_GPDMA_FLASH0            = 26,
-    HAL_GPDMA_FLASH1            = 27,
-    HAL_GPDMA_I2C1_RX           = 28,
-    HAL_GPDMA_I2C1_TX           = 29,
-    HAL_GPDMA_I2C2_RX           = 30,
-    HAL_GPDMA_I2C2_TX           = 31,
-    HAL_GPDMA_I2C3_RX           = 32,
-    HAL_GPDMA_I2C3_TX           = 33,
-    HAL_GPDMA_UART3_RX          = 34,
-    HAL_GPDMA_UART3_TX          = 35,
-    HAL_GPDMA_IR_RX             = 36,
-    HAL_GPDMA_IR_TX             = 37,
+    HAL_GPDMA_SDMMC0            = 11,
+    HAL_GPDMA_SDMMC1            = 12,
+    HAL_GPDMA_I2C0_RX           = 13,
+    HAL_GPDMA_I2C0_TX           = 14,
+    HAL_GPDMA_SPI_RX            = 15,
+    HAL_GPDMA_SPI_TX            = 16,
+    HAL_GPDMA_SPILCD_RX         = 17,
+    HAL_GPDMA_SPILCD_TX         = 18,
+    HAL_GPDMA_ISPI_RX           = 19,
+    HAL_GPDMA_ISPI_TX           = 20,
+    HAL_GPDMA_UART0_RX          = 21,
+    HAL_GPDMA_UART0_TX          = 22,
+    HAL_GPDMA_UART1_RX          = 23,
+    HAL_GPDMA_UART1_TX          = 24,
+    HAL_GPDMA_UART2_RX          = 25,
+    HAL_GPDMA_UART2_TX          = 26,
+    HAL_GPDMA_FLASH0            = 27,
+    HAL_GPDMA_FLASH1            = 28,
+    HAL_GPDMA_FLASH2            = 29,
+    HAL_GPDMA_I2C1_RX           = 30,
+    HAL_GPDMA_I2C1_TX           = 31,
+    HAL_GPDMA_I2C2_RX           = 32,
+    HAL_GPDMA_I2C2_TX           = 33,
+    HAL_GPDMA_I2C3_RX           = 34,
+    HAL_GPDMA_I2C3_TX           = 35,
+    HAL_GPDMA_UART3_RX          = 36,
+    HAL_GPDMA_UART3_TX          = 37,
+    HAL_GPDMA_IR_RX             = 38,
+    HAL_GPDMA_IR_TX             = 39,
+    HAL_GPDMA_I2C4_RX           = 40,
+    HAL_GPDMA_I2C4_TX           = 41,
+    HAL_GPDMA_I2C5_RX           = 42,
+    HAL_GPDMA_I2C5_TX           = 43,
 
     HAL_AUDMA_CODEC_RX          = 50,
     HAL_AUDMA_CODEC_TX          = 51,
@@ -140,8 +164,11 @@ enum HAL_DMA_PERIPH_T {
     HAL_AUDMA_FMDUMP1           = 76,
     HAL_AUDMA_CODEC_RX2         = 77,
     HAL_AUDMA_CODEC_TX2         = 78,
-    HAL_AUDMA_CODEC_TX3         = 79,
-    HAL_AUDMA_CAP_SENS          = 80,
+    HAL_AUDMA_CODEC_RX3         = 79,
+    HAL_AUDMA_CODEC_TX3         = 80,
+    HAL_AUDMA_CAP_SENS          = 81,
+    HAL_AUDMA_I2S2_RX           = 82,
+    HAL_AUDMA_I2S2_TX           = 83,
 
     HAL_DMA_PERIPH_QTY,
 };
@@ -157,10 +184,11 @@ typedef void (*HAL_DMA_DELAY_FUNC)(uint32_t ms);
 // DMA structure using for DMA configuration
 struct HAL_DMA_CH_CFG_T {
     uint8_t ch;                         /* DMA channel number */
-    uint8_t try_burst;
+    enum HAL_DMA_MASTER_T master : 4;
+    uint8_t try_burst : 4;
     uint16_t src_tsize;                 /* Length/Size of transfer */
-    enum HAL_DMA_WDITH_T src_width;
-    enum HAL_DMA_WDITH_T dst_width;
+    enum HAL_DMA_WIDTH_T src_width;
+    enum HAL_DMA_WIDTH_T dst_width;
     enum HAL_DMA_BSIZE_T src_bsize;
     enum HAL_DMA_BSIZE_T dst_bsize;
     enum HAL_DMA_FLOW_CONTROL_T type;   /* Transfer Type */
@@ -182,10 +210,10 @@ struct HAL_DMA_DESC_T {
 
 // DMA 2D configuration structure
 struct HAL_DMA_2D_CFG_T {
-    int16_t xmodify;
-    uint16_t xcount;
-    int16_t ymodify;
-    uint16_t ycount;
+    int32_t xmodify;
+    uint32_t xcount;
+    int32_t ymodify;
+    uint32_t ycount;
 };
 
 struct HAL_DMA_BURST_ADDR_INC_T {
@@ -201,13 +229,15 @@ void hal_dma_open(void);
 
 void hal_dma_close(void);
 
-void hal_dma_sleep(void);
+void hal_dma_sleep(enum HAL_CMU_LPU_SLEEP_MODE_T mode);
 
-void hal_dma_wakeup(void);
+void hal_dma_wakeup(enum HAL_CMU_LPU_SLEEP_MODE_T mode);
 
 bool hal_dma_chan_busy(uint8_t ch);
 
 uint8_t hal_dma_get_chan(enum HAL_DMA_PERIPH_T periph, enum HAL_DMA_GET_CHAN_T policy);
+
+uint32_t hal_dma_get_base_addr(uint8_t ch);
 
 void hal_dma_free_chan(uint8_t ch);
 
@@ -238,6 +268,8 @@ void hal_dma_get_cur_src_remain_and_addr(uint8_t ch, uint32_t *remain, uint32_t 
 
 uint32_t hal_dma_get_sg_remain_size(uint8_t ch);
 
+void hal_dma_get_irq_list(const int16_t **irq, uint32_t *cnt);
+
 enum HAL_DMA_RET_T hal_dma_irq_run_chan(uint8_t ch);
 
 bool hal_dma_busy(void);
@@ -258,6 +290,10 @@ void hal_dma_set_desc_burst_addr_inc(struct HAL_DMA_DESC_T *desc, const struct H
 
 void hal_dma_clear_desc_burst_addr_inc(struct HAL_DMA_DESC_T *desc);
 
+void hal_dma_sync_for_cpu(const void *buf, uint32_t len);
+
+void hal_dma_sync_for_device(const void *buf, uint32_t len);
+
 void hal_dma_record_busy_chan(void);
 
 void hal_dma_print_busy_chan(void);
@@ -268,6 +304,7 @@ void hal_dma_print_busy_chan(void);
 #define hal_audma_close                 hal_dma_close
 #define hal_audma_chan_busy             hal_dma_chan_busy
 #define hal_audma_get_chan              hal_dma_get_chan
+#define hal_audma_get_base_addr         hal_dma_get_base_addr
 #define hal_audma_free_chan             hal_dma_free_chan
 #define hal_audma_cancel                hal_dma_cancel
 #define hal_audma_stop                  hal_dma_stop
@@ -283,6 +320,7 @@ void hal_dma_print_busy_chan(void);
 #define hal_gpdma_close                 hal_dma_close
 #define hal_gpdma_chan_busy             hal_dma_chan_busy
 #define hal_gpdma_get_chan              hal_dma_get_chan
+#define hal_gpdma_get_base_addr         hal_dma_get_base_addr
 #define hal_gpdma_free_chan             hal_dma_free_chan
 #define hal_gpdma_cancel                hal_dma_cancel
 #define hal_gpdma_stop                  hal_dma_stop

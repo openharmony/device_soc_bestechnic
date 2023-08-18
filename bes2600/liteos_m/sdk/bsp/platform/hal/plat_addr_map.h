@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2020 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __PLAT_ADDR_MAP_H__
 #define __PLAT_ADDR_MAP_H__
 
@@ -26,12 +27,24 @@ extern "C" {
 #define CHIP_ID_LITERAL                         best1000
 #elif defined(CHIP_BEST1305)
 #define CHIP_ID_LITERAL                         best1305
+#elif defined(CHIP_BEST1306)
+#define CHIP_ID_LITERAL                         best1306
 #elif defined(CHIP_BEST1400) || defined(CHIP_BEST1402)
 #define CHIP_ID_LITERAL                         best1400
 #elif defined(CHIP_BEST1501)
 #define CHIP_ID_LITERAL                         best1501
+#elif defined(CHIP_BEST1501P)
+#define CHIP_ID_LITERAL                         best1501p
+#elif defined(CHIP_BEST1502X)
+#define CHIP_ID_LITERAL                         best1502x
+#elif defined(CHIP_BEST1503)
+#define CHIP_ID_LITERAL                         best1503
 #elif defined(CHIP_BEST1600)
 #define CHIP_ID_LITERAL                         best1600
+#elif defined(CHIP_BEST1603)
+#define CHIP_ID_LITERAL                         best1603
+#elif defined(CHIP_BEST1700)
+#define CHIP_ID_LITERAL                         best1700
 #elif defined(CHIP_BEST2000)
 #define CHIP_ID_LITERAL                         best2000
 #elif defined(CHIP_BEST2001)
@@ -40,6 +53,12 @@ extern "C" {
 #define CHIP_ID_LITERAL                         best2002
 #elif defined(CHIP_BEST2003)
 #define CHIP_ID_LITERAL                         best2003
+#elif defined(CHIP_BEST2005)
+#define CHIP_ID_LITERAL                         best2005
+#elif defined(CHIP_BEST2007)
+#define CHIP_ID_LITERAL                         best2007
+#elif defined(CHIP_BEST2009)
+#define CHIP_ID_LITERAL                         best2009
 #elif defined(CHIP_BEST2300)
 #define CHIP_ID_LITERAL                         best2300
 #elif defined(CHIP_BEST2300A)
@@ -75,37 +94,67 @@ extern "C" {
 #define ROMX_BASE                               ROM_BASE
 #endif
 
-#ifdef CHIP_HAS_TCM
+#ifndef ROM_EXT_SIZE
+#define ROM_EXT_SIZE                            0
+#endif
 
-#define RAM_TO_RAMX(d)                          (d)
-#define RAMX_TO_RAM(d)                          (d)
+#define ROM_TOTAL_SIZE                          (ROM_SIZE + ROM_EXT_SIZE)
 
-#define FLASH_TO_FLASHX(d)                      (d)
-#define FLASHX_TO_FLASH(d)                      (d)
+#ifndef RAMX_SIZE
+#define RAMX_SIZE                               RAM_SIZE
+#endif
 
-#define PSRAM_TO_PSRAMX(d)                      (d)
-#define PSRAMX_TO_PSRAM(d)                      (d)
+#ifndef RAMXRET_SIZE
+#define RAMXRET_SIZE                            RAMRET_SIZE
+#endif
 
-#else /* !CHIP_HAS_TCM */
+#ifdef MAIN_RAM_USE_TCM
+#define RAM_TO_RAMX(a)                          (a)
+#define RAMX_TO_RAM(a)                          (a)
+#else
+#define RAM_TO_RAMX(a)                          ((a) - RAM_BASE + RAMX_BASE)
+#define RAMX_TO_RAM(a)                          ((a) - RAMX_BASE + RAM_BASE)
+#endif
 
-#define RAM_TO_RAMX(d)                          ((d) - RAM_BASE + RAMX_BASE)
-#define RAMX_TO_RAM(d)                          ((d) - RAMX_BASE + RAM_BASE)
+#ifdef RAM_SECURITY_FLAG
+#define RAM_NS_TO_S(a)                          ((a) | RAM_SECURITY_FLAG)
+#define RAM_S_TO_NS(a)                          ((a) & ~RAM_SECURITY_FLAG)
+#else
+#define RAM_NS_TO_S(a)                          (a)
+#define RAM_S_TO_NS(a)                          (a)
+#endif
 
-#define FLASH_TO_FLASHX(d)                      ((d) - FLASH_BASE + FLASHX_BASE)
-#define FLASHX_TO_FLASH(d)                      ((d) - FLASHX_BASE + FLASH_BASE)
+#define FLASH_TO_FLASHX(a)                      ((a) - FLASH_BASE + FLASHX_BASE)
+#define FLASHX_TO_FLASH(a)                      ((a) - FLASHX_BASE + FLASH_BASE)
 
-#define PSRAM_TO_PSRAMX(d)                      ((d) - PSRAM_BASE + PSRAMX_BASE)
-#define PSRAMX_TO_PSRAM(d)                      ((d) - PSRAMX_BASE + PSRAM_BASE)
+#define PSRAM_TO_PSRAMX(a)                      ((a) - PSRAM_BASE + PSRAMX_BASE)
+#define PSRAMX_TO_PSRAM(a)                      ((a) - PSRAMX_BASE + PSRAM_BASE)
 
-#endif /* !CHIP_HAS_TCM */
+#define PSRAMUHSX_TO_PSRAMUHS(a)                ((a) - PSRAMUHSX_BASE + PSRAMUHS_BASE)
+#define PSRAMUHS_TO_PSRAMUHSX(a)                ((a) - PSRAMUHS_BASE + PSRAMUHSX_BASE)
 
-#define FLASH_C_TO_NC(d)                        ((d) - FLASH_BASE + FLASH_NC_BASE)
-#define FLASH_NC_TO_C(d)                        ((d) - FLASH_NC_BASE + FLASH_BASE)
+#define FLASH_C_TO_NC(a)                        ((a) - FLASH_BASE + FLASH_NC_BASE)
+#define FLASH_NC_TO_C(a)                        ((a) - FLASH_NC_BASE + FLASH_BASE)
 
-#define PSRAM_C_TO_NC(d)                        ((d) - PSRAM_BASE + PSRAM_NC_BASE)
-#define PSRAM_NC_TO_C(d)                        ((d) - PSRAM_NC_BASE + PSRAM_BASE)
+#define FLASH1_C_TO_NC(a)                       ((a) - FLASH1_BASE + FLASH1_NC_BASE)
+#define FLASH1_NC_TO_C(a)                       ((a) - FLASH1_NC_BASE + FLASH1_BASE)
+
+#define FLASH2_C_TO_NC(a)                       ((a) - FLASH2_BASE + FLASH2_NC_BASE)
+#define FLASH2_NC_TO_C(a)                       ((a) - FLASH2_NC_BASE + FLASH2_BASE)
+
+#define PSRAM_C_TO_NC(a)                        ((a) - PSRAM_BASE + PSRAM_NC_BASE)
+#define PSRAM_NC_TO_C(a)                        ((a) - PSRAM_NC_BASE + PSRAM_BASE)
+
+#define PSRAMUHS_C_TO_NC(a)                     ((a) - PSRAMUHS_BASE + PSRAMUHS_NC_BASE)
+#define PSRAMUHS_NC_TO_C(a)                     ((a) - PSRAMUHS_NC_BASE + PSRAMUHS_BASE)
 
 #define BUILD_INFO_MAGIC                        0xBE57341D
+
+#define TRACE_ID_STR_OFFSET                     0xFFC00000
+
+#ifdef LINKER_SCRIPT
+
+/* Common RAM config checks (only check in lds file, the first compiled file during build) */
 
 #if (RAM_BASE & (0x400 - 1))
 #error "RAM_BASE should be aligned on 0x400 boundary"
@@ -113,6 +162,42 @@ extern "C" {
 #if defined(RAMCP_BASE) && (RAMCP_BASE & (0x400 - 1))
 #error "RAMCP_BASE should be aligned on 0x400 boundary"
 #endif
+
+#ifdef RAM_REGION_OFFSET
+#if (RAM_SIZE <= RAM_REGION_OFFSET)
+#error "Bad RAM_REGION_OFFSET"
+#endif
+#ifndef RAM_REGION_SIZE
+#define RAM_REGION_SIZE                         (RAM_SIZE - RAM_REGION_OFFSET)
+#endif
+#if (RAM_SIZE < RAM_REGION_OFFSET + RAM_REGION_SIZE)
+#error "Bad RAM_REGION_SIZE"
+#endif
+#endif
+
+#ifdef RAMX_REGION_OFFSET
+#if (RAMX_SIZE <= RAMX_REGION_OFFSET)
+#error "Bad RAMX_REGION_OFFSET"
+#endif
+#ifndef RAMX_REGION_SIZE
+#define RAMX_REGION_SIZE                        (RAMX_SIZE - RAMX_REGION_OFFSET)
+#endif
+#if (RAMX_SIZE < RAMX_REGION_OFFSET + RAMX_REGION_SIZE)
+#error "Bad RAMX_REGION_SIZE"
+#endif
+#endif
+
+#if defined(SEPARATE_RAM_RAMX) && !defined(MAIN_RAM_USE_TCM)
+#if !defined(RAM_REGION_OFFSET) || !defined(RAMX_REGION_OFFSET)
+#error "RAM_REGION_OFFSET and RAMX_REGION_OFFSET should be defined with SEPARATE_RAM_RAMX"
+#endif
+#if !((RAM_REGION_OFFSET + RAM_REGION_SIZE <= RAMX_REGION_OFFSET) || \
+        (RAMX_REGION_OFFSET + RAMX_REGION_SIZE <= RAM_REGION_OFFSET))
+#error "RAM_REGION_OFFSET and RAMX_REGION_OFFSET overlap"
+#endif
+#endif
+
+#endif /* LINKER_SCRIPT */
 
 #ifdef __cplusplus
 }

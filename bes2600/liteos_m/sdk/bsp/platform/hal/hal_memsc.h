@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __HAL_MEMSC_H__
 #define __HAL_MEMSC_H__
 
@@ -19,9 +20,11 @@
 extern "C" {
 #endif
 
+#include "hal_cmu.h"
 #include "stdint.h"
 #include "stdbool.h"
 
+#ifndef HAL_MEMSC_ID_T
 enum HAL_MEMSC_ID_T {
     HAL_MEMSC_ID_0,
     HAL_MEMSC_ID_1,
@@ -30,10 +33,12 @@ enum HAL_MEMSC_ID_T {
 
     HAL_MEMSC_ID_QTY
 };
+#endif
 
 #define HAL_MEMSC_ID_TRACE              HAL_MEMSC_ID_0
-#define HAL_MEMSC_ID_TRNG               HAL_MEMSC_ID_1
+#define HAL_MEMSC_ID_SPINLOCK           HAL_MEMSC_ID_1
 
+#ifndef HAL_MEMSC_AON_ID_T
 enum HAL_MEMSC_AON_ID_T {
     HAL_MEMSC_AON_ID_0,
     HAL_MEMSC_AON_ID_1,
@@ -42,6 +47,7 @@ enum HAL_MEMSC_AON_ID_T {
 
     HAL_MEMSC_AON_ID_QTY
 };
+#endif
 
 int hal_memsc_lock(enum HAL_MEMSC_ID_T id);
 

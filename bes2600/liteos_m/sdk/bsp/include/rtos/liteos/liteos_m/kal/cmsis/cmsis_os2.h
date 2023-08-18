@@ -379,6 +379,7 @@ typedef struct liteos_cmsis_thread
     void *func; //TSK_ENTRY_FUNC
     void * arg;
     void *ef_id; // EVENT_CB_S *
+    uint32_t ready;
 }*osThreadId_t;
 
 /**

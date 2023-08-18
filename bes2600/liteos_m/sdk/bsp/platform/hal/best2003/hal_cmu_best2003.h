@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __HAL_CMU_BEST2003_H__
 #define __HAL_CMU_BEST2003_H__
 
@@ -47,7 +48,7 @@ enum HAL_CMU_MOD_ID_T {
     HAL_CMU_MOD_H_AHB0,         // 15
     HAL_CMU_MOD_H_PSRAM1G,      // 16
     HAL_CMU_MOD_H_PSRAM200,     // 17
-    HAL_CMU_MOD_H_FLASH,        // 18
+    HAL_CMU_MOD_H_REAL_FLASH,   // 18
     HAL_CMU_MOD_H_RAM5,         // 19
     HAL_CMU_MOD_H_RAM4,         // 20
     HAL_CMU_MOD_H_RAM3,         // 21
@@ -56,11 +57,11 @@ enum HAL_CMU_MOD_ID_T {
     HAL_CMU_MOD_H_RAM0,         // 24
     HAL_CMU_MOD_H_ROM0,         // 25
     HAL_CMU_MOD_H_BT_DUMP,      // 26
-    HAL_CMU_MOD_H_WF_DUMP,      // 27
+    HAL_CMU_MOD_H_WF_TSF,       // 27
     HAL_CMU_MOD_H_SDMMC,        // 28
     HAL_CMU_MOD_H_CHECKSUM,     // 29
     HAL_CMU_MOD_H_CRC,          // 30
-    HAL_CMU_MOD_H_FLASH1,       // 31
+    HAL_CMU_MOD_H_REAL_FLASH1,  // 31
     // PCLK/PRST
     HAL_CMU_MOD_P_CMU,          // 0
     HAL_CMU_MOD_P_WDT,          // 1
@@ -94,7 +95,7 @@ enum HAL_CMU_MOD_ID_T {
     HAL_CMU_MOD_O_USB32K,       // 2
     HAL_CMU_MOD_O_PSRAM1G,      // 3
     HAL_CMU_MOD_O_PSRAM200,     // 4
-    HAL_CMU_MOD_O_FLASH,        // 5
+    HAL_CMU_MOD_O_REAL_FLASH,   // 5
     HAL_CMU_MOD_O_SDMMC,        // 6
     HAL_CMU_MOD_O_WDT,          // 7
     HAL_CMU_MOD_O_TIMER0,       // 8
@@ -118,16 +119,16 @@ enum HAL_CMU_MOD_ID_T {
     HAL_CMU_MOD_O_WDT_AP,       // 26
     HAL_CMU_MOD_O_TIMER0_AP,    // 27
     HAL_CMU_MOD_O_TIMER1_AP,    // 28
-    HAL_CMU_MOD_O_FLASH1,       // 29
+    HAL_CMU_MOD_O_REAL_FLASH1,  // 29
     HAL_CMU_MOD_O_I2C2,         // 30
     HAL_CMU_MOD_O_UART3,        // 31
     // QCLK/QRST
     HAL_CMU_MOD_Q_NULL,         // 0
-    HAL_CMU_MOD_Q_DSI_32K,      // 1
-    HAL_CMU_MOD_Q_DSI_PN,       // 2
-    HAL_CMU_MOD_Q_DSI_TV,       // 3
-    HAL_CMU_MOD_Q_DSI_PIX,      // 4
-    HAL_CMU_MOD_Q_DSI_DSI,      // 5
+    HAL_CMU_MOD_Q_DIS_32K,      // 1
+    HAL_CMU_MOD_Q_DIS_PN,       // 2
+    HAL_CMU_MOD_Q_DIS_TV,       // 3
+    HAL_CMU_MOD_Q_DIS_PIX,      // 4
+    HAL_CMU_MOD_Q_DIS_DSI,      // 5
     HAL_CMU_MOD_Q_CSI_LANE,     // 6
     HAL_CMU_MOD_Q_CSI_PIX,      // 7
     HAL_CMU_MOD_Q_CSI_LANG,     // 8
@@ -198,8 +199,8 @@ enum HAL_CMU_MOD_ID_T {
     HAL_CMU_MOD_O_PWM6 = HAL_CMU_AON_O_PWM6,
     HAL_CMU_MOD_O_PWM7 = HAL_CMU_AON_O_PWM7,
 
-    HAL_CMU_H_DCACHE = HAL_CMU_MOD_H_CACHE0,
-    HAL_CMU_H_ICACHE = HAL_CMU_MOD_H_CACHE1,
+    HAL_CMU_MOD_H_DCACHE = HAL_CMU_MOD_H_CACHE0,
+    HAL_CMU_MOD_H_ICACHE = HAL_CMU_MOD_H_CACHE1,
 
     HAL_CMU_MOD_P_SPI_DPD = HAL_CMU_AON_A_SPIDPD,
     HAL_CMU_MOD_O_SPI_DPD = HAL_CMU_AON_O_SPIDPD,
@@ -212,6 +213,17 @@ enum HAL_CMU_MOD_ID_T {
     HAL_CMU_MOD_X_DISP = HAL_CMU_MOD_QTY,
     HAL_CMU_MOD_H_DISPPRE = HAL_CMU_MOD_QTY,
     HAL_CMU_MOD_H_DISP = HAL_CMU_MOD_QTY,
+#ifdef ALT_BOOT_FLASH
+    HAL_CMU_MOD_H_FLASH  = HAL_CMU_MOD_H_REAL_FLASH1,
+    HAL_CMU_MOD_O_FLASH  = HAL_CMU_MOD_O_REAL_FLASH1,
+    HAL_CMU_MOD_H_FLASH1 = HAL_CMU_MOD_H_REAL_FLASH,
+    HAL_CMU_MOD_O_FLASH1 = HAL_CMU_MOD_O_REAL_FLASH,
+#else
+    HAL_CMU_MOD_H_FLASH  = HAL_CMU_MOD_H_REAL_FLASH,
+    HAL_CMU_MOD_O_FLASH  = HAL_CMU_MOD_O_REAL_FLASH,
+    HAL_CMU_MOD_H_FLASH1 = HAL_CMU_MOD_H_REAL_FLASH1,
+    HAL_CMU_MOD_O_FLASH1 = HAL_CMU_MOD_O_REAL_FLASH1,
+#endif
 
 };
 
@@ -303,6 +315,7 @@ enum HAL_CMU_I2S_MCLK_ID_T {
     HAL_CMU_I2S_MCLK_PER                = 0x06,
     HAL_CMU_I2S_MCLK_CLK_OUT            = 0x07,
 };
+#define HAL_CMU_I2S_MCLK_ID_T               HAL_CMU_I2S_MCLK_ID_T
 
 enum HAL_PWM_ID_T {
     HAL_PWM_ID_0,
@@ -372,6 +385,15 @@ enum HAL_CMU_PLL_USER_T {
 };
 #define HAL_CMU_PLL_USER_T                  HAL_CMU_PLL_USER_T
 
+enum HAL_CMU_BT_TRIGGER_SRC_T {
+    HAL_CMU_BT_TRIGGER_SRC_0,
+    HAL_CMU_BT_TRIGGER_SRC_1,
+    HAL_CMU_BT_TRIGGER_SRC_2,
+    HAL_CMU_BT_TRIGGER_SRC_3,
+
+    HAL_CMU_BT_TRIGGER_SRC_QTY,
+};
+
 #define HAL_CMU_USB_ROM_SELECT_CLOCK_SOURCE
 
 #define HAL_CMU_SYS_REBOOT
@@ -384,13 +406,13 @@ enum HAL_FLASH0_SIZE_CFG {
     HAL_FLASH0_SIZE_64M = 0x8,
 };
 
-enum HAL_CMU_JTAG_SEL_T {
-    HAL_CMU_JTAG_SEL_MAIN,
-    HAL_CMU_JTAG_SEL_CP,
-    HAL_CMU_JTAG_SEL_A7,
+typedef void (*HAL_CMU_BT_TRIGGER_HANDLER_T)(enum HAL_CMU_BT_TRIGGER_SRC_T src);
 
-    HAL_CMU_JTAG_SEL_QTY
-};
+int hal_cmu_bt_trigger_set_handler(enum HAL_CMU_BT_TRIGGER_SRC_T src, HAL_CMU_BT_TRIGGER_HANDLER_T hdlr);
+
+int hal_cmu_bt_trigger_enable(enum HAL_CMU_BT_TRIGGER_SRC_T src);
+
+int hal_cmu_bt_trigger_disable(enum HAL_CMU_BT_TRIGGER_SRC_T src);
 
 int hal_cmu_fast_timer_offline(void);
 
@@ -405,6 +427,12 @@ void hal_cmu_ddr_reset_clear();
 uint32_t hal_cmu_get_aon_chip_id(void);
 
 uint32_t hal_cmu_get_aon_revision_id(void);
+
+void hal_cmu_cp_subsys_enable(uint32_t sp);
+
+void hal_cmu_cp_subsys_disable(void);
+
+void hal_cmu_cp_start_cpu(uint32_t sp, uint32_t entry);
 
 void hal_cmu_cp_enable(uint32_t sp, uint32_t entry);
 
@@ -424,6 +452,10 @@ void hal_cmu_dsp_clock_enable(void);
 
 void hal_cmu_dsp_clock_disable(void);
 
+void hal_cmu_dsp_clock_continue(void);
+
+void hal_cmu_dsp_clock_hold(void);
+
 void hal_cmu_dsp_reset_set(void);
 
 void hal_cmu_dsp_reset_clear(void);
@@ -440,21 +472,17 @@ void hal_cmu_jtag_set_cp(void);
 
 void hal_cmu_jtag_set_a7(void);
 
-void hal_cmu_cp_boot(uint32_t entry);
-
-void hal_cmu_jtag_sel(enum HAL_CMU_JTAG_SEL_T sel);
-
 void hal_cmu_dma_req_init(void);
 
-void hal_cmu_flash0_dual_die();
+void hal_cmu_flash0_dual_die(void);
 
 void hal_cmu_set_flash0_x8_mode(uint32_t en);
 
 void hal_cmu_set_flash0_size(enum HAL_FLASH0_SIZE_CFG cfg);
 
-void hal_cmu_flash1_enable();
+void hal_cmu_flash1_io_enable(void);
 
-void hal_cmu_wlan_set_sleep_allow(uint32_t auto_mode);
+void hal_cmu_wifi_set_sleep_allow(uint32_t auto_mode);
 
 uint32_t hal_cmu_get_osc_ready_cycle_cnt(void);
 
@@ -466,23 +494,21 @@ void hal_cmu_dsi_phy_reset_clear(void);
 
 void hal_cmu_dsi_clock_enable(void);
 
-void hal_cmu_dsi_clock_enable_v2(uint8_t pixel_div);
-
 void hal_cmu_dsi_clock_disable(void);
 
 void hal_cmu_dsi_reset_set(void);
 
 void hal_cmu_dsi_reset_clear(void);
 
-void hal_cmu_csi_clock_enable(void);
+uint32_t hal_cmu_get_dsp_pll_source_clock(void);
+
+void hal_cmu_csi_clock_enable(uint32_t pixclk_mhz);
 
 void hal_cmu_csi_clock_disable(void);
 
 void hal_cmu_csi_reset_set(void);
 
 void hal_cmu_csi_reset_clear(void);
-
-void hal_cmu_lcdc_clock_enable(void);
 
 void hal_cmu_lcdc_clock_disable(void);
 
@@ -499,6 +525,34 @@ void hal_cmu_dsi_wakeup(void);
 void hal_cmu_lcdc_sleep(void);
 
 void hal_cmu_lcdc_wakeup(void);
+
+int hal_cmu_dsp_set_freq(enum HAL_CMU_FREQ_T freq);
+
+#ifdef CNTRL_VPA_DYNAMIC
+void hal_cmu_mcu2cp_done3_irq_enable(void(*handler)(void));
+
+void hal_cmu_mcu2cp_done3_irq_disable();
+#endif
+
+#ifdef BSP_NICKNAME_SUPPORT
+
+void hal_timer_start_nickname(uint32_t load);
+
+void hal_timer_stop_nickname(void);
+
+#define hal_timer_start hal_timer_start_nickname
+
+#define hal_timer_stop hal_timer_stop_nickname
+
+int hal_spi_send_nickname(const void *data, uint32_t len);
+
+int hal_spi_recv_nickname(const void *cmd, void *data, uint32_t len);
+
+#define hal_spi_send hal_spi_send_nickname
+
+#define hal_spi_recv hal_spi_recv_nickname
+
+#endif
 
 #ifdef __cplusplus
 }

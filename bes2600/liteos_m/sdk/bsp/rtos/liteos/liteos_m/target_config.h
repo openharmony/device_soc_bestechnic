@@ -1,25 +1,46 @@
 /*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * Copyright (c) 2013-2019, Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (c) 2020, Huawei Device Co., Ltd. All rights reserved.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 1. Redistributions of source code must retain the above copyright notice, this list of
+ *    conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list
+ *    of conditions and the following disclaimer in the documentation and/or other materials
+ *    provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors may be used
+ *    to endorse or promote products derived from this software without specific prior written
+ *    permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT 0T LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN 0 EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT 0T LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+/**
+ * @defgroup los_config System configuration items
+ * @ingroup kernel
+ */
+
 #ifndef _TARGET_CONFIG_H
 #define _TARGET_CONFIG_H
 
-#include "cmsis.h"
+#include "plat_addr_map.h"
+#include _TO_STRING(CONCAT_SUFFIX(CHIP_ID_LITERAL, h))
 #include "los_compiler.h"
-#ifdef CP_BUILD
-#include "hal_timer.h"
-#endif
+
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {
@@ -30,7 +51,6 @@ extern "C" {
 #define __weak                                 __attribute__((weak))
 #endif
 
-#ifdef CP_BUILD
 /* =============================================================================
                                         System clock module configuration
 ============================================================================= */
@@ -39,17 +59,13 @@ extern "C" {
  * System clock (unit: HZ)
  */
 #if defined(OSTICK_USE_FAST_TIMER)
-#define OS_SYS_CLOCK            (1000UL)
-#else
-#if defined(CHIP_BEST2002) || defined(CHIP_BEST2003)
 #define OS_SYS_CLOCK            (6000000UL)
+#elif defined(OS_CLOCK_NOMINAL)
+#define OS_SYS_CLOCK            OS_CLOCK_NOMINAL
 #else
-#define OS_SYS_CLOCK            CONFIG_SYSTICK_HZ
+#define OS_SYS_CLOCK            (16000UL)
 #endif
-#endif
-#else
-#define OS_SYS_CLOCK            (6000000UL)
-#endif
+
 
 /**
  * @ingroup los_config
@@ -161,7 +177,7 @@ extern "C" {
  * Longest execution time of tasks with the same priorities
  */
 #ifndef LOSCFG_BASE_CORE_TIMESLICE_TIMEOUT
-#define LOSCFG_BASE_CORE_TIMESLICE_TIMEOUT                  10
+#define LOSCFG_BASE_CORE_TIMESLICE_TIMEOUT                  20000
 #endif
 
 /**
@@ -472,6 +488,13 @@ extern UINT8 __os_heap_start__[];
 #define LOSCFG_BACKTRACE_DEPTH                               15
 #endif
 
+#define LOSCFG_KERNEL_EXTKERNEL 1
+#define LOSCFG_KERNEL_BACKTRACE 1
+#define LOSCFG_KERNEL_SIGNAL 1
+#define LOSCFG_KERNEL_CPUP 1
+#define LOSCFG_KERNEL_PM 1
+#define LOSCFG_KERNEL_PM_TASK_PTIORITY 1
+#define LOSCFG_KERNEL_PM_TASK_STACKSIZE 1024
 /* =============================================================================
                                        printf configuration
 ============================================================================= */
@@ -483,7 +506,9 @@ extern UINT8 __os_heap_start__[];
 
 #define LOSCFG_KERNEL_RUNSTOP	1
 
-#define LOSCFG_BACKTRACE_TYPE 1
+#ifndef LOSCFG_BACKTRACE_TYPE
+#define LOSCFG_BACKTRACE_TYPE 0
+#endif
 
 #define LOSCFG_BASE_CORE_TICK_RESPONSE_MAX 0xFFFFFFFF
 

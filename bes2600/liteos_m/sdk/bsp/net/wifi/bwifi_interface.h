@@ -1,27 +1,35 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2023 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
+
 #ifndef BWIFI_INTERFACE_H
 #define BWIFI_INTERFACE_H
 
 #include "plat_types.h"
+#ifdef RTOS
 #include "cmsis_os.h"
+#endif
 #include "wifi_def.h"
 #include "bwifi_hal.h"
 #include "bwifi_event.h"
 #if LWIP_ETHERNETIF
 #include "lwip/netif.h"
+#endif
+#ifdef __P2P_MODE_SUPPORT__
+#include "wifi_p2p.h"
+#include "bwifi_p2p_interface.h"
 #endif
 
 #ifdef __cplusplus
@@ -31,10 +39,12 @@ extern "C" {
 #define BWIFI_MAX_COUNTRY_CODE_SIZE     2
 #define BWIFI_CONFIG_VAL_LEN            100
 #define WIFI_SCAN_DUMP
+#define SOFTAP_VENDOR_ELEMENTS_MAX_LEN  128     //refer to best2002 configuration
 
 typedef enum {
     WIFI_IF_STATION,
     WIFI_IF_SOFTAP,
+    WIFI_IF_P2P
 } BWIFI_INTF_TYPE_T;
 
 typedef enum {
@@ -104,6 +114,8 @@ typedef enum {
     WIFI_USER_EVT_MAC_RESET_START,
     WIFI_USER_EVT_MAC_RESET_DONE,
     WIFI_USER_EVT_COEX_MODE_CHANGE,
+    WIFI_USER_EVT_LOW_POWER_CHANGE,
+    WIFI_USER_EVT_P2PMODE_EVENT,
     WIFI_USER_EVT_MAX
 } WIFI_USER_EVT_ID;
 
@@ -111,12 +123,6 @@ typedef enum {
     FATAL_ERROR = 1,
     UMAC_CRASH  = 2,
 } BWIFI_MAC_RESET_REASON;
-
-struct ip_info {
-    uint32_t ip;               /**< IP address */
-    uint32_t netmask;          /**< netmask */
-    uint32_t gw;               /**< gateway */
-};
 
 struct bwifi_quick_connect_config {
     struct bwifi_station_config config;
@@ -130,7 +136,25 @@ void bwifi_reg_user_evt_handler(WIFI_USER_EVT_ID evt_id, user_evt_handler_t cb);
 void bwifi_unreg_user_evt_handler(WIFI_USER_EVT_ID evt_id);
 void bwifi_reg_eth_input_handler(eth_input_handler cb);
 void bwifi_unreg_eth_input_handler();
-
+int  bwifi_vendor_set_rx_frame_handler(int enable, wifi_frame_recv_handler cb, void *param);
+#ifdef __SNIFFER_MODE__
+void bwifi_reg_sniffer_recv_handler(sniffer_recv_handler cb);
+void bwifi_unreg_sniffer_recv_handler();
+int bwifi_sniffer_cmd(int cmd, void *param);
+#endif
+#if WIFI_NET_TOOL_SUPPORT
+/*
+ * Add network test tool tcpdump element to wpa_supplicant
+ */
+typedef void (*bwifi_tcpdump_callback)(unsigned char *buf, int len);
+void bwifi_reg_tcpdump_handler(bwifi_tcpdump_callback cb);
+void bwifi_unreg_tcpdump_handler(void);
+/*
+ * Add network test tool wifi status query pta element to wpa_supplicant
+ * return the pta of current wifi status.
+ */
+float bwifi_get_epta_ratio(void);
+#endif
 /*
  * wifi record interface
  */
@@ -170,15 +194,22 @@ int bwifi_get_saved_config(struct bwifi_station_config *config, int count);
  */
 int bwifi_find_saved_config_by_ssid(const char *ssid, struct bwifi_station_config *config);
 /*
- * Delete all network configs saved in wpa and flash
- */
-int bwifi_del_all_config(void);
-/*
  * Delete network config saved in wpa and flash
  * It will check ssid, passwd, hidden, web_keyid, bssid (if not zero),
  * if config is NULL or config->ssid is zero length, delete all.
  */
 int bwifi_del_config(struct bwifi_station_config *config);
+
+/*
+ * Add custom mgmt frame defined ie info
+ */
+int bwifi_vendor_custom_ie_add(u8 *ie_info, u8 ie_length, u16 trans_type);
+
+/*
+ * Delete custom mgmt frame defined ie info
+ */
+int bwifi_vendor_custom_ie_del(int index);
+
 /*
  * Scan for wildcard ssid and saved hidden ssids
  * you can get bss list from bwifi_get_scan_result
@@ -318,6 +349,8 @@ int bwifi_set_ip_addr(BWIFI_INTF_TYPE_T type, struct ip_info *ip);
  */
 void bwifi_change_current_status(BWIFI_STATUS_T new_status);
 
+int bwifi_init_done(void);
+
 void airkiss_notify(uint8_t token);
 
 /**
@@ -363,13 +396,32 @@ int bwifi_set_country_code(char *country);
  */
 int bwifi_get_country_code(char *country);
 
+/**
+ * set_probe_req_filter - set driver to recive probe request frame or not
+ * @enable: filter switch, 0 - close filter to rx probe request frame, other - opposite
+ * Returns: 0 - success, other - failure
+ */
+int bwifi_set_probe_req_filter(uint8_t enable);
+
+/*
+ * Set wpa log level
+ */
+int bwifi_set_wpa_log_level(char *level);
+
 void bwifi_set_connecting_status(void);
 /*
- * Set powersave mode for legacy Wi-Fi.
+ * Set powersave mode for legacy Wi-Fi (LMAC).
  * @ps: 0 = disable, 1 = enable
  * Returns: 0 on success or negtive on failure
  */
 int bwifi_set_ps_mode(int ps);
+
+/*
+ * Set low power for legacy Wi-Fi (UMAC).
+ * @ps: 0 = disable, 1 = enable
+ * Returns: 0 on success or negtive on failure
+ */
+int bwifi_set_low_power(int lowpower);
 
 /*
  * swtich channel dynamically
@@ -386,6 +438,12 @@ int bwifi_switch_channel(uint8_t mode, uint8_t channel, int8_t snd_offset);
  * Start softap with previous configuration
  */
 int bwifi_softap_start(void);
+
+/*
+ * softap mode disconnect a station
+ */
+int bwifi_softap_disconnect_sta(uint8_t *ucMac);
+
 /*
  * Stop softap
  */
@@ -482,11 +540,87 @@ void bwifi_set_fix_rate(uint32_t fix_rate_idx);
  */
 uint32_t  bwifi_get_fix_rate(void);
 
+/**
+ * Send TWT setup request to AP
+ *
+ * @mac_addr: MAC address of the peer STA
+ * @setup_type: Setup request type (0 - request, 1 - suggest, 2 - demand)
+ * @config: TWT config parameters
+ *
+ * Returns: 0 on success, nagtive on failure
+ */
+int bwifi_twt_setup(const uint8_t *addr, uint8_t setup_type,
+                    struct bwifi_twt_config *config);
+
+/**
+ * Send TWT teardown request
+ * @mac_addr: MAC address of the peer STA
+ * @flow_id: TWT flow id
+ *
+ * Returns: 0 on success, nagtive on failure
+ */
+int bwifi_twt_teardown(const uint8_t *addr, uint8_t flow_id);
+
+#ifdef ENABLE_FW_KEEP_ALIVE
+/*
+ * Set ip keep alive feature's parameters.
+ * @paras ip alive parameters;
+ * Returns: the idx of the tcp stream when adding one or the delete result when deleting one;
+ */
+int bwifi_set_ip_alive(struct ip_alive_paras *paras);
+
+/*
+ * Enable/disable ip keep alive function.
+ * @period interval to sending tcp/udp heartbeat in seconds, set to 0 will stop sending out any;
+ *
+ * Returns: BWIFI_R_OK on success, others on failure;
+ */
+int bwifi_enable_ip_alive(uint16_t period);
+#endif
+
+#ifdef __SET_MULTICAST_FILTER__
+/*
+ * set a multicast address filter.
+ * @paras mode. 0:disable filter. 1:enable filter. 2:clean addr table
+ *              3:filter all multicast. 4:filter add. 5:filter del
+ * @paras addr. filter address.
+ *
+ * Returns: BWIFI_R_OK on success, others on failure;
+ */
+int bwifi_set_multicast_filter(u8 mode, u8* addr);
+#endif
+
+#ifdef __SET_BROADCAST_FILTER__
+/*
+ * Enable/disable broadcast filter.
+ *
+ * Returns: BWIFI_R_OK on success, others on failure;
+ */
+int bwifi_set_broadcast_filter(u8 enable);
+#endif
+
+#ifdef __SET_ARP_OFFLOAD__
+/*
+ * Enable/disable arp offload.
+ *
+ * Returns: BWIFI_R_OK on success, others on failure;
+ */
+int bwifi_set_arp_offload(u8 enable);
+#endif
+
 /*
  * Do wifi reset
  * Returns: BWIFI_R_OK on success, others on failure
  */
 int bwifi_reset(void);
+
+
+/*
+ * wifi power on/off
+ * onoff: 1 - wifi power on, 0 - wifi power off
+ * Returns: BWIFI_R_OK on success, others on failure
+ */
+int bwifi_power_on(uint8_t onoff);
 
 /*
  * set epta parameters of wifi/bt coex
@@ -536,8 +670,75 @@ static inline int bwifi_send_data_buf(uint8_t devnum, uint8_t **tx_buf, uint16_t
  */
 int bwifi_str_cmd(uint8_t type, uint8_t *cmd_buf, uint8_t *rsp_buf, uint32_t rsp_size);
 
+/**
+ * bwifi_dat_cmd - send data command to wifi subsystem
+ * @tx_buf: pointer of the data buffer to be sent.
+ * @tx_len: length of the data to be sent.
+ * Returns: 0 - success, other - failure
+ */
+int bwifi_dat_cmd(uint8_t *tx_buf, uint16_t tx_len);
+
+/*
+ * bwifi_autoip_enable - set autoip enable
+ * @flag: autoip enable flag, 0 - disable(false), other - enable(true)
+ * Return void
+ */
+void bwifi_autoip_enable(uint8_t flag);
+
+/*
+ * bwifi_check_capability - Check whether the macros in struct bwifi_hal_ops are aligned
+ * Instruction: First, at the begining of bwifi_init(), the state of macros in bwifi_hal_ops
+ * are saved with varible g_wifi_hal_cap; Then we can check the state of macros in bwifi_hal_ops
+ * after bwifi_init() through call this function bwifi_check_capability().
+ * Returns: 0 - success, other - failure
+ */
+extern uint32_t g_wifi_hal_cap;
+static inline int bwifi_check_capability(uint32_t *localCap)
+{
+    uint32_t local_cap = 0;
+
+#ifdef __AP_MODE__
+    local_cap |= (1 << 0);
+#endif
+
+#ifdef ENABLE_FW_KEEP_ALIVE
+    local_cap |= (1 << 1);
+#endif
+
+#ifdef __SNIFFER_MODE__
+    local_cap |= (1 << 2);
+#endif
+
+#ifdef CSI_REPORT
+    local_cap |= (1 << 3);
+#endif
+
+    if (localCap)
+        *localCap = local_cap;
+
+    if (local_cap == g_wifi_hal_cap)
+        return 0;
+    else
+        return -1;
+}
+
+/**
+ * bwifi_ext_vendor_cmd - send ext vendor command to wifi subsystem
+ * @hdr: include command id and length
+ * Returns: 0 - success, other - failure
+ */
+int bwifi_ext_vendor_cmd(struct ext_vendor_cmd_info_hdr *hdr);
+
+/**
+ * bwifi_set_connect_timeout - set timeout value for wifi connect process
+ * @timeout: msec for timeout value
+ * Returns: current connect timeout value
+ */
+int bwifi_set_connect_timeout(int timeout);
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif /* BWIFI_INTERFACE_H */
+

@@ -70,9 +70,9 @@ typedef enum IRQn
     WAKEUP_IRQn                 =   1,      /*!< Wakeup Interrupt                   */
     CODEC_IRQn                  =   2,      /*!< CODEC Interrupt                    */
     CODEC_TX_PEAK_IRQn          =   3,      /*!< CODEC TX PEAK Interrupt            */
-    SDMMC_IRQn                  =   4,      /*!< SDMMC Interrupt                    */
-    BES2003_AUDMA_IRQn          =   5,      /*!< Audio DMA Interrupt                */
-    BES2003_GPDMA_IRQn          =   6,      /*!< General Purpose DMA Interrupt      */
+    SDMMC0_IRQn                 =   4,      /*!< SDMMC Interrupt                    */
+    MCU_AUDMA_IRQn              =   5,      /*!< Audio DMA Interrupt                */
+    MCU_GPDMA_IRQn              =   6,      /*!< General Purpose DMA Interrupt      */
     USB_IRQn                    =   7,      /*!< USB Interrupt                      */
     USB_AUX_IRQn                =   8,      /*!< USB AUX Interrupt                  */
     USB_EXT_IRQn                =   9,      /*!< USB EXT Interrupt                  */
@@ -149,20 +149,45 @@ typedef enum IRQn
 } IRQn_Type;
 
 #ifndef DSP_USE_GPDMA
-#define AUDMA_IRQn              BES2003_AUDMA_IRQn
-#define GPDMA_IRQn              BES2003_GPDMA_IRQn
-#else
-#define AUDMA_IRQn              BES2003_AUDMA_IRQn //MCU use AUDMA
+#if !defined(CHIP_ROLE_CP)
+#if defined(CHIP_DMA_CFG_IDX) && (CHIP_DMA_CFG_IDX == 1)
+#define MCU_USE_GPDMA
 #endif
+#endif
+#ifdef MCU_USE_GPDMA
+#define AUDMA_IRQn              MCU_GPDMA_IRQn
+#else
+#define AUDMA_IRQn              MCU_AUDMA_IRQn
+#define GPDMA_IRQn              MCU_GPDMA_IRQn
+#endif /* MCU_USE_GPDMA */
+#else
+#define AUDMA_IRQn              MCU_AUDMA_IRQn //MCU use AUDMA
+#endif /* DSP_USE_GPDMA */
 
 #define GPIO_IRQn               AON_GPIO_IRQn
 #define GPIOAUX_IRQn            AON_GPIOAUX_IRQn
+
+#ifdef CHIP_ROLE_CP
+#define TIMER00_IRQn            MCU_TIMER20_IRQn
+#define TIMER01_IRQn            MCU_TIMER21_IRQn
+#define TIMER20_IRQn            MCU_TIMER00_IRQn
+#define TIMER21_IRQn            MCU_TIMER01_IRQn
+#else
+#ifdef CORE_SLEEP_POWER_DOWN
+#define TIMER00_IRQn            AON_TIMER00_IRQn
+#define TIMER01_IRQn            AON_TIMER01_IRQn
+#define TIMER20_IRQn            MCU_TIMER00_IRQn
+#define TIMER21_IRQn            MCU_TIMER01_IRQn
+#else
 #define TIMER00_IRQn            MCU_TIMER00_IRQn
 #define TIMER01_IRQn            MCU_TIMER01_IRQn
-#define TIMER10_IRQn            MCU_TIMER10_IRQn
-#define TIMER11_IRQn            MCU_TIMER11_IRQn
 #define TIMER20_IRQn            MCU_TIMER20_IRQn
 #define TIMER21_IRQn            MCU_TIMER21_IRQn
+#endif
+#endif
+#define TIMER10_IRQn            MCU_TIMER10_IRQn
+#define TIMER11_IRQn            MCU_TIMER11_IRQn
+
 #define WDT_IRQn                AON_WDT_IRQn
 
 #define TRANSQ0_RMT_IRQn        TRANSQW_RMT_IRQn
@@ -182,7 +207,7 @@ typedef enum IRQn
 #define __MPU_PRESENT             1U        /* MPU present */
 #define __VTOR_PRESENT            1U        /* VTOR present */
 #define __NVIC_PRIO_BITS          3U        /* Number of Bits used for Priority Levels */
-#define __Vendor_SysTickConfig    1U        /* Set to 1 if different SysTick Config is used */
+#define __Vendor_SysTickConfig    0U        /* Set to 1 if different SysTick Config is used */
 #define __FPU_PRESENT             1U        /* FPU present */
 #define __DSP_PRESENT             1U        /* DSP extension present */
 
@@ -192,13 +217,7 @@ typedef enum IRQn
 #endif
 #endif
 
-#if (defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1)) || defined(__ARM_ARCH_7EM__ENHANCE__)
 #include "core_cm33.h"                      /* Processor and core peripherals */
-#else
-#define __NUM_CODE_PATCH          32
-#define __NUM_LIT_PATCH           32
-#include "core_cm4.h"                      /* Processor and core peripherals */
-#endif
 
 #ifndef __ASSEMBLER__
 
@@ -209,23 +228,6 @@ typedef enum IRQn
 /* ================================================================================ */
 /* ================       Device Specific Peripheral Section       ================ */
 /* ================================================================================ */
-
-#ifndef __ASSEMBLER__
-static inline uint32_t SysTick_Config(uint32_t ticks)
-{
-  if ((ticks - 1UL) > SysTick_LOAD_RELOAD_Msk)
-  {
-    return (1UL);                                                   /* Reload value impossible */
-  }
-
-  SysTick->LOAD  = (uint32_t)(ticks - 1UL);                         /* set reload register */
-  NVIC_SetPriority (SysTick_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL); /* set Priority for Systick Interrupt */
-  SysTick->VAL   = 0UL;                                             /* Load the SysTick Counter Value */
-  SysTick->CTRL  = SysTick_CTRL_TICKINT_Msk   |
-                   SysTick_CTRL_ENABLE_Msk;                         /* Enable SysTick IRQ and SysTick Timer */
-  return (0UL);                                                     /* Function successful */
-}
-#endif
 
 /* -------------------  Start of section using anonymous unions  ------------------ */
 #if   defined (__CC_ARM)
