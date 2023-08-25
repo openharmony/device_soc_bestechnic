@@ -1,17 +1,9 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/* mbed Microcontroller Library - CMSIS
+ * Copyright (C) 2009-2011 ARM Limited. All rights reserved.
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * A generic CMSIS include header, pulling in LPC11U24 specifics
  */
+
 #ifndef MBED_CMSIS_H
 #define MBED_CMSIS_H
 
@@ -52,8 +44,14 @@ __extension__ \
  })
 #endif
 
-struct irq_masked_address {uint32_t pc; uint32_t lr;};
+struct irq_masked_address {
+    uint32_t pc;
+    uint32_t lr;
+};
 extern struct irq_masked_address irq_masked_addr;
+extern struct irq_masked_address irq_g_masked_addr;
+
+extern uint32_t __got_info_start[];
 
 __STATIC_FORCEINLINE uint32_t int_lock_global(void)
 {
@@ -63,14 +61,22 @@ __STATIC_FORCEINLINE uint32_t int_lock_global(void)
     if (st != IRQ_LOCK_MASK) {
         cpsr |= IRQ_LOCK_MASK;
         __set_CPSR(cpsr);
+#if defined(__NuttX__)
+        extern bool global_int_locked[];
+        global_int_locked[get_cpu_id()] = true;
+#endif
     }
     return st;
 #else
-	uint32_t pri = __get_PRIMASK();
-	if ((pri & 0x1) == 0) {
-		__disable_irq();
-	}
-	return pri;
+    uint32_t pri = __get_PRIMASK();
+    uint32_t pc;
+    if ((pri & 0x1) == 0) {
+        __ASM volatile ("mov %0, PC" : "=r"(pc));
+        irq_g_masked_addr.pc = pc;
+        irq_g_masked_addr.lr = (uint32_t)__builtin_return_address(0);
+        __disable_irq();
+    }
+    return pri;
 #endif
 }
 
@@ -78,24 +84,67 @@ __STATIC_FORCEINLINE void int_unlock_global(uint32_t pri)
 {
 #ifdef __ARM_ARCH_ISA_ARM
     if (pri != IRQ_LOCK_MASK) {
+#if defined(__NuttX__)
+        extern bool global_int_locked[];
+        global_int_locked[get_cpu_id()] = false;
+#endif
         uint32_t cpsr = __get_CPSR();
         cpsr = (cpsr & ~IRQ_LOCK_MASK) | pri;
         __set_CPSR(cpsr);
     }
 #else
-	if ((pri & 0x1) == 0) {
-		__enable_irq();
-	}
+    if ((pri & 0x1) == 0) {
+        irq_g_masked_addr.pc = -1U;
+        __enable_irq();
+    }
 #endif
 }
 
-#if defined(NUTTX_BUILD) || defined(KERNEL_LITEOS_A) ||\
+__STATIC_FORCEINLINE int in_int_locked(void)
+{
+    uint32_t mask;
+
+#ifdef __ARM_ARCH_ISA_ARM
+#if defined(__NuttX__)
+    extern bool global_int_locked[];
+    return (global_int_locked[get_cpu_id()] == true);
+#else
+    mask = __get_CPSR();
+    if ((mask & IRQ_LOCK_MASK) == IRQ_LOCK_MASK) {
+        return true;
+    }
+#endif
+#else
+    mask = __get_PRIMASK();
+    if (mask & 0x1) {
+        return true;
+    }
+#endif
+
+#ifdef INT_LOCK_EXCEPTION
+#ifdef __ARM_ARCH_ISA_ARM
+    mask = GIC_GetInterfacePriorityMask();
+#else
+    mask = __get_BASEPRI();
+#endif
+    if (mask == ((IRQ_PRIORITY_HIGHPLUS << (8 - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL)) {
+        return true;
+    }
+#endif
+
+    return false;
+}
+
+#if defined(__NuttX__) || defined(KERNEL_LITEOS_A) ||\
      (defined(__ARM_ARCH_ISA_ARM) && (defined(KERNEL_RHINO) || defined(KERNEL_RTT)))
+
 extern uint32_t int_lock(void);
 extern void int_unlock(uint32_t pri);
 extern uint32_t int_lock_local(void);
 extern void int_unlock_local(uint32_t pri);
+
 #else
+
 __STATIC_FORCEINLINE uint32_t int_lock(void)
 {
 #ifdef INT_LOCK_EXCEPTION
@@ -106,10 +155,13 @@ __STATIC_FORCEINLINE uint32_t int_lock(void)
     return mask;
 #else
     uint32_t pri = __get_BASEPRI();
-    uint32_t pc;
-    __ASM volatile ("mov %0, PC" : "=r"(pc));
-    irq_masked_addr.pc = pc;
-    irq_masked_addr.lr = (uint32_t)__builtin_return_address(0);
+    if (pri != ((IRQ_PRIORITY_HIGHPLUS << (8 - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL)) {
+        uint32_t pc;
+        __ASM volatile ("mov %0, PC" : "=r"(pc));
+        irq_masked_addr.pc = pc;
+        irq_masked_addr.lr = (uint32_t)__builtin_return_address(0);
+    }
+
     // Only allow IRQs with priority IRQ_PRIORITY_HIGHPLUSPLUS and IRQ_PRIORITY_REALTIME
     __set_BASEPRI(((IRQ_PRIORITY_HIGHPLUS << (8 - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL));
     return pri;
@@ -125,6 +177,9 @@ __STATIC_FORCEINLINE void int_unlock(uint32_t pri)
 #ifdef __ARM_ARCH_ISA_ARM
     GIC_SetInterfacePriorityMask(pri);
 #else
+    if (pri == 0) {
+        irq_masked_addr.pc = -1U;
+    }
     __set_BASEPRI(pri);
 #endif
 #else
@@ -136,34 +191,29 @@ __STATIC_FORCEINLINE uint32_t int_lock_local(void)
 {
     return int_lock();
 }
+
 __STATIC_FORCEINLINE void int_unlock_local(uint32_t pri)
 {
     int_unlock(pri);
 }
 
-__STATIC_FORCEINLINE uint32_t int_lock_smp_com(void)
-{
-    return int_lock();
-}
-__STATIC_FORCEINLINE void int_unlock_smp_com(uint32_t pri)
-{
-    int_unlock(pri);
-}
-
-
 #endif
+
+#ifdef KERNEL_NUTTX
+#include "arch/irq.h"
+#endif
+
 __STATIC_FORCEINLINE int in_isr(void)
 {
-#ifdef __ARM_ARCH_ISA_ARM
-#ifdef KERNEL_RHINO
-    extern int rhino_in_isr(void);
-    return rhino_in_isr();
+#ifdef KERNEL_NUTTX
+    return (int)up_interrupt_context();
 #else
+#ifdef __ARM_ARCH_ISA_ARM
     uint32_t mode = __get_mode();
     return mode != CPSR_M_USR && mode != CPSR_M_SYS;
-#endif
 #else
     return __get_IPSR() != 0;
+#endif
 #endif
 }
 
@@ -183,17 +233,38 @@ __STATIC_FORCEINLINE uint32_t unsigned_range_value_map(uint32_t from_val, uint32
     return ((from_val - from_min) * (to_max - to_min) + (from_max - from_min) / 2) / (from_max - from_min) + to_min;
 }
 
-void GotBaseInit(void);
+__STATIC_FORCEINLINE void GotBaseInit(void)
+{
+#ifndef __ARMCC_VERSION
+    asm volatile("ldr r9, =__got_info_start");
+#endif
+}
 
 void boot_init_boot_sections(void);
 
 void boot_init_sram_sections(void);
 
+void boot_init_psram_sections(void);
+
+void boot_init_sram_sections_cp(int load_code);
+
+int subsys_check_boot_struct(uint32_t boot_struct_addr, uint32_t *code_start_addr);
+
 void boot_init_rom_in_flash(void);
 
-int set_bool_flag(bool *flag);
+//-------------------------------------------------------------------
+// Mutex flag
+//-------------------------------------------------------------------
 
-void clear_bool_flag(bool *flag);
+typedef bool MUTEX_FLAG_T;
+
+int mutex_flag_lock(MUTEX_FLAG_T *flag);
+
+void mutex_flag_unlock(MUTEX_FLAG_T *flag);
+
+//-------------------------------------------------------------------
+// Some simple math functions
+//-------------------------------------------------------------------
 
 float db_to_float(float db);
 

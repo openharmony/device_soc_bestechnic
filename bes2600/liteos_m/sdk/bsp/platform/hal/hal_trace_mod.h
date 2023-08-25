@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2020 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means), or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright), trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __HAL_TRACE_MOD_H__
 #define __HAL_TRACE_MOD_H__
 
@@ -56,11 +57,19 @@ extern "C" {
     _TR_MODULE_DEF(AI_BIXBY),               \
     _TR_MODULE_DEF(AOB_SM),                 \
     _TR_MODULE_DEF(SPEECH),                 \
+    _TR_MODULE_DEF(VOICE_COMPRESS),         \
+    _TR_MODULE_DEF(BT_GATT),                \
+    _TR_MODULE_DEF(APP_UX),                 \
+    _TR_MODULE_DEF(CC_DECODE),              \
+    _TR_MODULE_DEF(CC_ENCODE),              \
+    _TR_MODULE_DEF(ESHELL),                 \
+    _TR_MODULE_DEF(WALKIE_TALKIE),          \
+    _TR_MODULE_DEF(RPC_SENSOR),             \
     _TR_MODULE_DEF(WIFI),                   \
     _TR_MODULE_DEF(NET),                    \
-    _TR_MODULE_DEF(VOICE_COMPRESS),         \
+    _TR_MODULE_DEF(SPA),                    \
+    _TR_MODULE_DEF(BIS_T),                  \
     _TR_MODULE_DEF(BT_ADAPTOR),             \
-
 
 enum TR_MODULE_T {
     _TR_MODULE_LIST

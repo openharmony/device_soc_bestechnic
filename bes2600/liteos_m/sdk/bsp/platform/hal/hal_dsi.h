@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2021 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __HAL_DSI_H__
 #define __HAL_DSI_H__
 
@@ -23,6 +24,7 @@ extern "C" {
 #include "stdbool.h"
 
 typedef void (*HAL_DSI_TE_GPIO_IRQ_HANDLER)(void);
+typedef void (*HAL_DSI_ULPS_CB_HANDLER)(uint32_t param);
 
 struct HAL_DSI_CFG_T {
     uint32_t active_width;
@@ -97,58 +99,13 @@ struct HAL_DSI_CFG_T {
     int cfg_ckey_v2;
 };
 
-enum DSI_MODE_T {
-/** Video mode */
-    DSI_MODE_VIDEO,
-/** Command mode */
-    DSI_MODE_CMD,
-};
-
-typedef void (*HAL_DSI_XFER_COMPLETE_CALLBACK_T)(uint8_t layerId, uint8_t channel, uint32_t addr);
-
-/**
- * @param
- *      h_res       horizontal resolution
- *      mode        @see enum DSI_MODE_T
- *      dsi_bitclk  Mbps
- *      dsi_pclk    KHz
- * @note
- * Total-pixel = H-total * V-total * fps
- * Bitclk =  Total-pixel * bpp(bit) / lane-number
- * Byteclk = Bitclk / 8
- * dsi_clk = Byteclk * lane-number = Total-pixel * bpp(bit) / 8
- * dsi_pclk = dsi_clk / bpp(byte) = H-total * V-total * fps
- */
-void hal_dsi_init_v2(uint16_t h_res, enum DSI_MODE_T mode, uint8_t lane_number, uint32_t dsi_bitclk, uint32_t dsi_pclk);
-
-void hal_lcdc_init(const struct HAL_DSI_CFG_T *cfg, const uint8_t *layer0,
-    const uint8_t *layer1, const uint8_t *layer2);
-
-void hal_lcdc_gamma_enable(const uint8_t * config_R, const uint8_t * config_G, const uint8_t * config_B);
-
-void hal_lcdc_gamma_disable(void);
-
-void hal_lcdc_start(void);
-
-void hal_dsi_send_cmd(uint8_t cmd);
-int hal_dsi_read_cmd(uint8_t cmd, uint8_t *read_buf, uint8_t len);
-void hal_dsi_send_cmd_data(uint8_t cmd, uint32_t len, uint8_t p0, uint8_t p1, uint8_t p2, uint8_t p3);
-void hal_dsi_send_long_array(uint32_t len,uint32_t *data);
-void hal_dsi_send_cmd_list(unsigned cmd, unsigned char para_count, unsigned char *para_list);
-
-void hal_lcdc_update_addr(uint8_t layerId, uint8_t channel, uint32_t addr);
-void hal_lcdc_set_callback(HAL_DSI_XFER_COMPLETE_CALLBACK_T callback);
-
 /**
  * @brief hal_dsi_init - init dsi phy
  *
  * @param h_res : panel horizontal resolution
  */
-#if defined(NUTTX_BUILD)
 void hal_dsi_init(uint16_t h_res);
-#else
-void hal_dsi_init(uint16_t h_res ,uint8_t lane_number);
-#endif
+
 /**
  * @brief hal_dsi_reset - reset phy, besause hs mode phy work error,
  *                        lp cmd send has some errors.
@@ -214,6 +171,8 @@ int hal_dsi_irqn(void);
  */
 uint32_t hal_dsi_get_irqstate(void);
 
+uint32_t hal_dsi_get_unov_flags(void);
+
 /**
  * hal_dsi_teirq_enable - enable dsi te irq
  */
@@ -253,7 +212,9 @@ void hal_dsi_enter_ulps_mode();
 /**
  * hal_dsi_exit_ulps_mode - exit ulps mode
  */
-void hal_dsi_exit_ulps_mode();
+void hal_dsi_exit_ulps_mode(void);
+
+void hal_dsi_exit_ulps_with_cb(HAL_DSI_ULPS_CB_HANDLER hdlr,void *param);
 
 void hal_dsi_start(void);
 
@@ -266,6 +227,10 @@ void hal_dsi_te_gpio_irq_register(HAL_DSI_TE_GPIO_IRQ_HANDLER hdlr);
 void hal_dsi_te_gpio_irq_enable(void);
 
 void hal_dsi_te_gpio_irq_disable(void);
+
+void hal_dsi_start_hs_clock(void);
+
+void hal_dsi_stop_hs_clock(void);
 
 #ifdef __cplusplus
 }

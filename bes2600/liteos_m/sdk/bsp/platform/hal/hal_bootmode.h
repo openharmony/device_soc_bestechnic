@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __HAL_BOOTMODE_H__
 #define __HAL_BOOTMODE_H__
 
@@ -25,9 +26,9 @@ extern "C" {
 #define HAL_SW_BOOTMODE_MASK                    (0x0FFFFFFF << 4)
 
 // SW_BOOTMODE_START                            (1 << 4)
-#define HAL_SW_BOOTMODE_READ_ENABLED            (1 << 4)
-#define HAL_SW_BOOTMODE_WRITE_ENABLED           (1 << 5)
-#define HAL_SW_BOOTMODE_JTAG_ENABLED            (1 << 6)
+#define HAL_SW_BOOTMODE_ROM_RESERVED_4          (1 << 4)
+#define HAL_SW_BOOTMODE_ROM_RESERVED_5          (1 << 5)
+#define HAL_SW_BOOTMODE_ROM_RESERVED_6          (1 << 6)
 #define HAL_SW_BOOTMODE_FORCE_USB_DLD           (1 << 7)
 #define HAL_SW_BOOTMODE_FORCE_UART_DLD          (1 << 8)
 #define HAL_SW_BOOTMODE_DLD_TRANS_UART          (1 << 9)
@@ -49,8 +50,6 @@ extern "C" {
 #define HAL_SW_BOOTMODE_TEST_MODE               (1 << 20)
 #define HAL_SW_BOOTMODE_TEST_SIGNALINGMODE      (1 << 21)
 #define HAL_SW_BOOTMODE_TEST_NOSIGNALINGMODE    (1 << 22)
-/* For A7 reboot */
-#define HAL_SW_BOOTMODE_A7_REBOOT               (1 << 21)
 
 #define HAL_SW_BOOTMODE_ENTER_HIDE_BOOT         (1 << 23)
 
@@ -67,14 +66,14 @@ extern "C" {
 #define HAL_SW_BOOTMODE_TEST_NORMAL_MODE        (1 << 28)
 #endif
 
+/* For A7 reboot */
+#define HAL_SW_BOOTMODE_A7_REBOOT               (1 << 29)
+#define HAL_SW_BOOTMODE_PMU_WARM_BOOT           (1 << 30)
+
 #ifdef ANC_APP
 #define HAL_SW_BOOTMODE_REBOOT_BT_ON            (1 << 29)
 #define HAL_SW_BOOTMODE_REBOOT_ANC_ON           (1 << 30)
 #endif
-
-#define HAL_SW_BOOTMODE_BURNIN_MODE (1 << 29)
-#define HAL_SW_BOOTMODE_TEST_NOSIGNALINGMODE_WIFI (1 << 30)
-#define HAL_SW_BOOTMODE_WARM_BOOT               (1 << 31)
 
 // APP_BOOTMODE_END                             (1 << 31)
 // SW_BOOTMODE_END                              (1 << 31)
@@ -95,7 +94,11 @@ union HAL_HW_BOOTMODE_T hal_hw_bootmode_get(void);
 
 void hal_hw_bootmode_init(void);
 
+void hal_hw_bootmode_clear(void);
+
 uint32_t hal_sw_bootmode_get(void);
+
+uint32_t hal_sw_bootmode_get_ram(void);
 
 void hal_sw_bootmode_set(uint32_t bm);
 

@@ -1,17 +1,19 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2023 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
+
 #ifndef WIFI_DEF_H
 #define WIFI_DEF_H
 
@@ -26,6 +28,7 @@ enum ENUM_WIFI_RUN_MODE{
     WIFI_RUN_NORMAL_MODE = 0, //signaling
     WIFI_RUN_TEST_MODE   = 1, //nonsignaling
     WIFI_RUN_RESET_MODE  = 2, //wifi reset
+    WIFI_RUN_SIG_TEST_MODE =3,//specific signal test
     WIFI_RUN_MODE_MAX,
 };
 
@@ -38,7 +41,14 @@ enum ENUM_WIFI_BAND{
 enum ENUM_WIFI_BAND_WIDTH{
     BAND_WIDTH_20M = 0,
     BAND_WIDTH_40M,
+    BAND_WIDTH_80M,
     BAND_WIDTH_MAX
+};
+
+struct ip_info {
+    uint32_t ip;               /**< IP address */
+    uint32_t netmask;          /**< netmask */
+    uint32_t gw;               /**< gateway */
 };
 
 #ifndef ETH_ALEN

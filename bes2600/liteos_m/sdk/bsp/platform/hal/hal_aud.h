@@ -1,25 +1,27 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-#ifndef AUDIO_DEF_H
-#define AUDIO_DEF_H
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
+#ifndef __HAL_AUD_H__
+#define __HAL_AUD_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stdint.h>
+#include "plat_addr_map.h"
+#include "stdint.h"
 
 #define CODEC_FREQ_24M                      24000000
 #define CODEC_FREQ_26M                      26000000
@@ -29,68 +31,6 @@ extern "C" {
 #define CODEC_FREQ_48K_SERIES               CODEC_FREQ_24P576M
 #define CODEC_FREQ_44_1K_SERIES             CODEC_FREQ_22P5792M
 
-#if 0
-#elif defined(CHIP_BEST3001) || defined(CHIP_BEST3003) || defined(CHIP_BEST3005)
-
-#define CODEC_FREQ_CRYSTAL                  CODEC_FREQ_24M
-
-#define CODEC_PLL_DIV                       36
-#define CODEC_CMU_DIV                       9
-#ifdef CHIP_BEST3001
-#define CODEC_PLAYBACK_BIT_DEPTH            20
-#else
-#define CODEC_PLAYBACK_BIT_DEPTH            24
-#endif
-
-#elif defined(CHIP_BEST1305) || \
-    defined(CHIP_BEST1400) || defined(CHIP_BEST1402) || \
-    defined(CHIP_BEST1501) || defined(CHIP_BEST1600) || \
-    defined(CHIP_BEST2300) || defined(CHIP_BEST2300A) || \
-    defined(CHIP_BEST2300P) || defined(CHIP_BEST1501SIMU) || defined(CHIP_BEST1600SIMU)
-
-#if defined(CHIP_BEST1501) || defined(CHIP_BEST1501SIMU) || defined(CHIP_BEST1600SIMU)
-#define CODEC_FREQ_CRYSTAL                  CODEC_FREQ_24M
-#endif
-
-#define CODEC_FREQ_EXTRA_DIV                2
-
-#define CODEC_PLL_DIV                       16
-#define CODEC_CMU_DIV                       8
-#define CODEC_PLAYBACK_BIT_DEPTH            24
-
-#elif defined(CHIP_BEST1000)
-
-#if defined(__AUDIO_DIV_10___)
-#define CODEC_PLL_DIV                       10
-#elif defined(__AUDIO_DIV_9___)
-#define CODEC_PLL_DIV                       9
-#else
-#define CODEC_PLL_DIV                       8
-#endif
-#define CODEC_CMU_DIV                       CODEC_PLL_DIV
-#define CODEC_PLAYBACK_BIT_DEPTH            18
-
-#elif defined(CHIP_BEST2000) || defined(CHIP_BEST2001) || defined(CHIP_BEST2002)
-
-#define CODEC_PLL_DIV                       32
-#define CODEC_CMU_DIV                       8
-#define CODEC_PLAYBACK_BIT_DEPTH            20
-
-#elif defined(CHIP_BEST2003)
-
-#define CODEC_PLL_DIV                       156
-#define CODEC_CMU_DIV                       13
-#define CODEC_PLAYBACK_BIT_DEPTH            20
-
-#else
-
-#error "Please update audio definitions"
-
-#endif
-
-#ifndef CODEC_FREQ_CRYSTAL
-#define CODEC_FREQ_CRYSTAL                  CODEC_FREQ_26M
-#endif
 #ifndef CODEC_FREQ_EXTRA_DIV
 #define CODEC_FREQ_EXTRA_DIV                1
 #endif
@@ -100,6 +40,9 @@ extern "C" {
 enum AUD_STREAM_USE_DEVICE_T{
     AUD_STREAM_USE_DEVICE_NULL = 0,
     AUD_STREAM_USE_EXT_CODEC,
+    AUD_STREAM_USE_INT_CODEC,
+    AUD_STREAM_USE_INT_CODEC2,
+    AUD_STREAM_USE_INT_CODEC3,
     AUD_STREAM_USE_I2S0_MASTER,
     AUD_STREAM_USE_I2S0_SLAVE,
     AUD_STREAM_USE_I2S1_MASTER,
@@ -108,9 +51,8 @@ enum AUD_STREAM_USE_DEVICE_T{
     AUD_STREAM_USE_TDM0_SLAVE,
     AUD_STREAM_USE_TDM1_MASTER,
     AUD_STREAM_USE_TDM1_SLAVE,
-    AUD_STREAM_USE_INT_CODEC,
-    AUD_STREAM_USE_INT_CODEC2,
-    AUD_STREAM_USE_INT_SPDIF,
+    AUD_STREAM_USE_SPDIF0,
+    AUD_STREAM_USE_SPDIF1,
     AUD_STREAM_USE_BT_PCM,
     AUD_STREAM_USE_DPD_RX,
     AUD_STREAM_USE_MC,
@@ -186,6 +128,7 @@ enum AUD_CHANNEL_NUM_T {
 #define AUD_CHANNEL_MAP_ALL                 (0x0003FFFF)
 
 enum AUD_CHANNEL_MAP_T {
+    AUD_CHANNEL_MAP_NULL = 0,
     AUD_CHANNEL_MAP_END = AUD_CHANNEL_MAP_ECMIC_CH1,
 };
 
@@ -223,6 +166,7 @@ enum AUD_STREAM_ID_T {
     AUD_STREAM_ID_1,
     AUD_STREAM_ID_2,
     AUD_STREAM_ID_3,
+    AUD_STREAM_ID_4,
 
     AUD_STREAM_ID_NUM,
 };
@@ -240,7 +184,6 @@ enum AUD_IO_PATH_T {
 
     // Input path
     AUD_INPUT_PATH_MAINMIC,
-    AUD_INPUT_PATH_VOICE_DEV,
     AUD_INPUT_PATH_VADMIC,
     AUD_INPUT_PATH_ASRMIC,
     AUD_INPUT_PATH_LINEIN,
@@ -248,6 +191,7 @@ enum AUD_IO_PATH_T {
     AUD_INPUT_PATH_USBAUDIO,
     AUD_INPUT_PATH_ANC_ASSIST,
     AUD_INPUT_PATH_HEARING,
+    AUD_INPUT_PATH_DC_CALIB,
 
     // Output path
     AUD_OUTPUT_PATH_SPEAKER,
@@ -268,34 +212,47 @@ enum ANC_TYPE_T {
     ANC_SPKCALIB        = (1 << 4),
     ANC_DEHOWLING       = (1 << 5),
     PSAP_FEEDFORWARD    = (1 << 6),
+    PSAP_EQ             = (1 << 7),
+    PSAP_SW             = (1 << 8),
 };
 
-struct CODEC_DAC_VOL_T {
-    signed char tx_pa_gain      :6;
-    unsigned char sdm_gain      :2;
-    signed char sdac_volume;
-};
+#ifdef CODEC_DAC_VOL_FLOAT
+// Defined in plat_addr_map_xxx.h
+typedef float CODEC_DAC_VOL_T;
+#else
+typedef signed char CODEC_DAC_VOL_T;
+#endif
 
+#ifdef CODEC_ADC_VOL_FLOAT
+// Defined in plat_addr_map_xxx.h
+typedef float CODEC_ADC_VOL_T;
+#else
 typedef signed char CODEC_ADC_VOL_T;
+#endif
+
+#ifndef CODEC_DAC_VOL_MAX_INDEX
+#define CODEC_DAC_VOL_MAX_INDEX             16
+#endif
 
 enum TGT_VOLUME_LEVEL_T {
-    TGT_VOLUME_LEVEL_MUTE = 0,
-    TGT_VOLUME_LEVEL_1,
-    TGT_VOLUME_LEVEL_2,
-    TGT_VOLUME_LEVEL_3,
-    TGT_VOLUME_LEVEL_4,
-    TGT_VOLUME_LEVEL_5,
-    TGT_VOLUME_LEVEL_6,
-    TGT_VOLUME_LEVEL_7,
-    TGT_VOLUME_LEVEL_8,
-    TGT_VOLUME_LEVEL_9,
-    TGT_VOLUME_LEVEL_10,
-    TGT_VOLUME_LEVEL_11,
-    TGT_VOLUME_LEVEL_12,
-    TGT_VOLUME_LEVEL_13,
-    TGT_VOLUME_LEVEL_14,
-    TGT_VOLUME_LEVEL_15,
-    TGT_VOLUME_LEVEL_MAX,
+    TGT_VOLUME_LEVEL_MUTE   = 0,
+    TGT_VOLUME_LEVEL_1      = CODEC_DAC_VOL_MAX_INDEX * 1 / 16,
+    TGT_VOLUME_LEVEL_2      = CODEC_DAC_VOL_MAX_INDEX * 2 / 16,
+    TGT_VOLUME_LEVEL_3      = CODEC_DAC_VOL_MAX_INDEX * 3 / 16,
+    TGT_VOLUME_LEVEL_4      = CODEC_DAC_VOL_MAX_INDEX * 4 / 16,
+    TGT_VOLUME_LEVEL_5      = CODEC_DAC_VOL_MAX_INDEX * 5 / 16,
+    TGT_VOLUME_LEVEL_6      = CODEC_DAC_VOL_MAX_INDEX * 6 / 16,
+    TGT_VOLUME_LEVEL_7      = CODEC_DAC_VOL_MAX_INDEX * 7 / 16,
+    TGT_VOLUME_LEVEL_8      = CODEC_DAC_VOL_MAX_INDEX * 8 / 16,
+    TGT_VOLUME_LEVEL_9      = CODEC_DAC_VOL_MAX_INDEX * 9 / 16,
+    TGT_VOLUME_LEVEL_10     = CODEC_DAC_VOL_MAX_INDEX * 10 / 16,
+    TGT_VOLUME_LEVEL_11     = CODEC_DAC_VOL_MAX_INDEX * 11 / 16,
+    TGT_VOLUME_LEVEL_12     = CODEC_DAC_VOL_MAX_INDEX * 12 / 16,
+    TGT_VOLUME_LEVEL_13     = CODEC_DAC_VOL_MAX_INDEX * 13 / 16,
+    TGT_VOLUME_LEVEL_14     = CODEC_DAC_VOL_MAX_INDEX * 14 / 16,
+    TGT_VOLUME_LEVEL_15     = CODEC_DAC_VOL_MAX_INDEX * 15 / 16,
+    TGT_VOLUME_LEVEL_16     = CODEC_DAC_VOL_MAX_INDEX,
+    TGT_VOLUME_LEVEL_MAX    = TGT_VOLUME_LEVEL_16,
 
     TGT_VOLUME_LEVEL_QTY
 };
@@ -317,6 +274,7 @@ enum TGT_ADC_VOL_LEVEL_T {
     TGT_ADC_VOL_LEVEL_13,
     TGT_ADC_VOL_LEVEL_14,
     TGT_ADC_VOL_LEVEL_15,
+    TGT_ADC_VOL_LEVEL_MAX = TGT_ADC_VOL_LEVEL_15,
 
     TGT_ADC_VOL_LEVEL_QTY
 };

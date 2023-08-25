@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __PMU_BEST2003_H__
 #define __PMU_BEST2003_H__
 
@@ -44,7 +45,7 @@ enum PMU_EFUSE_PAGE_T {
 
     PMU_EFUSE_PAGE_BATTER_HV    = 4,
     PMU_EFUSE_PAGE_RESERVED_5   = 5,
-    PMU_EFUSE_PAGE_CODE_VER     = 6,
+    PMU_ROM_EFUSE_PAGE_CODE_VER = 6,
     PMU_EFUSE_PAGE_WIFIBT_CALI  = 7,
 
     PMU_EFUSE_PAGE_DCDC_CALI    = 8,
@@ -54,11 +55,9 @@ enum PMU_EFUSE_PAGE_T {
 
     PMU_EFUSE_PAGE_DCCALIB_R    = 12,
     PMU_EFUSE_PAGE_TEMP_CALI    = 13,
-    PMU_EFUSE_PAGE_GPADC_CALI   = 14,
-    PMU_EFUSE_PAGE_WIFI_5G_CALI = 15,
+    PMU_EFUSE_PAGE_RESERVED_14  = 14,
+    PMU_EFUSE_PAGE_RESERVED_15  = 15,
 };
-
-#define PMU_EFUSE_PAGE_GPADC_CALI PMU_EFUSE_PAGE_GPADC_CALI
 
 enum PMU_PLL_DIV_TYPE_T {
     PMU_PLL_DIV_DIG,
@@ -76,9 +75,23 @@ enum PMU_IRQ_TYPE_T {
     PMU_IRQ_TYPE_QTY
 };
 
+#ifdef ALIOS_SUPPORT
 enum FLASH_SIZE_TYPE_T {
     FLASH_16M,
     FLASH_32M,
+};
+#endif
+
+/*modification must be synchronized to lmac.*/
+enum CHIP_MODEL_T {
+    CHIP_MODEL_2003F = 4,
+    CHIP_MODEL_2003G = 5,
+    CHIP_MODEL_2003H = 6,
+    CHIP_MODEL_2003I = 7,
+    /* add new 2003 ver here */
+
+    CHIP_MODEL_2006  = 32,
+    /* add new 2006 ver here*/
 };
 
 #define MAX_VMIC_CH_NUM                 2
@@ -144,9 +157,13 @@ union BOOT_FLASH_CFG_T {
 
 #define SECURITY_VALUE_T                       SECURITY_VALUE_T
 
-#define PMU_BOOT_FLASH_ID
+enum VPA_USER_T {
+    VPA_USER_WIFI = (1 << 0),
+    VPA_USER_BT = (1 << 1),
+};
 
-enum HAL_FLASH_ID_T pmu_get_boot_flash_id(void);
+void pmu_vpa_enable(enum VPA_USER_T user, bool en);
+enum HAL_FLASH_ID_T pmu_get_boot_flash_ctrl_id(void);
 
 uint8_t pmu_gpio_setup_irq(enum HAL_GPIO_PIN_T pin, const struct HAL_GPIO_IRQ_CFG_T *cfg);
 
@@ -155,8 +172,6 @@ void pmu_codec_hppa_enable(int enable);
 void pmu_codec_mic_bias_enable(uint32_t map);
 
 void pmu_codec_mic_bias_lowpower_mode(uint32_t map);
-
-void pmu_set_dsi_clk(uint32_t dsi_clk);
 
 void pmu_pll_div_reset_set(enum HAL_CMU_PLL_T pll);
 
@@ -168,12 +183,6 @@ void pmu_led_uart_enable(enum HAL_IOMUX_PIN_T pin);
 
 void pmu_led_uart_disable(enum HAL_IOMUX_PIN_T pin);
 
-void pmu_reboot_hook();
-
-void pmu_vcore_set_high_volt();
-
-void pmu_vcore_set_normal_volt();
-
 uint16_t wifi_rf_read_temperature_2003(void);
 
 void pmu_temperature_sensor_init(void);
@@ -181,10 +190,10 @@ void pmu_temperature_sensor_init(void);
 void wifi_temperature_init(void);
 
 int32_t pmu_read_temperature(void);
-
 void bbpl_temprt_comp_init_2003(void);
-
 void bbpl_compensate_by_temprt_2003(void);
+
+#ifdef ALIOS_SUPPORT
 
 int pmu_set_security_value(enum FLASH_SIZE_TYPE_T flash_size);
 
@@ -200,11 +209,15 @@ int pmu_set_boot_flash_cfg(void);
 
 int pmu_get_boot_flash_cfg(union BOOT_FLASH_CFG_T *val);
 
+#endif
+
 int pmu_get_efuse_wifi_cali(uint8_t *pa_pad_cap_m, uint8_t *pa_driver_a);
 
 int pmu_set_efuse_wifi_cali(uint8_t pa_pad_cap_m, uint8_t pa_driver_a);
 
 void pmu_wf_tx_config(uint8_t band);
+
+enum CHIP_MODEL_T pmu_get_chip_model(void);
 
 #ifdef __cplusplus
 }

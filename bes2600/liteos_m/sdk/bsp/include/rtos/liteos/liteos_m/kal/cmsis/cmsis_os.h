@@ -1,17 +1,19 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2021-2031 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ * 
+ ****************************************************************************/
+
 #ifndef __CMSIS_OS_H__
 #define __CMSIS_OS_H__
 
@@ -102,6 +104,7 @@ typedef osStatus_t              osStatus;
 #define osFeature_Pool        1         ///< Memory Pools:    1=available, 0=not available
 #define osFeature_MessageQ    1         ///< Message Queues:  1=available, 0=not available
 #define osFeature_MailQ       1         ///< Mail Queues:     1=available, 0=not available
+#define CMSIS_V1_SIGNAL_ANY   ((1u<<16)-1u) ///< thread flags: Flags zero, wait for any signal
 
 #define osRtxSemaphoreTokenLimit 65535U ///< maximum number of tokens per semaphore
 /**

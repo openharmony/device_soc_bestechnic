@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __PLAT_TYPES_H__
 #define __PLAT_TYPES_H__
 
@@ -23,62 +24,14 @@ extern "C" {
 #include "stdint.h"
 #include "stdbool.h"
 
-#define __TCMDATA __attribute__((section(".tcmdata")))
-#define __RAMCODE __attribute__((section(".ramcode")))
-#define __RAMDATA __attribute__((section(".ramdata")))
-
-#ifdef RESTRICTED_RAM
-#define __RRAMCODE __attribute__((section(".rram_text")))
-#define __RRAMDATA __attribute__((section(".rram_data")))
-#define __RRAMBSS __attribute__((section(".rram_bss")))
-#else
-#define __RRAMCODE
-#define __RRAMDATA
-#define __RRAMBSS
-#endif
-#define __SRAMCODE __attribute__((section(".sram_text")))
-#define __SRAMDATA __attribute__((section(".sram_data")))
-#define __SRAMBSS __attribute__((section(".sram_bss")))
-#define __AUDMA __attribute__((section(".audma")))
-#define __FSRAMCODE __attribute__((section(".fast_text_sram")))
-#define __BOOTSRAMCODE   __attribute__((section(".boot_text_sram")))
-
-#if defined(CHIP_HAS_PSRAM) && defined(PSRAM_ENABLE)
-#define __PSRAMCODE __attribute__((section(".psram_text")))
-#define __PSRAMDATA __attribute__((section(".psram_data")))
-#define __PSRAMBSS __attribute__((section(".psram_bss")))
-#elif defined(CHIP_HAS_PSRAMUHS) && defined(PSRAMUHS_ENABLE)
-#define __PSRAMUHSCODE		__attribute__((section(".psramuhs_text")))
-#define __PSRAMUHSDATA	__attribute__((section(".psramuhs_data")))
-#define __PSRAMUHSBSS		__attribute__((section(".psramuhs_bss")))
-#define __PSRAMCODE		__PSRAMUHSCODE
-#define __PSRAMDATA		__PSRAMUHSDATA
-// #define __PSRAMBSS			__PSRAMUHSBSS
-#define __PSRAMBSS
-#else
-#define __PSRAMCODE
-#define __PSRAMDATA
-#define __PSRAMBSS
-#endif
-#define __SRAM_EXT_CODE  __PSRAMCODE
-#define __SRAM_EXT_DATA  __PSRAMDATA
-#define __SRAM_EXT_BSS     __PSRAMBSS
-
-#ifndef TRUE
-#define TRUE 1
-#endif
-#ifndef FALSE
-#define FALSE 0
-#endif
-
-typedef unsigned char               u8;
-typedef unsigned short              u16;
-typedef unsigned long               u32;
-typedef unsigned long long          u64;
-typedef char                        s8;
-typedef short                       s16;
-typedef long                        s32;
-typedef long long                   s64;
+typedef uint8_t         u8;
+typedef uint16_t        u16;
+typedef uint32_t        u32;
+typedef uint64_t        u64;
+typedef int8_t          s8;
+typedef int16_t         s16;
+typedef int32_t         s32;
+typedef int64_t         s64;
 
 /* IO definitions (access restrictions to peripheral registers) */
 /**
@@ -106,14 +59,15 @@ typedef long long                   s64;
 
 /* Frequently used macros */
 
-#ifndef _ALIGN
-#define _ALIGN(val,exp)                  (((val) + ((exp)-1)) & ~((exp)-1))
+#ifndef ALIGN
+#define ALIGN(val,exp)                  (((val) + ((exp)-1)) & ~((exp)-1))
 #endif
 
 #define ARRAY_SIZE(a)                   (sizeof(a)/sizeof(a[0]))
 #define LAST_ELEMENT(x)                 (&x[ARRAY_SIZE(x)-1])
 #define BOUND(x, min, max)              ( (x) < (min) ? (min) : ((x) > (max) ? (max):(x)) )
 #define ROUND_SIZEOF(t)                 ((sizeof(t)+sizeof(int)-1)&~(sizeof(int)-1))
+#define ROUND_UP(N, S)                  ((((N) + (S) - 1) / (S)) * (S))
 
 // Structure offset
 #ifndef OFFSETOF
@@ -132,6 +86,9 @@ typedef long long                   s64;
 
 #define TO_STRING_A(s)                  # s
 #define TO_STRING(s)                    TO_STRING_A(s)
+
+#define MACRO_CONCAT_(a, b)             a ## b
+#define MACRO_CONCAT(a, b)              MACRO_CONCAT_(a, b)
 
 /* Remove const cast-away warnings from gcc -Wcast-qual */
 #define __UNCONST(a)                    ((void *)(unsigned long)(const void *)(a))
@@ -175,6 +132,7 @@ typedef long long                   s64;
 #ifndef NORETURN
 #define NORETURN                        __attribute__((noreturn))
 #endif
+
 // For ASM functions in C
 #ifdef __arm__
 #define NAKED                           __attribute__((naked))
@@ -230,6 +188,7 @@ typedef long long                   s64;
                        + __GNUC_MINOR__ * 100 \
                        + __GNUC_PATCHLEVEL__)
 
+#ifndef STATIC_ASSERT
 #if defined(__GNUC__) && (GCC_VERSION >= 40600) && !defined(__cplusplus)
 
 // GCC 4.6 or later
@@ -258,6 +217,7 @@ typedef long long                   s64;
 #endif
 
 #endif // No built-in static assert
+#endif
 /// --------------------------------
 
 #ifdef __cplusplus

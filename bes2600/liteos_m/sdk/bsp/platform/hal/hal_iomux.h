@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __HAL_IOMUX_H__
 #define __HAL_IOMUX_H__
 
@@ -21,9 +22,6 @@ extern "C" {
 
 #include "plat_types.h"
 #include "plat_addr_map.h"
-#if defined(NUTTX_BUILD)
-#include "arch/board/board.h"
-#endif
 #include CHIP_SPECIFIC_HDR(hal_iomux)
 
 enum HAL_IOMUX_OP_TYPE_T {
@@ -79,12 +77,23 @@ void hal_iomux_set_uart3(void);
 void hal_iomux_set_analog_i2c(void);
 void hal_iomux_set_analog_i2c_master_slave(void);
 void hal_iomux_set_jtag(void);
-void hal_iomux_set_sdmmc_dt_n_out_group(int enable);
-void hal_iomux_set_sdmmc(void);
+void hal_iomux_set_sdmmc0_dt_n_out_group(int enable);
+void hal_iomux_set_sdmmc1_dt_n_out_group(int enable);
+void hal_iomux_set_sdmmc0(void);
+void hal_iomux_clear_sdmmc0(void);
+void hal_iomux_set_sdmmc1(void);
+void hal_iomux_clear_sdmmc1(void);
 void hal_iomux_set_i2s0(void);
 void hal_iomux_set_i2s1(void);
+void hal_iomux_set_i2s2(void);
+void hal_iomux_set_i2s0_mclk(void);
+void hal_iomux_set_i2s1_mclk(void);
+void hal_iomux_set_i2s0_mclk_in(void);
+void hal_iomux_set_i2s1_mclk_in(void);
 void hal_iomux_set_spdif0(void);
 void hal_iomux_set_spdif1(void);
+void hal_iomux_set_qspilcd0(void);
+void hal_iomux_set_dsi_te(void);
 enum HAL_IOMUX_PIN_T hal_iomux_get_dsi_te_pin(void);
 void hal_iomux_set_dig_mic_clock_pin(enum HAL_IOMUX_PIN_T pin);
 void hal_iomux_set_dig_mic_data0_pin(enum HAL_IOMUX_PIN_T pin);
@@ -98,6 +107,10 @@ void hal_iomux_set_i2c0(void);
 void hal_iomux_set_i2c1(void);
 void hal_iomux_set_i2c2(void);
 void hal_iomux_set_i2c3(void);
+void hal_iomux_set_i2c4(void);
+void hal_iomux_set_i2c5(void);
+void hal_iomux_set_i3c0(void);
+void hal_iomux_set_i3c1(void);
 void hal_iomux_set_pwm0(void);
 void hal_iomux_set_pwm1(void);
 void hal_iomux_set_pwm2(void);
@@ -108,13 +121,17 @@ void hal_iomux_set_pwm6(void);
 void hal_iomux_set_pwm7(void);
 void hal_iomux_set_ir(void);
 void hal_iomux_set_sdio_voltage(enum HAL_IOMUX_PIN_VOLTAGE_DOMAINS_T volt);
+enum HAL_IOMUX_PIN_VOLTAGE_DOMAINS_T hal_iomux_get_sdio_voltage(void);
 void hal_iomux_set_sdio(void);
-void hal_iomux_set_sdmmc(void);
 void hal_iomux_set_clock_out(void);
 void hal_iomux_set_clock_12m(void);
 void hal_iomux_clear_clock_12m(void);
 void hal_iomux_set_bt_tport(void);
+void hal_iomux_clear_bt_tport(void);
+void hal_iomux_set_emmc_tport(void);
+void hal_iomux_clear_emmc_tport(void);
 void hal_iomux_set_bt_rf_sw(int rx_on, int tx_on);
+void hal_iomux_set_bt_active_out(void);
 
 void hal_iomux_ispi_access_init(void);
 #ifndef HAL_IOMUX_ISPI_ACCESS_T
@@ -131,6 +148,8 @@ void hal_iomux_set_codec_gpio_trigger(enum HAL_IOMUX_PIN_T pin, bool polarity);
 
 void hal_iomux_single_wire_uart_rx(uint32_t uart);
 void hal_iomux_single_wire_uart_tx(uint32_t uart);
+
+void hal_iomux_set_i2s_tx_trig(void);
 
 #ifdef __cplusplus
 }

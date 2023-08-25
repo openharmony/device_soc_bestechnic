@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __PMU_H__
 #define __PMU_H__
 
@@ -23,6 +24,7 @@ extern "C" {
 #include "hal_analogif.h"
 #include "hal_cmu.h"
 #include "hal_gpio.h"
+#include "hal_gpadc.h"
 #include "plat_addr_map.h"
 #include CHIP_SPECIFIC_HDR(pmu)
 
@@ -35,8 +37,6 @@ extern "C" {
 #endif
 #define pmu_read(reg, val)                  hal_analogif_reg_read(ISPI_PMU_REG(reg), val)
 #define pmu_write(reg, val)                 hal_analogif_reg_write(ISPI_PMU_REG(reg), val)
-#define wifi_read(reg, val)                  hal_analogif_reg_read(ISPI_WFRF_REG(reg), val)
-#define wifi_write(reg, val)                 hal_analogif_reg_write(ISPI_WFRF_REG(reg), val)
 
 #define  PMU_MANUAL_MODE                    1
 #define  PMU_AUTO_MODE                      0
@@ -105,8 +105,26 @@ enum PMU_VIORISE_REQ_USER_T {
    PMU_VIORISE_REQ_USER_PWL1,
    PMU_VIORISE_REQ_USER_FLASH,
    PMU_VIORISE_REQ_USER_CHARGER,
+   PMU_VIORISE_REQ_USER_SDIO,
+   PMU_VIORISE_REQ_USER_WIFI_VCO,
 
    PMU_VIORISE_REQ_USER_QTY
+};
+
+enum PMU_BOOT_CAUSE_T {
+    PMU_BOOT_CAUSE_NULL                 = 0,
+    PMU_BOOT_CAUSE_POWER_KEY            = (1 << 0),
+    PMU_BOOT_CAUSE_DIG_WDT              = (1 << 1),
+    PMU_BOOT_CAUSE_DIG_REBOOT           = (1 << 2),
+    PMU_BOOT_CAUSE_AC_IN                = (1 << 3),
+    PMU_BOOT_CAUSE_AC_OUT               = (1 << 4),
+    PMU_BOOT_CAUSE_RTC                  = (1 << 5),
+    PMU_BOOT_CAUSE_PMU_WDT              = (1 << 6),
+    PMU_BOOT_CAUSE_RESET_KEY            = (1 << 7),
+    PMU_BOOT_CAUSE_LONG_PRESS           = (1 << 8),
+    PMU_BOOT_CAUSE_VCHG_COMMAND         = (1 << 9),
+    PMU_BOOT_CAUSE_VCORE_LOW            = (1 << 10),
+    PMU_BOOT_CAUSE_VBAT_OVP             = (1 << 11),
 };
 
 struct PMU_LED_BR_CFG_T {
@@ -123,7 +141,11 @@ typedef void (*PMU_CHARGER_IRQ_HANDLER_T)(enum PMU_CHARGER_STATUS_T status);
 
 typedef void (*PMU_WDT_IRQ_HANDLER_T)(void);
 
+typedef void (*PMU_CAP_IRQ_HANDLER_T)(void);
+
 typedef void (*PMU_IRQ_UNIFIED_HANDLER_T)(uint16_t irq_status);
+
+void pmu_boot_init(void);
 
 int pmu_open(void);
 
@@ -156,6 +178,8 @@ void pmu_flash_read_config(void);
 void pmu_flash_freq_config(uint32_t freq);
 
 void pmu_psram_freq_config(uint32_t freq);
+
+void pmu_psramuhs_freq_config(uint32_t freq);
 
 void pmu_fir_high_speed_config(int enable);
 
@@ -245,6 +269,12 @@ void pmu_led_breathing_enable(enum HAL_IOMUX_PIN_T pin, const struct PMU_LED_BR_
 
 void pmu_led_breathing_disable(enum HAL_IOMUX_PIN_T pin);
 
+int pmu_led_pwm_enable(enum HAL_IOMUX_PIN_T pin, uint8_t ratio);
+
+int pmu_led_pwm_disable(enum HAL_IOMUX_PIN_T pin);
+
+void pmu_uart_enable(void);
+
 void pmu_wdt_set_irq_handler(PMU_WDT_IRQ_HANDLER_T handler);
 
 int pmu_wdt_config(uint32_t irq_ms, uint32_t reset_ms);
@@ -263,6 +293,10 @@ int pmu_set_irq_unified_handler(enum PMU_IRQ_TYPE_T type, PMU_IRQ_UNIFIED_HANDLE
 
 enum HAL_PWRKEY_IRQ_T pmu_pwrkey_irq_value_to_state(uint16_t irq_status);
 
+int pmu_gpadc_div_ctrl(enum HAL_GPADC_CHAN_T channel, int enable);
+
+enum PMU_BOOT_CAUSE_T pmu_boot_cause_get(void);
+
 //=========================================================================
 // APIs for internal use only
 //=========================================================================
@@ -273,9 +307,15 @@ void pmu_wdt_restore_context(void);
 
 void pmu_charger_save_context(void);
 
-void pmu_charger_shutdown_config(void);
-
 int pmu_get_gpadc_data_bits(void);
+
+void pmu_bt_rcosc_cal(bool first_boot);
+
+void pmu_capsensor_close(void);
+
+void pmu_capsensor_open(uint8_t clk_cap_div);
+
+int pmu_capsensor_set_irq_handler(PMU_CAP_IRQ_HANDLER_T handler);
 
 #ifdef __cplusplus
 }

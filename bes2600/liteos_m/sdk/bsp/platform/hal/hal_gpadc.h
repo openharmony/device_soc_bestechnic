@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __HAL_GPADC_H__
 #define __HAL_GPADC_H__
 
@@ -67,7 +68,7 @@ enum HAL_ADCKEY_IRQ_STATUS_T {
 typedef uint16_t HAL_GPADC_MV_T;
 
 typedef void (*HAL_GPADC_EVENT_CB_T)(uint16_t raw_val, HAL_GPADC_MV_T volt);
-typedef void (*HAL_ADCKEY_EVENT_CB_T)(enum HAL_ADCKEY_IRQ_STATUS_T irq_status, uint16_t raw_val);
+typedef void (*HAL_ADCKEY_EVENT_CB_T)(enum HAL_ADCKEY_IRQ_STATUS_T irq_status, HAL_GPADC_MV_T volt);
 
 int hal_gpadc_masked_irq_valid(uint16_t irq);
 
@@ -76,6 +77,8 @@ uint16_t hal_gpadc_filter_out_unmasked_irq(uint16_t irq);
 int hal_gpadc_open(enum HAL_GPADC_CHAN_T channel, enum HAL_GPADC_ATP_T atp, HAL_GPADC_EVENT_CB_T cb);
 
 bool hal_gpadc_get_volt(enum HAL_GPADC_CHAN_T ch, HAL_GPADC_MV_T *volt);
+
+bool hal_gpadc_get_volt_blocked(enum HAL_GPADC_CHAN_T ch, HAL_GPADC_MV_T *volt);
 
 int hal_gpadc_close(enum HAL_GPADC_CHAN_T channel);
 
@@ -86,6 +89,10 @@ void hal_gpadc_wakeup(void);
 void hal_adckey_set_irq_handler(HAL_ADCKEY_EVENT_CB_T cb);
 
 int hal_adckey_set_irq(enum HAL_ADCKEY_IRQ_T type);
+
+HAL_GPADC_MV_T hal_gpadc_adc2volt(uint16_t gpadcVal);
+
+HAL_GPADC_MV_T hal_gpadc_adc2volt_ext(uint16_t gpadcVal, enum HAL_GPADC_CHAN_T channel);
 
 #ifdef __cplusplus
 	}

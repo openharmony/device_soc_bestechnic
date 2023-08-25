@@ -40,7 +40,13 @@ enum BUF_STATE {
     READY,
     BUSY,
 };
-
+void hal_lcdc_update_addr(uint8_t layerId, uint8_t channel, uint32_t addr){}
+void hal_dsi_init_v2(uint16_t h_res, enum DsiMode mode, uint8_t lane_number, uint32_t dsi_bitclk, uint32_t dsi_pclk){}
+void hal_lcdc_init(const struct HAL_DSI_CFG_T *cfg, const uint8_t *layer0,
+    const uint8_t *layer1, const uint8_t *layer2){}
+void hal_lcdc_start(void){}
+typedef void (*HAL_DSI_XFER_COMPLETE_CALLBACK_T)(uint8_t layerId, uint8_t channel, uint32_t addr);
+void hal_lcdc_set_callback(HAL_DSI_XFER_COMPLETE_CALLBACK_T callback){}
 struct MipiDsiDevice {
     uint32_t buffers[BUF_NUM];
     uint32_t buf_size;
@@ -125,7 +131,7 @@ static int32_t MipiDsiDevInit()
 
 static int32_t MipiDsiDevSetCntlrCfg(struct MipiDsiCntlr *cntlr)
 {
-    enum DSI_MODE_T dsi_mode = DSI_MODE_CMD;
+    enum DsiMode dsi_mode = DSI_CMD_MODE;
     uint8_t dsi_lane = (uint8_t)cntlr->cfg.lane;
     uint32_t dsi_bitclk = cntlr->cfg.phyDataRate;
     uint32_t dsi_pclk = cntlr->cfg.pixelClk;
@@ -136,7 +142,7 @@ static int32_t MipiDsiDevSetCntlrCfg(struct MipiDsiCntlr *cntlr)
         priv.cfg.active_width += 1;
         priv.cfg.active_height += 1;
     } else if (cntlr->cfg.mode == DSI_VIDEO_MODE) {
-        dsi_mode = DSI_MODE_VIDEO;
+        dsi_mode = DSI_VIDEO_MODE;
     }
     priv.mode = cntlr->cfg.mode;
     priv.cfg.h_back_porch = cntlr->cfg.timing.hbpPixels;

@@ -1,17 +1,18 @@
-/*
- * Copyright (c) 2021 Bestechnic (Shanghai) Co., Ltd. All rights reserved.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+/***************************************************************************
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2015-2019 BES.
+ * All rights reserved. All unpublished rights reserved.
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+ * No part of this work may be used or reproduced in any form or by any
+ * means, or stored in a database or retrieval system, without prior written
+ * permission of BES.
+ *
+ * Use of this work is governed by a license granted by BES.
+ * This work contains confidential and proprietary information of
+ * BES. which is protected by copyright, trade secret,
+ * trademark and other intellectual property rights.
+ *
+ ****************************************************************************/
 #ifndef __HAL_SLEEP_H__
 #define __HAL_SLEEP_H__
 
@@ -27,7 +28,7 @@ enum HAL_CPU_WAKE_LOCK_USER_T {
     HAL_CPU_WAKE_LOCK_USER_AUDIOFLINGER,
     HAL_CPU_WAKE_LOCK_USER_3,
     HAL_CPU_WAKE_LOCK_USER_4,
-    HAL_SYS_WAKE_LOCK_USER_TRANSQ,
+    HAL_CPU_WAKE_LOCK_USER_5,
     HAL_CPU_WAKE_LOCK_USER_6,
     HAL_CPU_WAKE_LOCK_USER_7,
     HAL_CPU_WAKE_LOCK_USER_8,
@@ -58,78 +59,86 @@ enum HAL_CPU_WAKE_LOCK_USER_T {
     HAL_CPU_WAKE_LOCK_USER_QTY
 };
 
-enum HAL_SYS_WAKE_LOCK_USER_T {
-    HAL_SYS_WAKE_LOCK_USER_INTERSYS,
-    HAL_SYS_WAKE_LOCK_USER_INTERSYS_HCI,
-    HAL_SYS_WAKE_LOCK_USER_I2C,
-    HAL_SYS_WAKE_LOCK_USER_3,
-    HAL_SYS_WAKE_LOCK_USER_4,
-    HAL_SYS_WAKE_LOCK_USER_5,
-    HAL_SYS_WAKE_LOCK_USER_6,
-    HAL_SYS_WAKE_LOCK_USER_7,
-    HAL_SYS_WAKE_LOCK_USER_8,
-    HAL_SYS_WAKE_LOCK_USER_9,
-    HAL_SYS_WAKE_LOCK_USER_10,
-    HAL_SYS_WAKE_LOCK_USER_11,
-    HAL_SYS_WAKE_LOCK_USER_12,
-    HAL_SYS_WAKE_LOCK_USER_13,
-    HAL_SYS_WAKE_LOCK_USER_14,
-    HAL_SYS_WAKE_LOCK_USER_15,
-    HAL_SYS_WAKE_LOCK_USER_16,
-    HAL_SYS_WAKE_LOCK_USER_17,
-    HAL_SYS_WAKE_LOCK_USER_18,
-    HAL_SYS_WAKE_LOCK_USER_19,
-    HAL_SYS_WAKE_LOCK_USER_20,
-    HAL_SYS_WAKE_LOCK_USER_21,
-    HAL_SYS_WAKE_LOCK_USER_22,
-    HAL_SYS_WAKE_LOCK_USER_23,
-    HAL_SYS_WAKE_LOCK_USER_24,
-    HAL_SYS_WAKE_LOCK_USER_25,
-    HAL_SYS_WAKE_LOCK_USER_26,
-    HAL_SYS_WAKE_LOCK_USER_27,
-    HAL_SYS_WAKE_LOCK_USER_28,
-    HAL_SYS_WAKE_LOCK_USER_29,
-    HAL_SYS_WAKE_LOCK_USER_30,
-    HAL_SYS_WAKE_LOCK_USER_31,
+enum HAL_BUS_WAKE_LOCK_USER_T {
+    HAL_BUS_WAKE_LOCK_USER_INTERSYS,
+    HAL_BUS_WAKE_LOCK_USER_INTERSYS_HCI,
+    HAL_BUS_WAKE_LOCK_USER_I2C,
+    HAL_BUS_WAKE_LOCK_USER_CP,
+    HAL_BUS_WAKE_LOCK_USER_SMP,
+    HAL_BUS_WAKE_LOCK_USER_RMT_IPC,
+    HAL_BUS_WAKE_LOCK_USER_RPTUN,
+    HAL_BUS_WAKE_LOCK_USER_EMMC,
+    HAL_BUS_WAKE_LOCK_USER_SDIO,
+    HAL_BUS_WAKE_LOCK_USER_9,
+    HAL_BUS_WAKE_LOCK_USER_10,
+    HAL_BUS_WAKE_LOCK_USER_11,
+    HAL_BUS_WAKE_LOCK_USER_12,
+    HAL_BUS_WAKE_LOCK_USER_13,
+    HAL_BUS_WAKE_LOCK_USER_14,
+    HAL_BUS_WAKE_LOCK_USER_15,
+    HAL_BUS_WAKE_LOCK_USER_16,
+    HAL_BUS_WAKE_LOCK_USER_17,
+    HAL_BUS_WAKE_LOCK_USER_18,
+    HAL_BUS_WAKE_LOCK_USER_19,
+    HAL_BUS_WAKE_LOCK_USER_20,
+    HAL_BUS_WAKE_LOCK_USER_21,
+    HAL_BUS_WAKE_LOCK_USER_22,
+    HAL_BUS_WAKE_LOCK_USER_23,
+    HAL_BUS_WAKE_LOCK_USER_24,
+    HAL_BUS_WAKE_LOCK_USER_25,
+    HAL_BUS_WAKE_LOCK_USER_26,
+    HAL_BUS_WAKE_LOCK_USER_27,
+    HAL_BUS_WAKE_LOCK_USER_28,
+    HAL_BUS_WAKE_LOCK_USER_29,
+    HAL_BUS_WAKE_LOCK_USER_30,
+    HAL_BUS_WAKE_LOCK_USER_31,
 
-    HAL_SYS_WAKE_LOCK_USER_QTY
+    HAL_BUS_WAKE_LOCK_USER_QTY
 };
 
-enum HAL_CHIP_WAKE_LOCK_USER_T {
-    HAL_CHIP_WAKE_LOCK_USER_ANC,
-    HAL_CHIP_WAKE_LOCK_USER_VAD,
-    HAL_CHIP_WAKE_LOCK_USER_CP,
-    HAL_CHIP_WAKE_LOCK_USER_3,
-    HAL_CHIP_WAKE_LOCK_USER_4,
-    HAL_CHIP_WAKE_LOCK_USER_5,
-    HAL_CHIP_WAKE_LOCK_USER_6,
-    HAL_CHIP_WAKE_LOCK_USER_7,
-    HAL_CHIP_WAKE_LOCK_USER_8,
-    HAL_CHIP_WAKE_LOCK_USER_9,
-    HAL_CHIP_WAKE_LOCK_USER_10,
-    HAL_CHIP_WAKE_LOCK_USER_11,
-    HAL_CHIP_WAKE_LOCK_USER_12,
-    HAL_CHIP_WAKE_LOCK_USER_13,
-    HAL_CHIP_WAKE_LOCK_USER_14,
-    HAL_CHIP_WAKE_LOCK_USER_15,
-    HAL_CHIP_WAKE_LOCK_USER_16,
-    HAL_CHIP_WAKE_LOCK_USER_17,
-    HAL_CHIP_WAKE_LOCK_USER_18,
-    HAL_CHIP_WAKE_LOCK_USER_19,
-    HAL_CHIP_WAKE_LOCK_USER_20,
-    HAL_CHIP_WAKE_LOCK_USER_21,
-    HAL_CHIP_WAKE_LOCK_USER_22,
-    HAL_CHIP_WAKE_LOCK_USER_23,
-    HAL_CHIP_WAKE_LOCK_USER_24,
-    HAL_CHIP_WAKE_LOCK_USER_25,
-    HAL_CHIP_WAKE_LOCK_USER_26,
-    HAL_CHIP_WAKE_LOCK_USER_27,
-    HAL_CHIP_WAKE_LOCK_USER_28,
-    HAL_CHIP_WAKE_LOCK_USER_29,
-    HAL_CHIP_WAKE_LOCK_USER_30,
-    HAL_CHIP_WAKE_LOCK_USER_31,
+enum HAL_SUBSYS_WAKE_LOCK_USER_T {
+    HAL_SUBSYS_WAKE_LOCK_USER_GPADC,
+    HAL_SUBSYS_WAKE_LOCK_USER_ANC,
+    HAL_SUBSYS_WAKE_LOCK_USER_VAD,
+    HAL_SUBSYS_WAKE_LOCK_USER_3,
+    HAL_SUBSYS_WAKE_LOCK_USER_4,
+    HAL_SUBSYS_WAKE_LOCK_USER_5,
+    HAL_SUBSYS_WAKE_LOCK_USER_6,
+    HAL_SUBSYS_WAKE_LOCK_USER_7,
+    HAL_SUBSYS_WAKE_LOCK_USER_8,
+    HAL_SUBSYS_WAKE_LOCK_USER_9,
+    HAL_SUBSYS_WAKE_LOCK_USER_10,
+    HAL_SUBSYS_WAKE_LOCK_USER_11,
+    HAL_SUBSYS_WAKE_LOCK_USER_12,
+    HAL_SUBSYS_WAKE_LOCK_USER_13,
+    HAL_SUBSYS_WAKE_LOCK_USER_14,
+    HAL_SUBSYS_WAKE_LOCK_USER_15,
+    HAL_SUBSYS_WAKE_LOCK_USER_16,
+    HAL_SUBSYS_WAKE_LOCK_USER_17,
+    HAL_SUBSYS_WAKE_LOCK_USER_18,
+    HAL_SUBSYS_WAKE_LOCK_USER_19,
+    HAL_SUBSYS_WAKE_LOCK_USER_20,
+    HAL_SUBSYS_WAKE_LOCK_USER_21,
+    HAL_SUBSYS_WAKE_LOCK_USER_22,
+    HAL_SUBSYS_WAKE_LOCK_USER_23,
+    HAL_SUBSYS_WAKE_LOCK_USER_24,
+    HAL_SUBSYS_WAKE_LOCK_USER_25,
+    HAL_SUBSYS_WAKE_LOCK_USER_26,
+    HAL_SUBSYS_WAKE_LOCK_USER_27,
+    HAL_SUBSYS_WAKE_LOCK_USER_28,
+    HAL_SUBSYS_WAKE_LOCK_USER_29,
+    HAL_SUBSYS_WAKE_LOCK_USER_30,
+    HAL_SUBSYS_WAKE_LOCK_USER_31,
 
-    HAL_CHIP_WAKE_LOCK_USER_QTY
+    HAL_SUBSYS_WAKE_LOCK_USER_QTY
+};
+
+enum HAL_SLEEP_POWER_DOWN_MODE_T {
+    HAL_SLEEP_POWER_DOWN_MODE_NONE,
+    HAL_SLEEP_POWER_DOWN_MODE_CPU,
+    HAL_SLEEP_POWER_DOWN_MODE_SUBSYS,
+
+    HAL_SLEEP_POWER_DOWN_MODE_QTY,
 };
 
 enum HAL_SLEEP_HOOK_USER_T {
@@ -137,6 +146,7 @@ enum HAL_SLEEP_HOOK_USER_T {
     HAL_SLEEP_HOOK_USER_OTA,
     HAL_SLEEP_HOOK_NORFLASH_API,
     HAL_SLEEP_HOOK_DUMP_LOG,
+
     HAL_SLEEP_HOOK_USER_QTY
 };
 
@@ -146,12 +156,15 @@ enum HAL_DEEP_SLEEP_HOOK_USER_T {
     HAL_DEEP_SLEEP_HOOK_USER_OTA,
     HAL_DEEP_SLEEP_HOOK_NORFLASH_API,
     HAL_DEEP_SLEEP_HOOK_DUMP_LOG,
+
     HAL_DEEP_SLEEP_HOOK_USER_QTY
 };
 
 enum HAL_SLEEP_STATUS_T {
     HAL_SLEEP_STATUS_DEEP,
     HAL_SLEEP_STATUS_LIGHT,
+
+    HAL_SLEEP_STATUS_QTY,
 };
 
 enum HAL_PM_USER_TYPE_T {
@@ -175,10 +188,16 @@ enum HAL_PM_STATE_T {
 
 struct CPU_USAGE_T {
     uint8_t busy;
-    uint8_t light_sleep;
-    uint8_t sys_deep_sleep;
-    uint8_t chip_deep_sleep;
+    uint8_t cpu_sleep;
+    uint8_t bus_sleep;
+    uint8_t subsys_sleep;
 };
+
+typedef struct {
+    uint8_t cpu_sleep_ratio;
+    uint8_t bus_sleep_ratio;
+    uint8_t subsys_sleep_ratio;
+} SYSTEM_SLEEP_STAT_T;
 
 typedef int (*HAL_SLEEP_HOOK_HANDLER)(void);
 typedef int (*HAL_DEEP_SLEEP_HOOK_HANDLER)(void);
@@ -200,17 +219,27 @@ int hal_cpu_wake_lock(enum HAL_CPU_WAKE_LOCK_USER_T user);
 
 int hal_cpu_wake_unlock(enum HAL_CPU_WAKE_LOCK_USER_T user);
 
-int hal_sys_wake_lock(enum HAL_SYS_WAKE_LOCK_USER_T user);
+uint32_t hal_cpu_wake_lock_get();
 
-int hal_sys_wake_unlock(enum HAL_SYS_WAKE_LOCK_USER_T user);
+int hal_bus_wake_lock(enum HAL_BUS_WAKE_LOCK_USER_T user);
 
-int hal_chip_wake_lock(enum HAL_CHIP_WAKE_LOCK_USER_T user);
+int hal_bus_wake_unlock(enum HAL_BUS_WAKE_LOCK_USER_T user);
 
-int hal_chip_wake_unlock(enum HAL_CHIP_WAKE_LOCK_USER_T user);
+uint32_t hal_bus_wake_lock_get();
 
-void hal_sleep_power_down_enable(void);
+int hal_subsys_wake_lock(enum HAL_SUBSYS_WAKE_LOCK_USER_T user);
 
-void hal_sleep_power_down_disable(void);
+int hal_subsys_wake_unlock(enum HAL_SUBSYS_WAKE_LOCK_USER_T user);
+
+uint32_t hal_subsys_wake_lock_get();
+
+void hal_sleep_power_down_mode_set(enum HAL_SLEEP_POWER_DOWN_MODE_T mode);
+
+enum HAL_SLEEP_POWER_DOWN_MODE_T hal_sleep_power_down_mode_get(void);
+
+void TZ_hal_sleep_power_down_mode_set_S(enum HAL_SLEEP_POWER_DOWN_MODE_T mode);
+
+int TZ_hal_sleep_deep_sleep_S(void);
 
 int hal_pm_notif_register(enum HAL_PM_USER_TYPE_T user, HAL_PM_NOTIF_HANDLER handler);
 
@@ -219,6 +248,10 @@ int hal_pm_notif_deregister(enum HAL_PM_USER_TYPE_T user, HAL_PM_NOTIF_HANDLER h
 void hal_sleep_start_stats(uint32_t stats_interval_ms, uint32_t trace_interval_ms);
 
 int hal_sleep_get_stats(struct CPU_USAGE_T *usage);
+
+SYSTEM_SLEEP_STAT_T* system_sleep_stat_get(void);
+
+void system_sleep_stat_update(uint8_t cpu_sleep, uint8_t bus_sleep, uint8_t subsys_sleep);
 
 #ifdef __cplusplus
 }
