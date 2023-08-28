@@ -13,13 +13,18 @@
 
 import("//drivers/hdf_core/adapter/khdf/liteos_m/hdf.gni")
 
-module_group("components") {
-  modules = [
-    "drivers",
-    "fs",
-    "net/lwip-2.1",
-    "ui",
-    "utils",
-    "bt",
+config("public") {
+  include_dirs = [ "include" ]
+}
+
+kernel_module("bt_adapter") {
+  sources = [
+    "src/btdemo.c",
+
   ]
+
+  include_dirs = [ "include" ]
+
+
+  cflags = [ "-DLOG_FMT_MAX_LEN=128" ]
 }
