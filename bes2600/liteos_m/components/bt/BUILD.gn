@@ -14,7 +14,7 @@
 import("//drivers/hdf_core/adapter/khdf/liteos_m/hdf.gni")
 
 config("public") {
-  include_dirs = [ "include" ]
+  include_dirs = [ "inc" ]
 }
 
 kernel_module("bt_adapter") {
@@ -64,5 +64,5 @@ kernel_module("bt_adapter") {
     "BLE_AUDIO_STEREO_CHAN_OVER_CIS_CNT=0",
   ]
 
-  cflags = [ "-DLOG_FMT_MAX_LEN=128" ]
+  cflags = []
 }
