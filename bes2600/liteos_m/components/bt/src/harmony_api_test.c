@@ -55,8 +55,8 @@ typedef struct
 #define SCAN_FILTER_DEV_NAME2 "fjr_ble_test2"
 
 /****************************Variable defination************************/
-static const char scan_filter_addr1[6] = {0x91,0x33,0x33,0x23,0x22,0x11};
-static const char scan_filter_addr2[6] = {0x92,0x33,0x33,0x23,0x22,0x11};
+static char scan_filter_addr1[6] = {0x91,0x33,0x33,0x23,0x22,0x11};
+static char scan_filter_addr2[6] = {0x92,0x33,0x33,0x23,0x22,0x11};
 
 #define SOFTBUS_SERVICE_UUID "11C8B310-80E4-4276-AFC0-F81590B2177F"
 #define SOFTBUS_CHARA_BLENET_UUID "00002B00-0000-1000-8000-00805F9B34FB"
@@ -169,7 +169,7 @@ static void OhosNotificationCb(int clientId, BtGattReadData *notifyData, int sta
 
 }
 
-static const BtGattClientCallbacks ohos_client_callback =
+static BtGattClientCallbacks ohos_client_callback =
 {
     .ConnectionStateCb       = OhosConnectionStateCb,
     .connectParaUpdateCb     = OhosConnectParaUpdateCb,

@@ -25,10 +25,10 @@ kernel_module("bt_adapter") {
 
   ]
   include_dirs = [
-    "//bes2600/liteos_m/sdk/bsp/bthost/adapter/inc/bt/common/",
-    "//bes2600/liteos_m/sdk/bsp/bthost/stack/bt_profiles/inc",
-    "//bes2600/liteos_m/sdk/bsp/bthost/adapter/inc/adapter_service/",
-    "//bes2600/liteos_m/components/bt/inc/"
+    "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/adapter/inc/bt/common/",
+    "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/stack/bt_profiles/inc",
+    "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/adapter/inc/adapter_service/",
+    "//device/soc/bestechnic/bes2600/liteos_m/components/bt/inc/"
   ]
   defines = [
     "BLE_STACK_NEW_DESIGN=1",
