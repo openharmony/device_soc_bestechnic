@@ -57,6 +57,8 @@ extern "C" {
 #define CHIP_ID_LITERAL                         best2005
 #elif defined(CHIP_BEST2007)
 #define CHIP_ID_LITERAL                         best2007
+#elif defined(CHIP_BEST2007P)
+#define CHIP_ID_LITERAL                         best2007p
 #elif defined(CHIP_BEST2009)
 #define CHIP_ID_LITERAL                         best2009
 #elif defined(CHIP_BEST2300)
@@ -124,6 +126,24 @@ extern "C" {
 #define RAM_S_TO_NS(a)                          (a)
 #endif
 
+#ifdef RAM_REGION_OFFSET
+#define RAM_REGION_BASE                         (RAM_BASE + RAM_REGION_OFFSET)
+#else
+#define RAM_REGION_BASE                         RAM_BASE
+#endif
+#ifndef RAM_REGION_SIZE
+#define RAM_REGION_SIZE                         (RAM_BASE + RAM_SIZE - RAM_REGION_BASE)
+#endif
+
+#ifdef RAMX_REGION_OFFSET
+#define RAMX_REGION_BASE                        (RAMX_BASE + RAMX_REGION_OFFSET)
+#else
+#define RAMX_REGION_BASE                        RAMX_BASE
+#endif
+#ifndef RAMX_REGION_SIZE
+#define RAMX_REGION_SIZE                        (RAMX_BASE + RAMX_SIZE - RAMX_REGION_BASE)
+#endif
+
 #define FLASH_TO_FLASHX(a)                      ((a) - FLASH_BASE + FLASHX_BASE)
 #define FLASHX_TO_FLASH(a)                      ((a) - FLASHX_BASE + FLASH_BASE)
 
@@ -167,9 +187,6 @@ extern "C" {
 #if (RAM_SIZE <= RAM_REGION_OFFSET)
 #error "Bad RAM_REGION_OFFSET"
 #endif
-#ifndef RAM_REGION_SIZE
-#define RAM_REGION_SIZE                         (RAM_SIZE - RAM_REGION_OFFSET)
-#endif
 #if (RAM_SIZE < RAM_REGION_OFFSET + RAM_REGION_SIZE)
 #error "Bad RAM_REGION_SIZE"
 #endif
@@ -178,9 +195,6 @@ extern "C" {
 #ifdef RAMX_REGION_OFFSET
 #if (RAMX_SIZE <= RAMX_REGION_OFFSET)
 #error "Bad RAMX_REGION_OFFSET"
-#endif
-#ifndef RAMX_REGION_SIZE
-#define RAMX_REGION_SIZE                        (RAMX_SIZE - RAMX_REGION_OFFSET)
 #endif
 #if (RAMX_SIZE < RAMX_REGION_OFFSET + RAMX_REGION_SIZE)
 #error "Bad RAMX_REGION_SIZE"

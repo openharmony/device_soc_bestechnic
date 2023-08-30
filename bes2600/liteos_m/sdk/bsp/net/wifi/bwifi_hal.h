@@ -229,9 +229,11 @@ struct wifi_p2p_cmd {
 
 enum EXT_VENDOR_CMD {
     SET_MAGIC_WOWLAN                    = 1,
-    SET_WIFI_EXT_CUSTOM_IE              = 2,
-    DEL_WIFI_EXT_CUSTOM_IE              = 3,
-    REG_WIFI_MAC_MGMT_FRAME_RX_CB       = 4,
+    SET_WIFI_EXT_CUSTOM_IE,
+    DEL_WIFI_EXT_CUSTOM_IE,
+    REG_WIFI_MAC_MGMT_FRAME_RX_CB,
+    GET_NET_IF,
+    SET_TDD_STAION_P2P_DUR,
 };
 
 struct ext_vendor_cmd_info_hdr {
@@ -242,6 +244,12 @@ struct ext_vendor_cmd_info_hdr {
 struct set_magic_wowlan {
     struct ext_vendor_cmd_info_hdr hdr;
     uint8_t enable;
+};
+
+struct set_station_p2p_dur {
+    struct ext_vendor_cmd_info_hdr hdr;
+    int sta_dur;
+    int p2p_dur;
 };
 
 #define WIFI_CUSTOM_IE_TRANS_BEACON         1
@@ -272,6 +280,14 @@ struct reg_wifi_mgmt_frame_rx_cb {
     struct ext_vendor_cmd_info_hdr      hdr;
     void*                               rx_cb;
 };
+
+#if LWIP_ETHERNETIF
+struct get_net_if {
+    struct ext_vendor_cmd_info_hdr hdr;
+    int type;
+    struct netif *net_if;
+};
+#endif
 
 struct bwifi_hal_ops {
     /* wifi power status 0 - power on, 1 - power off */

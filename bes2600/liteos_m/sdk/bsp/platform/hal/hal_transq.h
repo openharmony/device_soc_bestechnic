@@ -90,6 +90,8 @@ enum HAL_TRANSQ_RET_T hal_transq_flush(enum HAL_TRANSQ_ID_T id);
 
 uint8_t hal_transq_get_rx_irq_count(enum HAL_TRANSQ_ID_T id);
 
+bool hal_transq_tx_busy(enum HAL_TRANSQ_ID_T id);
+
 #endif // TRANSQ0_BASE
 
 #ifdef __cplusplus

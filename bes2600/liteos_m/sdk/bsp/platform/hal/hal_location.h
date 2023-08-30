@@ -21,6 +21,7 @@ extern "C" {
 #endif
 
 #include "plat_addr_map.h"
+#include "plat_types.h"
 
 #define HAL_SEC_CONCAT_2(a, b)          a.b
 #define HAL_SEC_CONCAT_3(a, b, c)       a.b.c
@@ -37,12 +38,18 @@ extern "C" {
 #define HAL_SEC_LOC(section)            HAL_SEC_NAME_ATTR(HAL_SEC_TO_STR(HAL_SEC_CONCAT_2(section, __LINE__)))
 #endif
 
+#ifdef LTO_OPTIMIZE
+#define HAL_FUNC_SEC_ATTR               NOINLINE
+#else
+#define HAL_FUNC_SEC_ATTR
+#endif
+
 #if defined(__GNUC__) && !((defined(ROM_BUILD) && !defined(ROM_IN_FLASH)) || defined(PROGRAMMER)) && !defined(NANDFLASH_BUILD)
 
-#define BOOT_TEXT_SRAM_LOC              HAL_SEC_LOC(.boot_text_sram)
-#define BOOT_TEXT_SRAM_DEF(n)           HAL_SEC_DEF(.boot_text_sram, n)
-#define BOOT_TEXT_FLASH_LOC             HAL_SEC_LOC(.boot_text_flash)
-#define BOOT_TEXT_FLASH_DEF(n)          HAL_SEC_DEF(.boot_text_flash, n)
+#define BOOT_TEXT_SRAM_LOC              HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.boot_text_sram)
+#define BOOT_TEXT_SRAM_DEF(n)           HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.boot_text_sram, n)
+#define BOOT_TEXT_FLASH_LOC             HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.boot_text_flash)
+#define BOOT_TEXT_FLASH_DEF(n)          HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.boot_text_flash, n)
 #define BOOT_RODATA_SRAM_LOC            HAL_SEC_LOC(.boot_rodata_sram)
 #define BOOT_RODATA_SRAM_DEF(n)         HAL_SEC_DEF(.boot_rodata_sram, n)
 #define BOOT_RODATA_FLASH_LOC           HAL_SEC_LOC(.boot_rodata_flash)
@@ -57,8 +64,8 @@ extern "C" {
 #define BOOT_BSS_DEF(n)                 HAL_SEC_DEF(.boot_bss, n)
 #endif
 
-#define SRAM_TEXT_LOC                   HAL_SEC_LOC(.sram_text)
-#define SRAM_TEXT_DEF(n)                HAL_SEC_DEF(.sram_text, n)
+#define SRAM_TEXT_LOC                   HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.sram_text)
+#define SRAM_TEXT_DEF(n)                HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.sram_text, n)
 #define SRAM_RODATA_LOC                 HAL_SEC_LOC(.sram_rodata)
 #define SRAM_RODATA_DEF(n)              HAL_SEC_DEF(.sram_rodata, n)
 #define SRAM_DATA_LOC                   HAL_SEC_LOC(.sram_data)
@@ -81,11 +88,11 @@ extern "C" {
 #define SRAM_NC_BSS_DEF(n)              HAL_SEC_DEF(.sram_nc_bss, n)
 #endif
 
-#define FRAM_TEXT_LOC                   HAL_SEC_LOC(.fast_text_sram)
-#define FRAM_TEXT_DEF(n)                HAL_SEC_DEF(.fast_text_sram, n)
+#define FRAM_TEXT_LOC                   HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.fast_text_sram)
+#define FRAM_TEXT_DEF(n)                HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.fast_text_sram, n)
 
-#define CP_TEXT_SRAM_LOC                HAL_SEC_LOC(.cp_text_sram)
-#define CP_TEXT_SRAM_DEF(n)             HAL_SEC_DEF(.cp_text_sram, n)
+#define CP_TEXT_SRAM_LOC                HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.cp_text_sram)
+#define CP_TEXT_SRAM_DEF(n)             HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.cp_text_sram, n)
 #define CP_DATA_LOC                     HAL_SEC_LOC(.cp_data)
 #define CP_DATA_DEF(n)                  HAL_SEC_DEF(.cp_data, n)
 #ifdef __ARMCC_VERSION
@@ -96,8 +103,8 @@ extern "C" {
 #define CP_BSS_DEF(n)                   HAL_SEC_DEF(.cp_bss, n)
 #endif
 
-#define FLASH_TEXT_LOC                  HAL_SEC_LOC(.flash_text)
-#define FLASH_TEXT_DEF(n)               HAL_SEC_DEF(.flash_text, n)
+#define FLASH_TEXT_LOC                  HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.flash_text)
+#define FLASH_TEXT_DEF(n)               HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.flash_text, n)
 #define FLASH_RODATA_LOC                HAL_SEC_LOC(.flash_rodata)
 #define FLASH_RODATA_DEF(n)             HAL_SEC_DEF(.flash_rodata, n)
 #define FLASH_NC_RODATA_LOC             HAL_SEC_LOC(.flash_nc_rodata)
@@ -107,8 +114,8 @@ extern "C" {
 #define REBOOT_CUSTOM_PARAM_DEF         HAL_SEC_DEF(.reboot_custom_param)
 
 #if 1 //def PSRAM_BASE
-#define PSRAM_TEXT_LOC                  HAL_SEC_LOC(.psram_text)
-#define PSRAM_TEXT_DEF(n)               HAL_SEC_DEF(.psram_text, n)
+#define PSRAM_TEXT_LOC                  HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.psram_text)
+#define PSRAM_TEXT_DEF(n)               HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.psram_text, n)
 #define PSRAM_RODATA_LOC                HAL_SEC_LOC(.psram_rodata)
 #define PSRAM_RODATA_DEF(n)             HAL_SEC_DEF(.psram_rodata, n)
 #define PSRAM_DATA_LOC                  HAL_SEC_LOC(.psram_data)
@@ -133,8 +140,8 @@ extern "C" {
 #endif
 
 #if 1 //def PSRAMUHS_BASE
-#define PSRAMUHS_TEXT_LOC               HAL_SEC_LOC(.psramuhs_text)
-#define PSRAMUHS_TEXT_DEF(n)            HAL_SEC_DEF(.psramuhs_text, n)
+#define PSRAMUHS_TEXT_LOC               HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.psramuhs_text)
+#define PSRAMUHS_TEXT_DEF(n)            HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.psramuhs_text, n)
 #define PSRAMUHS_RODATA_LOC             HAL_SEC_LOC(.psramuhs_rodata)
 #define PSRAMUHS_RODATA_DEF(n)          HAL_SEC_DEF(.psramuhs_rodata, n)
 #define PSRAMUHS_DATA_LOC               HAL_SEC_LOC(.psramuhs_data)
@@ -172,15 +179,15 @@ extern "C" {
 #else // !__GNUC__ || ROM_BUILD || PROGRAMMER
 
 #if defined(__GNUC__) && defined(ROM_SRAM_TEXT_SIMU)
-#define BOOT_TEXT_SRAM_LOC              HAL_SEC_LOC(.rom_ramx)
-#define BOOT_TEXT_SRAM_DEF(n)           HAL_SEC_DEF(.rom_ramx, n)
+#define BOOT_TEXT_SRAM_LOC              HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.rom_ramx)
+#define BOOT_TEXT_SRAM_DEF(n)           HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.rom_ramx, n)
 #else
 #define BOOT_TEXT_SRAM_LOC
 #define BOOT_TEXT_SRAM_DEF(n)           n
 #endif
 #if defined(__GNUC__) && defined(PROGRAMMER_INFLASH)
-#define BOOT_TEXT_FLASH_LOC             HAL_SEC_LOC(.boot_text_flash)
-#define BOOT_TEXT_FLASH_DEF(n)          HAL_SEC_DEF(.boot_text_flash, n)
+#define BOOT_TEXT_FLASH_LOC             HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.boot_text_flash)
+#define BOOT_TEXT_FLASH_DEF(n)          HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.boot_text_flash, n)
 #define BOOT_RODATA_FLASH_LOC           HAL_SEC_LOC(.boot_rodata_flash)
 #define BOOT_RODATA_FLASH_DEF(n)        HAL_SEC_DEF(.boot_rodata_flash, n)
 #else
@@ -202,8 +209,8 @@ extern "C" {
 #define BOOT_BSS_DEF(n)                 n
 
 #if defined(__GNUC__) && defined(ROM_SRAM_TEXT_SIMU)
-#define SRAM_TEXT_LOC                   HAL_SEC_LOC(.rom_ramx)
-#define SRAM_TEXT_DEF(n)                HAL_SEC_DEF(.rom_ramx, n)
+#define SRAM_TEXT_LOC                   HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.rom_ramx)
+#define SRAM_TEXT_DEF(n)                HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.rom_ramx, n)
 #else
 #define SRAM_TEXT_LOC
 #define SRAM_TEXT_DEF(n)                n
@@ -227,8 +234,8 @@ extern "C" {
 #define FRAM_TEXT_DEF(n)                n
 
 #if defined(__GNUC__) && defined(PROGRAMMER) && defined(PROGRAMMER_CP_SECTION) && !defined(__PIE__)
-#define CP_TEXT_SRAM_LOC                HAL_SEC_LOC(.cp_text_sram)
-#define CP_TEXT_SRAM_DEF(n)             HAL_SEC_DEF(.cp_text_sram, n)
+#define CP_TEXT_SRAM_LOC                HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.cp_text_sram)
+#define CP_TEXT_SRAM_DEF(n)             HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.cp_text_sram, n)
 #define CP_DATA_LOC                     HAL_SEC_LOC(.cp_data)
 #define CP_DATA_DEF(n)                  HAL_SEC_DEF(.cp_data, n)
 #ifdef __ARMCC_VERSION
@@ -248,8 +255,8 @@ extern "C" {
 #endif
 
 #if defined(__GNUC__) && defined(PROGRAMMER_INFLASH)
-#define FLASH_TEXT_LOC                  HAL_SEC_LOC(.flash_text)
-#define FLASH_TEXT_DEF(n)               HAL_SEC_DEF(.flash_text, n)
+#define FLASH_TEXT_LOC                  HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.flash_text)
+#define FLASH_TEXT_DEF(n)               HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.flash_text, n)
 #define FLASH_RODATA_LOC                HAL_SEC_LOC(.flash_rodata)
 #define FLASH_RODATA_DEF(n)             HAL_SEC_DEF(.flash_rodata, n)
 #define FLASH_NC_RODATA_LOC             HAL_SEC_LOC(.flash_nc_rodata)

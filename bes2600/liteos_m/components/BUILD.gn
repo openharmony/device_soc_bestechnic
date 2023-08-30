@@ -20,5 +20,6 @@ module_group("components") {
     "net/lwip-2.1",
     "ui",
     "utils",
+    "bt",
   ]
 }

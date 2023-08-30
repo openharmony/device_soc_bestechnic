@@ -159,7 +159,7 @@ typedef int64_t         s64;
 #define CONTAINER_OF(ptr, type, member) ({          \
         const typeof(((type *)0)->member)*__mptr = (ptr);    \
     (type *)((char *)__mptr - OFFSETOF(type, member)); })
-#endif 
+#endif
 #endif
 
 #else // Not GCC

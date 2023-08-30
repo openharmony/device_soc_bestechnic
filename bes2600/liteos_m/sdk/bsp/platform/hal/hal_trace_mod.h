@@ -41,6 +41,7 @@ extern "C" {
     _TR_MODULE_DEF(BLEPRF),                 \
     _TR_MODULE_DEF(BTAPP),                  \
     _TR_MODULE_DEF(BLEAPP),                 \
+    _TR_MODULE_DEF(BLESTACK),               \
     _TR_MODULE_DEF(TWSAPP),                 \
     _TR_MODULE_DEF(IBRTAPP),                \
     _TR_MODULE_DEF(APPMAIN),                \

@@ -319,18 +319,6 @@ int bwifi_set_static_ip(struct ip_info *ip);
 int bwifi_get_current_ip(struct ip_info *ip);
 
 #else
-
-#if LWIP_ETHERNETIF
-/*
- * Get netif struct of wifi station or softap
- *
- * This function should only be called when SDK inside LWIP is turned off
- * but ethernet interface is added and initialized by us.
- * return the netif struct to user's LWIP stack for further management.
- */
-struct netif *bwifi_get_netif(BWIFI_INTF_TYPE_T type);
-#endif
-
 /*
  * Set netif ip addr to wifi mac layer for ARP filter feature
  *
@@ -339,6 +327,17 @@ struct netif *bwifi_get_netif(BWIFI_INTF_TYPE_T type);
  * we need user to tell us the assigned local ip addr.
  */
 int bwifi_set_ip_addr(BWIFI_INTF_TYPE_T type, struct ip_info *ip);
+#endif
+
+#if LWIP_ETHERNETIF
+/*
+ * Get netif struct of wifi station, softap or p2p
+ *
+ * This function should be called when SDK inside LWIP is turned off
+ * but ethernet interface is added and initialized by us.
+ * return the netif struct to user's LWIP stack for further management.
+ */
+struct netif *bwifi_get_netif(BWIFI_INTF_TYPE_T type);
 #endif
 
 /**

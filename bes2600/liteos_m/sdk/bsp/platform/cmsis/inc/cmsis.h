@@ -235,8 +235,8 @@ __STATIC_FORCEINLINE uint32_t unsigned_range_value_map(uint32_t from_val, uint32
 
 __STATIC_FORCEINLINE void GotBaseInit(void)
 {
-#ifndef __ARMCC_VERSION
-    asm volatile("ldr r9, =__got_info_start");
+#if defined(__PIE__) && !defined(__ARMCC_VERSION)
+    asm volatile("ldr r9, =__got_info_start; b 1f; .pool; 1:;");
 #endif
 }
 
