@@ -134,6 +134,10 @@ typedef struct {
 
 typedef struct {
     void *wpa;
+} BWIFI_EVENT_P2P_CONNECT_START_T;
+
+typedef struct {
+    void *wpa;
     void *res;        /* struct p2p_go_neg_results res; we need os_free it */
     uint8_t p2p_role; /**< enum WIFI_P2P_ROLE_ID */
     int stat;
@@ -175,9 +179,9 @@ typedef struct {
     void *wpa;
     uint8_t bssid[6];
     char  ssid[33];
-    int ssid_len;
-    int persistent;
-    int client;
+    uint8_t ssid_len;
+    uint8_t persistent;
+    uint8_t client;
     u8 ip[12];
     u8 ip_type; //ipv4 or ipv6
 } BWIFI_EVENT_P2P_GROUP_STARTED_T;
@@ -221,6 +225,7 @@ typedef union {
     BWIFI_EVENT_P2P_DEVICE_LOST_T               p2p_device_lost;
     BWIFI_EVENT_P2P_GROUP_REMOVE_T              p2p_group_remove;
     BWIFI_EVENT_P2P_GO_NEG_REQ_T                p2p_go_neg_req;
+    BWIFI_EVENT_P2P_CONNECT_START_T             p2p_connect_start;
     BWIFI_EVENT_P2P_GO_NEG_COMP_T               p2p_go_neg_comp;
     BWIFI_EVENT_P2P_INVITATION_RESULT_T         p2p_invitation_res;
     BWIFI_EVENT_P2P_SD_REQ_T                    p2p_sd_req;
@@ -261,6 +266,7 @@ typedef enum {
     EVENT_P2P_SCANDONE                    = 19,
     EVENT_P2P_GC_AUTHED                   = 20,
     EVENT_P2P_GC_DEAUTHED                 = 21,
+    EVENT_P2P_CONNECT_START               = 22,
     EVENT_P2P_MAX
 } BWIFI_P2P_EVENT_ID;
 
@@ -350,7 +356,7 @@ typedef enum {
     EVENT_COEX_MODE_CHANGE                    = 12, /**< switch wifi/bt coex mode between fdd and tdd */
     EVENT_WORK_CHANNEL_NOTIFY                 = 13, /**< notify channel change for re-config_dpd **/
 #ifdef __P2P_MODE_SUPPORT__
-    EVENT_P2PMODE_EVENT                       = 14, /**< P2P EVENT AP */
+    EVENT_P2PMODE_EVENT                       = 14, /**< P2P MODE EVENT */
 #endif
 
     EVENT_LMAC_FATAL_ERROR                    = 20, /**< lower mac got a fatal error */

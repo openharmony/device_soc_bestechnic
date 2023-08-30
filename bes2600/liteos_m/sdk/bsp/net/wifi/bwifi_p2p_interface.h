@@ -130,7 +130,7 @@ int bwifi_p2p_peers(int vif_idx, char *buf, int len);
  * For example: p2p P2P_CONNECT 9e:07:73:d6:ec:08 pbc freq=2412...
  * Returns: BWIFI_R_OK is success, other is fail
  */
-int bwifi_p2p_conenct(int vif_idx,  char *cmd);
+int bwifi_p2p_connect(int vif_idx,  char *cmd);
 
 #if (WIFI_STACK_VER == 1)
 /**
@@ -149,6 +149,14 @@ int bwifi_p2p_disconnect(int vif_idx);
  * Returns: BWIFI_R_OK is success, other is fail
 */
 int bwifi_p2p_reconnect(void);
+#elif (WIFI_STACK_VER == 2)
+/*
+ * TDD timeslot repartition between station and p2p .
+ *
+ * @sta_dur: station duration.
+ * @p2p_dur: p2p duration.
+ */
+int bwifi_p2p_sta_timeslot_repartition(int sta_dur, int p2p_dur);
 #endif
 
 /**
@@ -249,6 +257,14 @@ int bwifi_p2p_5g_ht40(int vif_idx, int ht40);
  * Returns: BWIFI_R_OK is success, other is fail.
  */
 int bwifi_p2p_set_config_methods(int vif_idx, int wps_methods);
+
+/**
+ * Get p2p peer config method
+ *
+ * @vif_idx: The p2p vif_idx index
+ * Returns: p2p peer config methed.
+ */
+int bwifi_p2p_get_config_methods(int vif_idx);
 
 /**
  * Set p2p operation channel
@@ -415,7 +431,7 @@ u8 *bwifi_p2p_get_peer_mac(int vif_idx);
 bool bwifi_p2p_is_open(int vif_idx);
 
 /**
- * Config p2p go status.
+ * Config p2p go status. call by bwifi_p2p_interface
  *
  * @vif_idx: The p2p vif_idx index.
  * @on: true p2p go is start. false p2p go is stop.
@@ -430,6 +446,23 @@ int bwifi_p2p_set_go_stat(int vif_idx, bool on);
  * Returns: true p2p go is start. false p2p go is stop.
  */
 bool bwifi_p2p_get_go_stat(int vif_idx);
+
+/**
+ * User Config p2p go status call by customer.
+ *
+ * @vif_idx: The p2p vif_idx index.
+ * @on: true p2p go is start. false p2p go is stop.
+ * Returns: BWIFI_R_OK is success, other is fail.
+ */
+int bwifi_p2p_set_user_go_stat(int vif_idx, bool on);
+
+/**
+ * Get User config p2p go status.
+ *
+ * @vif_idx: The p2p vif_idx index
+ * Returns: true p2p go is start. false p2p go is stop.
+ */
+bool bwifi_p2p_get_user_go_stat(int vif_idx);
 
 /**
  * Get p2p freq from chan.

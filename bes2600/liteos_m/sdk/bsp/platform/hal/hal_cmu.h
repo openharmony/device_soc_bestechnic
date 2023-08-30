@@ -21,10 +21,13 @@ extern "C" {
 #endif
 
 #include "stdint.h"
+#include "cmsis.h"
 #include "plat_addr_map.h"
 #include "plat_types.h"
 #ifdef CHIP_SUBSYS_SENS
 #include CHIP_SPECIFIC_HDR(hal_senscmu)
+#elif defined(CHIP_SUBSYS_CSP)
+#include CHIP_SPECIFIC_HDR(hal_cspcmu)
 #elif defined(CHIP_SUBSYS_BTH)
 #include CHIP_SPECIFIC_HDR(hal_bthcmu)
 #else
@@ -193,13 +196,23 @@ struct CORE_STARTUP_CFG_T {
     __IO uint32_t reset_hdlr;
 };
 
+#ifdef HAL_CMU_VALID_CRYSTAL_FREQ
 void hal_cmu_set_crystal_freq_index(uint32_t index);
-
-uint32_t hal_cmu_get_crystal_freq(void);
 
 uint32_t hal_cmu_get_default_crystal_freq(void);
 
-uint32_t hal_cmu_get_fast_timer_freq(void);
+uint32_t hal_cmu_get_crystal_freq(void);
+#else
+//__STATIC_FORCEINLINE void hal_cmu_set_crystal_freq_index(uint32_t index) {}
+
+//__STATIC_FORCEINLINE uint32_t hal_cmu_get_default_crystal_freq(void) {return HAL_CMU_DEFAULT_CRYSTAL_FREQ;}
+
+__STATIC_FORCEINLINE uint32_t hal_cmu_get_crystal_freq(void) {return HAL_CMU_DEFAULT_CRYSTAL_FREQ;}
+#endif
+
+#ifndef CMU_FAST_TIMER_WITH_LOW_SYS_FREQ
+__STATIC_FORCEINLINE uint32_t hal_cmu_get_fast_timer_freq(void) {return hal_cmu_get_crystal_freq() / 4;}
+#endif
 
 int hal_cmu_clock_enable(enum HAL_CMU_MOD_ID_T id);
 

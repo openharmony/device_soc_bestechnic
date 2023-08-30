@@ -272,6 +272,11 @@ SECTIONS
   *:bh.o(.text*)
   *:txrx.o(.text*)
   *:rx.o(.text*)
+  *:hwio.o(.text*)
+  *:fwio.o(.text*)
+  *:michael.o(.text*)
+  *:util.o(.text*)
+  *:rate.o(.text*)
   /* lwip */
   *:tcp.o(.text*)
   *:tcpip.o(.text*)
@@ -287,6 +292,8 @@ SECTIONS
   *:sockets.o(.text*)
   *:memp.o(.text*)
   *:mem.o(.text*)
+  *:def.o(.text*)
+  *:raw.o(.text*)
   /* iperf */
   *:iperf_api.o(.text*)
   *:iperf_client_api.o(.text*)
@@ -343,28 +350,8 @@ SECTIONS
   /* for SCO_CP_ACCEL=1 */
   *:cmsis_dsp_lib*.o(.text*)
   *libm.a:(.text*)
-  *:tcp*.o(.text*)
-  *:net*.o(.text*)
-  *:agg*.o(.text*)
-  *:michael.o(.text*)
-  *:rx.o(.text*)
-  *:event.o(.text*)
-  *:util.o(.text*)
-  *:rate.o(.text*)
-  *:rc80211*.o(.text*)
-  *:tx.o(.text*)
-  *:status.o(.text*)
-  *:hwio.o(.text*)
-  *:fwio.o(.text*)
-  *:bh.o(.text*)
-  *:txrx.o(.text*)
-  *:skbuff.o(.text*)
-  *:eth*.o(.text*)
-  *:def.o(.text*)
-  *:raw.o(.text*)
   *:cmsis*.o(.text*)
   *:list.o(.text*)
-  *:memp*.o(.text*)
   *:mcu_slave_init.o(.text*)
   *:dsp_code_decom.o(.text*)
   *:lzma_decode.o(.text*)
@@ -581,18 +568,6 @@ SECTIONS
   *:drc.o(.text*)
   *:limiter.o(.text*)
   :audio_prompt_sbc.o(.text*)
-  *:udp*.o(.text*)
-  *:ip*.o(.text*)
-  *:tcp*.o(.text*)
-  *:mem*.o(.text*)
-  *:pbuf.o(.text*)
-  *:icmp.o(.text*)
-  *:net*.o(.text*)
-  *:eth*.o(.text*)
-  *:iperf*.o(.text*)
-  *:nts*.o(.text*)
-  *:socket*.o(.text*)
-  *:hw_crc.o(.text*)
   *(.fast_text_sram*)
   /*
 		   If you want protect one section by armv8's mpu, the section should
@@ -1583,11 +1558,19 @@ SECTIONS
   LONG(((ABSOLUTE(__flash_start)) - 0x2C000000 + 0x28000000));
  } > FLASH
  __flash_end = .;
- .combo (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000 -
+ __flash_tail_sec_start = (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000 -
   0 - 0x1000*2 - 0 - 0x1000 -
   0 - 0 - 0 -
   0 - 0 - 0x0 - 0x0 -
-  0) (NOLOAD) : AT (ADDR(.combo))
+  0);
+ .dummy_flash_tail (__flash_tail_sec_start - 16) (NOLOAD) : AT (ADDR(.dummy_flash_tail))
+ {
+  __dummy_flash_tail_start = .;
+   . = ALIGN(4K);
+  __dummy_flash_tail_end = .;
+ } > FLASH_NC
+ ASSERT(__flash_tail_sec_start == __dummy_flash_tail_end, "Bad dummy_flash_tail")
+ .combo (__flash_tail_sec_start) (NOLOAD) :
  {
   __combo_start = .;
   . = 0;

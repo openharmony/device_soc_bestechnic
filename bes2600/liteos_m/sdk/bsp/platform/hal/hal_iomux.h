@@ -123,6 +123,7 @@ void hal_iomux_set_ir(void);
 void hal_iomux_set_sdio_voltage(enum HAL_IOMUX_PIN_VOLTAGE_DOMAINS_T volt);
 enum HAL_IOMUX_PIN_VOLTAGE_DOMAINS_T hal_iomux_get_sdio_voltage(void);
 void hal_iomux_set_sdio(void);
+void hal_iomux_set_sdio1(void);
 void hal_iomux_set_clock_out(void);
 void hal_iomux_set_clock_12m(void);
 void hal_iomux_clear_clock_12m(void);
@@ -150,6 +151,9 @@ void hal_iomux_single_wire_uart_rx(uint32_t uart);
 void hal_iomux_single_wire_uart_tx(uint32_t uart);
 
 void hal_iomux_set_i2s_tx_trig(void);
+
+void hal_iomux_set_analog_io(enum HAL_IOMUX_PIN_T pin);
+void hal_iomux_clear_analog_io(enum HAL_IOMUX_PIN_T pin);
 
 #ifdef __cplusplus
 }

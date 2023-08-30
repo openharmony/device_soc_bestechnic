@@ -169,11 +169,14 @@ uint32_t hal_sys_timer_ticks_to_us(uint32_t tick);
 
 #define MS_TO_FAST_TICKS(ms)        ((uint32_t)(ms) * (CONFIG_FAST_SYSTICK_HZ / 1000))
 
+#define FAST_TICKS_TO_MS(tick)      ((uint32_t)(tick) / (CONFIG_FAST_SYSTICK_HZ / 1000))
+
+#if defined(HAL_CMU_VALID_CRYSTAL_FREQ) || \
+        defined(CMU_FAST_TIMER_WITH_LOW_SYS_FREQ) || \
+        (HAL_CMU_DEFAULT_CRYSTAL_FREQ % (4 * 1000 * 1000))
 #define US_TO_FAST_TICKS(us)        ((uint32_t)(us) * (CONFIG_FAST_SYSTICK_HZ / 1000 / 100) / 10)
 
 #define NS_TO_FAST_TICKS(ns)        ((uint32_t)(ns) * (CONFIG_FAST_SYSTICK_HZ / 1000 / 100) / 10 / 1000)
-
-#define FAST_TICKS_TO_MS(tick)      ((uint32_t)(tick) / (CONFIG_FAST_SYSTICK_HZ / 1000))
 
 #define FAST_TICKS_TO_US(tick)      ((uint32_t)(tick) * 10 / (CONFIG_FAST_SYSTICK_HZ / 1000 / 100))
 
@@ -195,6 +198,34 @@ uint32_t hal_sys_timer_ticks_to_us(uint32_t tick);
 #define FAST_TICKS_TO_US_SAFE(tick) (((tick) > UINT32_MAX / 10) ? FAST_TICKS_TO_US64(tick) : FAST_TICKS_TO_US(tick))
 
 #define FAST_TICKS_TO_NS_SAFE(tick) (((tick) > UINT32_MAX / (10 * 1000)) ? FAST_TICKS_TO_NS64(tick) : FAST_TICKS_TO_NS(tick))
+
+#else // 24M crystal only
+#define US_TO_FAST_TICKS(us)        ((uint32_t)(us) * (CONFIG_FAST_SYSTICK_HZ / 1000 / 1000))
+
+#define NS_TO_FAST_TICKS(ns)        ((uint32_t)(ns) * (CONFIG_FAST_SYSTICK_HZ / 1000 / 1000) / 1000)
+
+#define FAST_TICKS_TO_US(tick)      ((uint32_t)(tick) / (CONFIG_FAST_SYSTICK_HZ / 1000 / 1000))
+
+#define FAST_TICKS_TO_NS(tick)      ((uint32_t)(tick) * 1000 / (CONFIG_FAST_SYSTICK_HZ / 1000 / 1000))
+
+#define US_TO_FAST_TICKS64(us)      ((uint32_t)((uint64_t)(us) * (CONFIG_FAST_SYSTICK_HZ / 1000 / 1000))
+
+#define NS_TO_FAST_TICKS64(ns)      ((uint32_t)((uint64_t)(ns) * (CONFIG_FAST_SYSTICK_HZ / 1000 / 1000) / 1000))
+
+#define FAST_TICKS_TO_US64(tick)    FAST_TICKS_TO_US(tick)
+
+#define FAST_TICKS_TO_NS64(tick)    ((uint32_t)((uint64_t)(tick) * 1000 / (CONFIG_FAST_SYSTICK_HZ / 1000 / 1000)))
+
+// 24M / 4 / 1000 / 1000 = 6
+#define US_TO_FAST_TICKS_SAFE(us)   (((us) > UINT32_MAX / 6) ? US_TO_FAST_TICKS64(us) : US_TO_FAST_TICKS(us))
+
+#define NS_TO_FAST_TICKS_SAFE(ns)   (((ns) > UINT32_MAX / 6) ? NS_TO_FAST_TICKS64(ns) : NS_TO_FAST_TICKS(ns))
+
+#define FAST_TICKS_TO_US_SAFE(tick) FAST_TICKS_TO_US(tick)
+
+#define FAST_TICKS_TO_NS_SAFE(tick) (((tick) > UINT32_MAX / 1000) ? FAST_TICKS_TO_NS64(tick) : FAST_TICKS_TO_NS(tick))
+
+#endif // 24M crystal only
 
 uint32_t hal_fast_sys_timer_get(void);
 

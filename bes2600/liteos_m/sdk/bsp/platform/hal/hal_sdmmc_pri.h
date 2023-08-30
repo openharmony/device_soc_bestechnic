@@ -22,6 +22,7 @@ extern "C" {
 
 #include "hal_dma.h"
 #include "hal_sdmmc.h"
+#include "hwtimer_list.h"
 
 /*************************Functional configuration area************************/
 #define MMC_WRITE
@@ -294,6 +295,8 @@ struct sdmmc_ip_host {
     uint8_t dma_en;
     uint8_t dma_ch;
     uint8_t dma_in_use;
+    HWTIMER_ID fifo_timer;
+    volatile uint8_t fifo_rw_flag;
     volatile uint8_t sdmmc_dma_lock;
     HAL_DMA_IRQ_HANDLER_T tx_dma_handler;
     HAL_DMA_IRQ_HANDLER_T rx_dma_handler;
