@@ -607,7 +607,7 @@ int BleGattsDeleteService(int serverId, int srvcHandle)
 
 int BleGattsDisconnect(int serverId, BdAddr bdAddr, int connId)
 {
-    gap_terminate_connection(connId);
+    gap_terminate_connection(connId, 0);
     return OHOS_BT_STATUS_SUCCESS;
 }
 

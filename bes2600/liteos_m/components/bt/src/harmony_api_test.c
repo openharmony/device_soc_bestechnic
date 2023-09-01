@@ -19,13 +19,23 @@
 #include "hal_trace.h"
 #include "harmony_utils.h"
 
-#include "customer_api_test.h"
+#include "adapter_service.h"
+#include "bes_me_api.h"
+
 #include "bt_adaptor_dbg.h"
 
 #include "ohos_bt_gatt.h"
 #include "ohos_bt_gatt_server.h"
 #include "ohos_bt_gatt_client.h"
 #include "softbus_adapter_ble_gatt_server.h"
+
+#define BLE_DEBUG 0
+
+#if BLE_DEBUG
+#include "customer_api_test.h"
+#else
+#include "eshell.h"
+#endif
 
 /****************************Macro defination***************************/
 static const int MAX_SERVICE_CHAR_NUM = 8;
@@ -52,7 +62,9 @@ typedef struct
 
 /****************************Function declaration***********************/
 #define SCAN_FILTER_DEV_NAME1 "fjr_ble_test1"
+#define SCAN_FILTER_DEV_NAME1_1 "fjr_ble_test1_1"
 #define SCAN_FILTER_DEV_NAME2 "fjr_ble_test2"
+#define SCAN_FILTER_DEV_NAME2_2 "fjr_ble_test2"
 
 /****************************Variable defination************************/
 static char scan_filter_addr1[6] = {0x91,0x33,0x33,0x23,0x22,0x11};
@@ -369,9 +381,9 @@ static void ohos_adv_set_data_handle(uint32_t BufPtr, uint32_t BufLen)
     //unsigned char advRspData[20] = {0};
     StartAdvRawData rawData = {0};
 
-    advData[0] = strlen(SCAN_FILTER_DEV_NAME1)+1;
+    advData[0] = strlen(SCAN_FILTER_DEV_NAME1_1)+1;
     advData[1] = 0X08;
-    memcpy(&advData[2], SCAN_FILTER_DEV_NAME1, advData[0]-1);
+    memcpy(&advData[2], SCAN_FILTER_DEV_NAME1_1, advData[0]-1);
     data_len = advData[0] + 1;
 
     rawData.advData =advData;
@@ -472,14 +484,11 @@ static void ohos_cli_read_handle(uint32_t BufPtr, uint32_t BufLen)
 */
 }
 
-static void ohos_cli_wirte_handle(uint32_t BufPtr, uint32_t BufLen)
+static void ohos_cli_wirte_handle(    int char_num, int writeType)
 {
-    int char_num = 0;
-    int writeType = 0;
     BtGattCharacteristic char_uuid = {0};
     const char value[] = {5,6,7,8,10};
 
-    sscanf((char *)BufPtr, "%d,%d", &char_num, &writeType);
     char_uuid.serviceUuid.uuidLen = strlen(SOFTBUS_SERVICE_UUID);
     char_uuid.serviceUuid.uuid    = SOFTBUS_SERVICE_UUID;
     if (char_num == 1)
@@ -496,13 +505,10 @@ static void ohos_cli_wirte_handle(uint32_t BufPtr, uint32_t BufLen)
     }
 }
 
-static void ohos_cli_reg_ntf_handle(uint32_t BufPtr, uint32_t BufLen)
+static void ohos_cli_reg_ntf_handle(int char_num)
 {
     int ret;
-    int char_num = 0;
     BtGattCharacteristic Uuid;
-
-    sscanf((char *)BufPtr, "%d", &char_num);
 
     Uuid.serviceUuid.uuidLen = strlen(SOFTBUS_SERVICE_UUID);
     Uuid.serviceUuid.uuid    = SOFTBUS_SERVICE_UUID;
@@ -577,15 +583,13 @@ static void ohos_srv_stop_handle(uint32_t BufPtr, uint32_t BufLen)
     BleGattsStopService(ohos_test_env.service_id, ohos_test_env.srvcHandle);
 }
 
-static void ohos_srv_send_ntf_handle(uint32_t BufPtr, uint32_t BufLen)
+static void ohos_srv_send_ntf_handle(int char_num, int confirm)
 {
-    int char_num = 0;
     GattsSendIndParam param;
     char send_data[] = {1,2,3,4};
 
     param.connectId  = ohos_test_env.service_conn_id;
-    sscanf((char *)BufPtr, "%d,%d", &char_num, &param.confirm);
-
+    param.confirm = confirm;
     if (char_num == 1)
     {
         param.attrHandle = ohos_test_env.char_hdl1;
@@ -627,6 +631,34 @@ static void ohos_uuid_tran_test_handle(uint32_t BufPtr, uint32_t BufLen)
     LOG_I("[%s][%d]: %s", __func__, __LINE__ , uuid_tring);
 }
 
+#if BLE_DEBUG
+
+static void bes_ohos_cli_reg_ntf_handle(uint32_t BufPtr, uint32_t BufLen)
+{
+    int char_num = 0;
+
+    sscanf((char *)BufPtr, "%d", &char_num);
+    ohos_cli_reg_ntf_handle(char_num);
+}
+
+static void bes_ohos_cli_wirte_handle(uint32_t BufPtr, uint32_t BufLen)
+{
+    int char_num = 0;
+    int writeType = 0;
+
+    sscanf((char *)BufPtr, "%d,%d", &char_num, &writeType);
+    ohos_cli_wirte_handle(char_num, writeType);
+}
+
+static void bes_ohos_srv_send_ntf_handle(uint32_t BufPtr, uint32_t BufLen)
+{
+    int char_num = 0;
+    int confirm = 0;
+
+    sscanf((char *)BufPtr, "%d,%d", &char_num, &confirm);
+    ohos_srv_send_ntf_handle(char_num, confirm);
+}
+
 static const customer_adapt_handle_t bluet_adapt_test_handle[]=
 {
     // gap cmd
@@ -646,9 +678,9 @@ static const customer_adapt_handle_t bluet_adapt_test_handle[]=
     {"ohos_cli_disconn", ohos_cli_disconn_handle},
     {"ohos_cli_search", ohos_cli_Search_srv_handle},
     {"ohos_cli_get_srv", ohos_cli_get_srv_handle},
-    {"ohos_cli_reg_ntf", ohos_cli_reg_ntf_handle},
     {"ohos_cli_read", ohos_cli_read_handle},
-    {"ohos_cli_wirte", ohos_cli_wirte_handle},
+    {"ohos_cli_reg_ntf", bes_ohos_cli_reg_ntf_handle},
+    {"ohos_cli_wirte", bes_ohos_cli_wirte_handle},
 
     // gatt server cmd
     {"ohos_srv_add_srv", ohos_srv_add_srv_handle},
@@ -678,3 +710,195 @@ uint8_t ohos_get_cmd_list(const customer_adapt_handle_t **cmd_list)
     *cmd_list = bluet_adapt_test_handle;
     return ARRAY_SIZE(bluet_adapt_test_handle);
 }
+#else
+
+static inline void bt_cmd_param_parse(int argc, char *argv[], int *data)
+{
+    int param_num = argc-1;
+    printf("[test] param_num=%d\r\n", param_num);
+    for (int i=0; i<param_num; ++i)
+    {
+        sscanf(argv[i+1], "%d", data+i);
+    }
+}
+
+static void bt_init_stack(int argc, char *argv[])
+{
+    printf("[test] bt stack init");
+    InitBtStack();
+
+    BleGattRegisterCallbacks(&ohos_adv_callback);
+    BleRegisterScanCallbacks(&ohos_scan_callback, &ohos_test_env.scanner_id);
+
+    // gatts callback
+    BtUuid appUuid;
+    char uuid[2] = {0x01, 0x02};
+    appUuid.uuidLen = 2;
+    appUuid.uuid = uuid;
+    BleGattsRegisterCallbacks(&ohos_service_callback);
+    ohos_test_env.service_id = BleGattsRegister(appUuid);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_stack_init", "none", bt_init_stack);
+
+static void bt_set_address(int argc, char *argv[])
+{
+    int param[6] = {0};
+    uint8_t bt_addr[6] = {0};
+
+    bt_cmd_param_parse(argc, argv, param);
+    bt_addr[0] = param[0];
+    bt_addr[1] = param[1];
+    bt_addr[2] = param[2];
+    bt_addr[3] = param[3];
+    bt_addr[4] = param[4];
+    bt_addr[5] = param[5];
+    printf("[test] set_address, addr=%x:%x:%x:%x:%x:%x\r\n",
+        bt_addr[0], bt_addr[1], bt_addr[2], bt_addr[3],bt_addr[4], bt_addr[5]);
+
+    bes_bt_me_set_bt_address(bt_addr);
+    bes_bt_me_set_ble_address(bt_addr);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_set_address", "none", bt_set_address);
+
+static void bt_ble_adv_start(int argc, char *argv[])
+{
+    ohos_adv_start_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_adv_start", "none", bt_ble_adv_start);
+
+static void bt_ble_adv_stop(int argc, char *argv[])
+{
+    ohos_adv_stop_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_adv_stop", "none", bt_ble_adv_stop);
+
+static void bt_ble_adv_set_data(int argc, char *argv[])
+{
+    ohos_adv_set_data_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_adv_set_data", "none", bt_ble_adv_set_data);
+
+static void bt_ble_scan_start(int argc, char *argv[])
+{
+    ohos_scan_start_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_scan_start", "none", bt_ble_scan_start);
+
+static void bt_ble_scan_stop(int argc, char *argv[])
+{
+    ohos_scan_stop_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_scan_stop", "none", bt_ble_scan_stop);
+
+static void bt_ble_cli_creat_conn(int argc, char *argv[])
+{
+    ohos_cli_creat_conn_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_creat_conn", "none", bt_ble_cli_creat_conn);
+
+static void bt_ble_cli_set_priority(int argc, char *argv[])
+{
+    ohos_cli_set_priority_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_set_priority", "none", bt_ble_cli_set_priority);
+
+static void bt_ble_cli_creat_conn_fast(int argc, char *argv[])
+{
+    ohos_cli_creat_conn_fast_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_creat_conn_fast", "none", bt_ble_cli_creat_conn_fast);
+
+static void bt_ble_cli_cancel_conn(int argc, char *argv[])
+{
+    ohos_cli_cancel_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_cancel_conn", "none", bt_ble_cli_cancel_conn);
+
+static void bt_ble_cli_disconn(int argc, char *argv[])
+{
+    ohos_cli_disconn_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_disconn", "none", bt_ble_cli_disconn);
+
+static void bt_ble_cli_search_srv(int argc, char *argv[])
+{
+    ohos_cli_Search_srv_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_search_srv", "none", bt_ble_cli_search_srv);
+
+static void bt_ble_cli_get_srv(int argc, char *argv[])
+{
+    ohos_cli_get_srv_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_get_srv", "none", bt_ble_cli_get_srv);
+
+static void bt_ble_cli_read(int argc, char *argv[])
+{
+    ohos_cli_read_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_read", "none", bt_ble_cli_read);
+
+static void bt_ble_cli_wirte(int argc, char *argv[])
+{
+    int param[2] = {0};
+
+    bt_cmd_param_parse(argc, argv, param);
+    ohos_cli_wirte_handle(param[0], param[1]);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_wirte", "none", bt_ble_cli_wirte);
+
+static void bt_ble_cli_reg_ntf(int argc, char *argv[])
+{
+    int param = 0;
+
+    bt_cmd_param_parse(argc, argv, &param);
+    ohos_cli_reg_ntf_handle(param);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_reg_ntf", "none", bt_ble_cli_reg_ntf);
+
+static void bt_ble_srv_add_srv(int argc, char *argv[])
+{
+    ohos_srv_add_srv_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_add_srv", "none", bt_ble_srv_add_srv);
+
+static void bt_ble_srv_start(int argc, char *argv[])
+{
+    ohos_srv_start_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_start", "none", bt_ble_srv_start);
+
+static void bt_ble_srv_stop(int argc, char *argv[])
+{
+    ohos_srv_stop_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_stop", "none", bt_ble_srv_stop);
+
+static void bt_ble_srv_send_ntf(int argc, char *argv[])
+{
+    int param[2] = {0};
+
+    bt_cmd_param_parse(argc, argv, param);
+    ohos_srv_send_ntf_handle(param[0], param[1]);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_send_ntf", "none", bt_ble_srv_send_ntf);
+
+static void bt_ble_srv_delete(int argc, char *argv[])
+{
+    ohos_srv_delete_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_delete", "none", bt_ble_srv_delete);
+
+static void bt_ble_srv_dis_conn(int argc, char *argv[])
+{
+    ohos_srv_dis_conn_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_dis_conn", "none", bt_ble_srv_dis_conn);
+
+static void bt_ble_uuid_tran_test(int argc, char *argv[])
+{
+    ohos_uuid_tran_test_handle(0, 0);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_uuid_tran_test", "none", bt_ble_uuid_tran_test);
+
+#endif

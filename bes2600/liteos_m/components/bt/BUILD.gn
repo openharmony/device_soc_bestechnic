@@ -22,47 +22,19 @@ kernel_module("bt_adapter") {
     "src/harmony_ble_gatt.c",
     "src/harmony_ble_client.c",
     "src/harmony_ble_server.c",
-
+    "src/harmony_utils.c",
+    "src/harmony_api_test.c"
   ]
   include_dirs = [
+    "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/utils/eshell/",
+    "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/adapter/inc",
     "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/adapter/inc/bt/common/",
     "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/stack/bt_profiles/inc",
     "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/adapter/inc/adapter_service/",
+    "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/adapter/inc/bt/me/",
     "//device/soc/bestechnic/bes2600/liteos_m/components/bt/inc/"
   ]
-  defines = [
-    "BLE_STACK_NEW_DESIGN=1",
-    "BLE_AUDIO_DOLPHIN_COMPATIBLE_SUPPORT=0",
-    "BLE_AUDIO_STARLORD_COMPATIBLE_SUPPORT=0",
-    "BT_RAMRUN_NEW=0",
-    "BLE=1",
-    "BLE_AUDIO_ENABLED=0",
-    "AOB_MOBILE_ENABLED=0",
-    "APP_TRACE_RX_ENABLE=1",
-    "IGNORE_POWER_ON_KEY_DURING_BOOT_UP=0",
-    "IS_AUTOPOWEROFF_ENABLED=0",
-    "POWER_ON_ENTER_TWS_PAIRING_ENABLED=0",
-    "FREE_TWS_PAIRING_ENABLED=0",
-    "BT_HID_HEAD_TRACKER_PROTOCOL=0",
-    "BT_HID_DEVICE=0",
-    "BT_DIP_SUPPORT=0",
-    "BT_MAP_SUPPORT=0",
-    "BT_PBAP_SUPPORT=0",
-    "BT_OPP_SUPPORT=0",
-    "BT_PAN_SUPPORT=0",
-    "GATT_OVER_BR_EDR=0",
-    "CTKD_ENABLE=0",
-    "IS_CTKD_OVER_BR_EDR_ENABLED=0",
-    "HOST_GEN_ECDH_KEY=0",
-    "AI_VOICE=0",
-    "AMA_VOICE=0",
-    "TOTA_v2=0",
-    "TEST_OVER_THE_AIR_v2=0",
-    "THROUGH_PUT=0",
-    "IS_HCI_ISO_PACKET_TRACE_ENABLED=1",
-    "APP_UI_TEST_MODE_ENABLE=0",
-    "BLE_AUDIO_STEREO_CHAN_OVER_CIS_CNT=0",
-  ]
+  defines = []
 
   cflags = []
 }
