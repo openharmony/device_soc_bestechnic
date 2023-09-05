@@ -803,7 +803,7 @@ int BleGattcConnect(int clientId, BtGattClientCallbacks *func, const BdAddr *bdA
     param.has_custom_init_timing = 0;
     osMutexRelease(BleGattcEnv.mutex_id);
 
-    ret = gap_start_initiating(BT_ADDR_TYPE_PUBLIC, &param, BleGapConnCallback);
+    ret = gap_start_initiating(&param, BleGapConnCallback);
 
     if (BT_STS_SUCCESS != ret)
     {
@@ -877,7 +877,7 @@ int BleGattcDisconnect(int clientId)
         ret = gap_cancel_initiating();
     } else if (UserGattc->ConnState == OHOS_STATE_CONNECTED)
     {
-        ret = gap_terminate_connection(UserGattc->ConnInfo.connhdl);
+        ret = gap_terminate_connection(UserGattc->ConnInfo.connhdl, 0);
     }
 
     if (BT_STS_SUCCESS != ret)

@@ -18,6 +18,10 @@
 
 #include "plat_types.h"
 #include "hal_trace.h"
+
+#include "adapter_service.h"
+#include "bes_me_api.h"
+
 #include "ohos_bt_gatt.h"
 #include "ohos_bt_def.h"
 //#include "harmony_utils.h"
@@ -502,6 +506,7 @@ int BleStartScanEx(int32_t ScannerId, const BleScanConfigs *configs, const BleSc
     osMutexRelease(BleGattEnv.mutex_id);
 
     // call stack api
+    param.own_addr_type     = BT_ADDR_TYPE_PUBLIC;
     param.continue_scanning = 1;
     param.filter_duplicated = 0;
     param.duration_ms       = 0;
@@ -511,7 +516,7 @@ int BleStartScanEx(int32_t ScannerId, const BleScanConfigs *configs, const BleSc
     {
         param.slow_scan = 1;
     }
-    ret = gap_start_background_scanning(BT_ADDR_TYPE_PUBLIC, &param, BleGapScanCallback);
+    ret = gap_start_background_scanning(&param, BleGapScanCallback);
     if (BT_STS_SUCCESS != ret)
     {
         return OHOS_BT_STATUS_FAIL;
@@ -684,7 +689,7 @@ int GetAdvHandle(int advId, int *advHandle)
 
 int InitBtStack(void)
 {
-    //BesbtInit();
+    //bes_bt_thread_init();
     return 0;
 }
 
