@@ -26,6 +26,7 @@
 #if LWIP_ETHERNETIF
 #include "lwip/netif.h"
 #endif
+#include "bwifi_interface.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,8 +37,8 @@ typedef enum {
     BWIFI_P2P_STATUS_P2P_FIND              = 1,
     BWIFI_P2P_STATUS_P2P_LISTEN            = 2,
     BWIFI_P2P_STATUS_P2P_STOP_FIND         = 3,
-    BWIFI_P2P_STATUS_P2P_CONNECTING       = 4,
-    BWIFI_P2P_STATUS_P2P_DISCONNECTING    = 5,
+    BWIFI_P2P_STATUS_P2P_CONNECTING        = 4,
+    BWIFI_P2P_STATUS_P2P_DISCONNECTING     = 5,
     BWIFI_P2P_STATUS_CONNECTED             = 6,
     BWIFI_P2P_STATUS_DHCPING               = 7,
     BWIFI_P2P_STATUS_GOT_IP                = 8,
@@ -90,7 +91,7 @@ int bwifi_p2p_find(int vif_idx);
  *
  * Returns: BWIFI_R_OK is success, other is fail
  */
-int bwifi_p2p_device_open();
+int bwifi_p2p_device_open(void);
 
 /**
  * set the command to wpa_supplicant
@@ -132,7 +133,6 @@ int bwifi_p2p_peers(int vif_idx, char *buf, int len);
  */
 int bwifi_p2p_connect(int vif_idx,  char *cmd);
 
-#if (WIFI_STACK_VER == 1)
 /**
  * set the command to wpa_supplicant
  *
@@ -142,6 +142,7 @@ int bwifi_p2p_connect(int vif_idx,  char *cmd);
  */
 int bwifi_p2p_disconnect(int vif_idx);
 
+#if (WIFI_STACK_VER == 1)
 /* invoke it as receive EVENT_P2P_WPS_CONNECTED after wps done, only version_1 invoke. */
 /**
  * reconnect command after wps done
@@ -198,7 +199,7 @@ int bwifi_wps_pbc(int vif_idx, char *p2p_dev_addr);
  *
  * Returns: BWIFI_R_OK is success, other is fail.
  */
-int bwifi_p2p_device_close();
+int bwifi_p2p_device_close(void);
 
 /**
  * p2p event handle, owner called by bes.
@@ -384,7 +385,7 @@ char *bwifi_p2p_get_name(int vif_idx);
  *
  * Returns: @WIFI_P2P_ROLE_ID GO or GC.
  */
-int bwifi_pre_p2p_init();
+int bwifi_pre_p2p_init(void);
 
 /**
  * config p2p go intent.

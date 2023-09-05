@@ -145,7 +145,13 @@ typedef enum IRQn
     INVALID_IRQn                = USER_IRQn_QTY,
 } IRQn_Type;
 
+#ifdef PSC_GPIO_IRQ_CTRL
 #define GPIO_IRQn               AON_IRQn
+#else
+#define GPIO_IRQn               AON_GPIO_IRQn
+#define GPIO1_IRQn              AON_GPIO_IRQn
+#define GPIO2_IRQn              AON_GPIO_IRQn
+#endif
 #define GPADC_IRQn              INVALID_IRQn
 #define PWRKEY_IRQn             INVALID_IRQn
 #define WDT_IRQn                AON_WDT_IRQn

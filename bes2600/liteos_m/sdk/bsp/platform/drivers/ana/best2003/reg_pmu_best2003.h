@@ -745,7 +745,7 @@
 
 #define REG_PMU_GPIO_INTR_CLR1              (1 << 15)
 #define REG_PMU_GPIO_INTR_CLR2              (1 << 14)
-#define REG_WDT_INTR_CLR                    (1 << 11)
+#define REG_WDT_INTR_CLR                    (1 << 13)
 
 // REG_049
 #define REG_BUCK_ANA_SYNC_DISABLE           (1 << 15)

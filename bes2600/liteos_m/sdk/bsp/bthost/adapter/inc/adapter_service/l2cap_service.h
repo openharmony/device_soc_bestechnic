@@ -43,6 +43,7 @@ extern "C" {
 #define PSM_LE_IPSP             0x0023 // internet protocol support profile IPSP
 #define PSM_OTS                 0x0025 // object transfer service OTS
 #define PSM_EATT                0x0027
+#define PSM_SPSM_GFPS           0x0041
 
 #define L2CAP_BESAUD_EXTRA_CHAN_ID  0xbbee
 #define L2CAP_NULL_CID              0x0000
@@ -188,6 +189,8 @@ bt_status_t bt_l2cap_remove_port(uint16_t local_l2cap_psm);
 bt_status_t bt_l2cap_set_rx_credits(uint16_t local_l2cap_psm, uint16_t expected_rx_mtu, uint16_t initial_credits, uint16_t credit_give_step);
 bt_status_t bt_l2cap_listen(uint16_t local_l2cap_psm);
 bt_status_t bt_l2cap_remove_listen(uint16_t local_l2cap_psm);
+bt_status_t bt_l2cap_send_packet(uint16_t connhdl, uint32_t l2cap_handle, const uint8_t *data, uint16_t len, void *context);
+bt_status_t bt_l2cap_disconnect(uint32_t l2cap_handle, uint8_t reason);
 
 uint32_t bt_l2cap_connect(const bt_bdaddr_t *remote, uint16_t local_l2cap_psm, l2cap_psm_target_profile_t target);
 

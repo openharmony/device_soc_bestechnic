@@ -938,8 +938,6 @@ void btm_sco_handle(uint16_t connhdl, hci_sco_ps_flag_t sco_ps_flag, const uint8
 
 typedef bool (*ibrt_io_capbility_callback)(void *bdaddr);
 
-int hci_cb_event_handle(uintptr_t connhdl, bt_hci_event_t event, bt_hci_callback_param_t param);
-
 void btm_security_link_key_notify(struct bdaddr_t *remote, uint8 *linkkey, uint8 key_type);
 void btm_security_pin_code_req(struct bdaddr_t *remote);
 void btm_security_link_key_req(struct bdaddr_t *remote);
@@ -997,9 +995,6 @@ int8 btm_device_write_inquiry_scan_activity(uint16 interval, uint16 window);
 
 int8 btm_conn_sco_is_open (struct btm_conn_item_t *conn);
 uint16 btm_conn_acl_get_conn_handle ( struct bdaddr_t *remote_bdaddr);
-
-void btm_acl_rx_slowdown_stop(struct bdaddr_t *remote);
-void btm_acl_rx_slowdown_check(struct bdaddr_t *remote);
 
 uint32_t btm_get_class_of_device(void);
 

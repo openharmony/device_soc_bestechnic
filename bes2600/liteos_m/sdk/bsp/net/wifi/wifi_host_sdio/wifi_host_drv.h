@@ -28,21 +28,21 @@ extern "C" {
  */
 #define MSG_KIND_BIT              (1 << 15) /* 1 for MGMT and 0 for DATA */
 
-/*When bit15 is 0*/
+/* When bit15 is 0 */
 #define MSG_OFFSET_IN_REGADDR_DATA (12)
-/* support 4 different messages at most */
+/* support 4 different device type at most */
 #define MSG_MASK_IN_REGADDR_DATA   (0x3000)
 #define OFT_OFFSET_IN_REGADDR_DATA (14)
 #define OFT_MASK_IN_REGADDR_DATA   (0x4000)
 #define LEN_OFFSET_IN_REGADDR_DATA (0)
 #define LEN_MASK_IN_REGADDR_DATA   (0xFFF)
 
-/*When bit15 is 1*/
-#define MSG_OFFSET_IN_REGADDR_MGMT  (8)
-/* support 128 different messages at most */
-#define MSG_MASK_IN_REGADDR_MGMT    (0x7F00)
-#define LEN_OFFSET_IN_REGADDR_MGMT  (0)
-#define LEN_MASK_IN_REGADDR_MGMT    (0xFF)
+/* When bit15 is 1 */
+#define MSG_OFFSET_IN_REGADDR_MGMT (8)
+/* support 128 different mgmt messages at most */
+#define MSG_MASK_IN_REGADDR_MGMT   (0x7F00)
+#define LEN_OFFSET_IN_REGADDR_MGMT (0)
+#define LEN_MASK_IN_REGADDR_MGMT   (0xFF)
 
 
 /* The last SDIO_LOCAL_RETU_LEN bytes is assumed to hold the
@@ -80,13 +80,13 @@ enum wifi_host_bus_sm {
 };
 
 enum if_sdio_msg_type {
-    /* transceive application data */
-    IF_SDIO_DATA_XMIT_DEV0 = 0,
-    IF_SDIO_DATA_XMIT_DEV1,
-    IF_SDIO_DATA_RECV_DEV0,
-    IF_SDIO_DATA_RECV_DEV1,
-    /* last DATA msg */
-    IF_SDIO_DATA_LAST,
+    /* sdio data transfer device type */
+    /* must match BWIFI_INTF_TYPE_T */
+    IF_SDIO_DEV_STATION = 0,
+    IF_SDIO_DEV_SOFTAP,
+    IF_SDIO_DEV_P2P,
+    /* last device type */
+    IF_SDIO_DEV_LAST,
 
     /* wifi hal functions to be called */
     IF_SDIO_MGMT_FIRST = 9,
@@ -136,6 +136,9 @@ enum if_sdio_msg_type {
     IF_SDIO_MGMT_STR_CMD, //53
     IF_SDIO_MGMT_DAT_CMD, //54
     IF_SDIO_MGMT_IP_ALIVE, //55
+
+    IF_SDIO_P2P_CMD,
+    IF_SDIO_P2P_PERSISTENT_CONNECT,
 
     IF_SDIO_MGMT_EVENT_UPLOAD,
     IF_SDIO_MGMT_RECV_SNIFFER,

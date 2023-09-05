@@ -27,6 +27,7 @@
 #include "bt_sys_config.h"
 
 #include "debug_cfg.h"
+#include "besbt_cfg.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -245,6 +246,34 @@ static inline uint32_t co_uint32_le_to_host(uint32_t n) {
 static inline uint32_t co_uint24_le_to_host(uint32_t n) {
     return co_host_to_uint24_le(n);
 }
+#endif
+
+#if HOST_OS_LITTLE_ENDIAN
+static inline uint16_t co_host_to_uint16_be(uint16_t n) {
+    return ((n & 0xff) << 8) | (n >> 8);
+}
+static inline uint32_t co_host_to_uint32_be(uint32_t n) {
+    return ((n & 0xff) << 24) | ((n & 0xff00) << 8) | ((n & 0xff0000) >> 8) | ((n & 0xff000000) >> 24);
+}
+static inline uint32_t co_host_to_uint24_be(uint32_t n) {
+    return ((n << 16) & 0xFF0000) | (n &0xFF00) | ((n >> 16) & 0xFF);
+}
+static inline uint16_t co_uint16_be_to_host(uint16_t n) {
+    return co_host_to_uint16_be(n);
+}
+static inline uint32_t co_uint32_be_to_host(uint32_t n) {
+    return co_host_to_uint32_be(n);
+}
+static inline uint32_t co_uint24_be_to_host(uint32_t n) {
+    return co_host_to_uint24_be(n);
+}
+#else
+static inline uint16_t co_host_to_uint16_be(uint16_t n) { return n; }
+static inline uint16_t co_uint16_be_to_host(uint16_t n) { return n; }
+static inline uint32_t co_host_to_uint32_be(uint32_t n) { return n; }
+static inline uint32_t co_uint32_be_to_host(uint32_t n) { return n; }
+static inline uint32_t co_host_to_uint24_be(uint32_t n) { return n; }
+static inline uint32_t co_uint24_be_to_host(uint32_t n) { return n; }
 #endif
 
 /**
@@ -566,7 +595,8 @@ typedef enum {
 #ifdef SLT_AUTO_TEST
     AUD_ID_TONE_1K = 0x2D,
 #endif
-    MAX_RECORD_NUM = 0x2E,
+    AUD_ID_CUSTOM_LEAK_DETECT = 0x2E,
+    MAX_RECORD_NUM = 0x2F,
     AUD_ID_ENUM_BOTTOM = 0x10000000,    // AUD_ID_ENUM is uint32_t
 } AUD_ID_ENUM;
 
@@ -1005,11 +1035,20 @@ typedef struct {
     char str[4];
 } bt_log_tag_t;
 
+#ifdef BT_LOG_SIMPLIFY
+void co_func_log_trace_simplify(uint32_t mod);
+#define co_func_log_trace_0(mod) co_func_log_trace_simplify(mod)
+#define co_func_log_trace_1(mod, a) co_func_log_trace_simplify(mod)
+#define co_func_log_trace_2(mod, a, b) co_func_log_trace_simplify(mod)
+#define co_func_log_trace_3(mod, a, b, c) co_func_log_trace_simplify(mod)
+#define co_func_log_trace_4(mod, a, b, c, d) co_func_log_trace_simplify(mod)
+#else
 void co_func_log_trace_0(uint32_t mod);
 void co_func_log_trace_1(uint32_t mod, uintptr_t a);
 void co_func_log_trace_2(uint32_t mod, uintptr_t a, uintptr_t b);
 void co_func_log_trace_3(uint32_t mod, uintptr_t a, uintptr_t b, uintptr_t c);
 void co_func_log_trace_4(uint32_t mod, uintptr_t a, uintptr_t b, uintptr_t c, uintptr_t d);
+#endif
 void co_func_log_str_0(uint32_t mod, const char *s);
 void co_func_log_str_1(uint32_t mod, const char *s, uintptr_t a);
 void co_func_log_str_2(uint32_t mod, const char *s, uintptr_t a, uintptr_t b);

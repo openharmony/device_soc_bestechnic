@@ -1621,7 +1621,6 @@ struct hci_ble_audio_dbg_trc_enable_cmd
     uint32_t trc_enable_opcode;
 } __attribute__ ((packed));
 
-
 #define HCI_LE_READ_BUFFER_SIZE             0x2002
 #define HCI_LE_READ_BUFFER_SIZE_V2          0x2060
 struct hci_le_read_buffer_size_cmpl
@@ -1853,7 +1852,7 @@ struct hci_le_set_adv_parameters {
     uint8_t peer_addr_type; // 0x00 public device address or public ia, 0x01 random device address or random (static) ia
     uint8_t peer_addr[6];
     uint8_t adv_channel_map; // bit 0 channel 37 shall be used, bit 1 38, bit 2 39 (default is 0x07)
-    uint8_t adv_filter_policy;
+    uint8_t adv_filter_policy; // 0x00 accept all req, 0x01 all conn_req only scan_req in list, 0x02 all scan_req only conn_req in list, 0x03 all req in list
 } __attribute__ ((packed));
 struct hci_le_set_adv_params_cmpl {
     uint8_t status;
@@ -1867,7 +1866,7 @@ struct hci_le_set_ext_adv_params_v1 {
     uint8_t own_addr_type; // 0x00 0x01, public or random address, 0x02 0x03, btc gen RPA based on local irk from the resolving list, if no match entry use public address or random address from 0x2035
     uint8_t peer_addr_type; // 0x00 public device address or public ia, 0x01 random device address or random (static) ia
     uint8_t peer_addr[6];
-    uint8_t adv_filter_policy;
+    uint8_t adv_filter_policy; // 0x00 accept all req, 0x01 all conn_req only scan_req in list, 0x02 all scan_req only conn_req in list, 0x03 all req in list
     int8_t adv_tx_power; // 0xXX range -127dBm to 20dBm, 0x7F host has no preference
     uint8_t pri_adv_phy; // 0x01 primary advertisement phy is LE 1M, 0x03 LE Coded
     uint8_t sec_adv_max_skip; // 0x00 AUX_ADV_IND shall be sent prior to the next adv event, 0x01 to 0xFF max adv events the btc can skip before sending AUX_ADV_IND on the sec adv physical channel
@@ -1884,7 +1883,7 @@ struct hci_le_set_ext_adv_params_v2 {
     uint8_t own_addr_type; // 0x00 0x01, public or random address, 0x02 0x03, btc gen RPA based on local irk from the resolving list, if no match entry use public address or random address from 0x2035
     uint8_t peer_addr_type; // 0x00 public device address or public ia, 0x01 random device address or random (static) ia
     uint8_t peer_addr[6];
-    uint8_t adv_filter_policy;
+    uint8_t adv_filter_policy; // 0x00 accept all req, 0x01 all conn_req only scan_req in list, 0x02 all scan_req only conn_req in list, 0x03 all req in list
     int8_t adv_tx_power; // 0xXX range -127dBm to 20dBm, 0x7F host has no preference
     uint8_t pri_adv_phy; // 0x01 primary advertisement phy is LE 1M, 0x03 LE Coded
     uint8_t sec_adv_max_skip; // 0x00 AUX_ADV_IND shall be sent prior to the next adv event, 0x01 to 0xFF max adv events the btc can skip before sending AUX_ADV_IND on the sec adv physical channel
@@ -3738,7 +3737,7 @@ struct hci_le_set_pa_param_v2 {
     uint8_t num_subevents; // 0x00 to 0x80
     uint8_t subevent_interval_1_25ms; // 0x06 to 0xFF * 1.25ms (7.5ms to 318.75ms)
     uint8_t response_slot_delay_1_25ms; // 0x00 no response slots, 0xXX 0x01 to 0xFE * 1.25ms (1.25ms to 317.5ms) time between the adv packet in a subevent and the 1st response slot
-    uint8_t response_slot_spacing; // 0x00 no response slots, 0xXX 0x02 to 0xFF * 0x125ms (0x25ms to 31.875ms) time between response slots
+    uint8_t response_slot_spacing_0_125ms; // 0x00 no response slots, 0xXX 0x02 to 0xFF * 0x125ms (0x25ms to 31.875ms) time between response slots
     uint8_t num_response_slots; // 0x00 no response slots, 0xXX 0x01 to 0xFF num of subevent response slots
 } __attribute__ ((packed));
 struct hci_ev_le_set_pa_param_cmpl_v1 {
@@ -3821,7 +3820,8 @@ struct hci_ev_le_pa_response_data_item {
     uint8_t data_length;
     uint8_t data[1];
 } __attribute__ ((packed));
-struct hci_ev_le_set_pa_response_report {
+
+struct hci_ev_le_pa_response_report {
     uint8_t subcode; // 0x28
     uint8_t adv_handle; // 0x00 to 0xEF, identify a pa train
     uint8_t subevent; // 0x00 to 0x7F
@@ -4185,9 +4185,12 @@ void hci_rx_handle(struct hci_rx_desc_t *rx_desc);
 struct pp_buff *hci_fc_each_link_has_tx_chance(hci_conn_type_t conn_type);
 void hci_defer_free_rx_buffer(struct pp_buff *ppb, uint32_t ca, uint32_t line);
 
+bool hci_tx_buff_process(void);
+void hci_rx_handle(struct hci_rx_desc_t *rx_desc);
+struct pp_buff *hci_fc_each_link_has_tx_chance(hci_conn_type_t conn_type);
+
 bt_status_t hci_simulate_event(const uint8_t *buff, uint16_t buff_len);
 bt_status_t hci_send_cmd_direct(const uint8_t *cmd_packet, uint8_t packet_len);
-void hci_stop_rx_bt_acl_data(uint16_t connhdl, bool stop);
 struct hci_conn_item_t *hci_find_conn_by_priv_param(hci_conn_type_t type, void *priv_param);
 struct hci_conn_item_t *hci_find_conn_by_address(hci_conn_type_t conn_type, bt_addr_type_t addr_type, const bt_bdaddr_t *peer_addr);
 void hci_foreach_acl_conn_item(hci_conn_type_t conn_type, int (*cb)(void *priv_param, void *param), void *param);

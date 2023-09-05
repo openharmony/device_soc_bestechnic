@@ -342,14 +342,19 @@ bt_status_t hci_send_cmd_packet(struct pp_buff *ppb);
 bt_status_t hci_send_command(uint16_t cmd_opcode, const uint8_t *cmd_data, uint8_t data_len);
 bt_status_t hci_set_cmd_wait_event(struct pp_buff *cmd_ppb, uint8_t wait_event);
 
+typedef void (*hci_cmd_evt_func_t)(uint16_t cmd_opcode, struct hci_cmd_evt_param_t *param); // cmd cmpl status cb func
 struct pp_buff *hci_create_cmd_packet(uint16_t cmd_opcode, uint8_t cmd_data_len, hci_cmd_evt_func_t cmpl_status_cb);
 struct pp_buff *hci_create_cmd_packet_with_priv(uint16_t cmd_opcode, uint8_t cmd_data_len, hci_cmd_evt_func_t cmpl_status_cb, void *priv, void *cont, void *cmpl);
 bt_status_t hci_send_command_with_callback(uint16_t cmd_opcode, const uint8_t *cmd_data, uint8_t data_len, hci_cmd_evt_func_t cmpl_status_cb);
 bt_status_t hci_send_raw_comand(const uint8_t *cmd_packet, uint8_t packet_len, hci_cmd_evt_func_t cmpl_status_cb);
 
 #ifdef BLE_HOST_SUPPORT
+#ifdef BLE_STACK_NEW_DESIGN
+void hci_register_le_callback(const struct hci_bt_callback_t *bt_cb);
+void hci_register_iso_callback(const struct hci_le_callback_t *bt_cb);
+#else
 void hci_register_le_callback(const struct hci_le_callback_t *le_cb);
-void hci_set_ble_callback(const struct hci_bt_callback_t *bt_cb);
+#endif
 bt_status_t hci_send_le_acl_packet(const uint8_t *hci_header, uint8_t header_len, const uint8_t *l2cap_payload, uint16_t payload_len);
 bt_status_t hci_send_le_cmd_packet(uint16_t cmd_opcode, const uint8_t *cmd_data, uint8_t data_len);
 void hci_free_le_acl_rx_buffer(uint8_t *l2cap_hdr_ptr);
@@ -360,7 +365,6 @@ int hci_count_free_le_tx_buff(void);
 int hci_get_iso_free_packet_num();
 bt_status_t hci_send_iso_packet(struct hci_tx_iso_desc_t *tx_iso_desc);
 gaf_media_data_t *hci_get_iso_rx_packet(uint16_t connhdl);
-void hci_set_iso_callback(const struct hci_le_callback_t *bt_cb);
 void hci_clean_iso_rx_packet(uint16_t connhdl);
 void hci_clean_iso_tx_packet(uint16_t connhdl);
 #endif
@@ -384,12 +388,16 @@ const bt_bdaddr_t *hci_get_bt_address(void);
 const bt_bdaddr_t *hci_get_le_address(void);
 const bt_bdaddr_t *hci_get_random_address(void);
 
+void *gap_create_hci_cmd_packet_extra(struct pp_buff **ppb_out, uint16_t cmd_opcode, uint8_t cmd_len, hci_cmd_evt_func_t cmd_cb, void *priv, void *cont, void *cmpl);
 void *gap_create_hci_cmd_packet(struct pp_buff **ppb_out, uint16_t cmd_opcode, uint8_t cmd_len, hci_cmd_evt_func_t cmd_cb, void *priv);
+bt_status_t gap_send_raw_hci_cmd_extra(uint16_t cmd_opcode, uint16_t cmd_len, const uint8_t *data_little_endian, hci_cmd_evt_func_t cmd_cb, void *priv, void *cont, void *cmpl);
 bt_status_t gap_send_raw_hci_cmd(uint16_t cmd_opcode, uint16_t cmd_len, const uint8_t *data_little_endian, hci_cmd_evt_func_t cmd_cb, void *priv);
 bt_status_t gap_send_raw_hci_command(uint16_t cmd_opcode, uint16_t cmd_len, const uint8_t *data_little_endian);
 bt_status_t gap_send_short_hci_cmd(uint16_t cmd_opcode, uint16_t cmd_len, uint32_t cmd_data, hci_cmd_evt_func_t cmd_cb, void *priv);
 bt_status_t gap_send_short_hci_command(uint16_t cmd_opcode, uint16_t cmd_len, uint32_t cmd_data);
 bt_status_t gap_send_hci_cmd_packet(struct pp_buff *ppb);
+void gap_acl_rx_slowdown_stop(hci_conn_type_t conn_type, bt_addr_type_t addr_type, const struct bdaddr_t *remote);
+void gap_acl_rx_slowdown_check(hci_conn_type_t conn_type, bt_addr_type_t addr_type, const struct bdaddr_t *remote);
 
 #ifdef __cplusplus
 }

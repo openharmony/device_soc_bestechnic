@@ -22,7 +22,7 @@ extern "C" {
 #include "stdio.h"
 #include "stdarg.h"
 
-#define LITE_VERSION
+// #define LITE_VERSION
 
 #ifdef LITE_VERSION
 #define USE_ID_1_AS_CRC
@@ -75,16 +75,16 @@ unsigned int hal_trace_get_id(char *buf);
 #define USER_ID_TWS_LR_SHIFT                (0)
 #define USER_ID_TWS_LR_MASK                 (0x03<<USER_ID_TWS_LR_SHIFT)   //2 bit ,L,R,N
 #define USER_ID_TWS_LR(n)                   (((n) & 0x03) << 0)
-#define USER_ID_TWS_TWS_L                   0
+#define USER_ID_TWS_TWS_N                   0
 #define USER_ID_TWS_TWS_R                   1
-#define USER_ID_TWS_TWS_N                   2
+#define USER_ID_TWS_TWS_L                   2
 
 #define USER_ID_TWS_ROLE_SHIFT              (2)
 #define USER_ID_TWS_ROLE_MASK               (0x03<<USER_ID_TWS_ROLE_SHIFT) //2 bit ,M,S,U,F
 #define USER_ID_TWS_ROLE(n)                 (((n) & 0x03) << 2)
-#define USER_ID_ROLE_MASTER                 0
-#define USER_ID_ROLE_SLAVE                  1
-#define USER_ID_ROLE_UNKNOW                 2
+#define USER_ID_ROLE_UNKNOWN                0
+#define USER_ID_ROLE_MASTER                 1
+#define USER_ID_ROLE_SLAVE                  2
 #define USER_ID_ROLE_FREEMAN                3
 
 #define USER_ID_CPUID_SHIFT                 (4)
