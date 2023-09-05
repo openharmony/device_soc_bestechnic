@@ -102,10 +102,49 @@ extern "C" {
 #define BT_DYNAMIC_ALLOC_HCI_RX_BUFF
 #endif
 
+#define BLE_LOCAL_USE_RPA_ONLY_AFTER_BONDING 0
+
 #ifdef BLE_ONLY_ENABLED
 #undef __GATT_OVER_BR_EDR__
 #undef CTKD_ENABLE
 #undef IS_CTKD_OVER_BR_EDR_ENABLED
+#endif
+
+#ifdef BLE_PERIPHERAL_ONLY
+#define BLE_GAP_CENTRAL_ROLE 0
+#else
+#define BLE_GAP_CENTRAL_ROLE 1
+#endif
+
+#ifdef BLE_GATT_CLIENT_DISABLE
+#define BLE_GATT_CLIENT_SUPPORT 0
+#else
+#define BLE_GATT_CLIENT_SUPPORT 1
+#endif
+
+#if BLE_AUDIO_ENABLED
+#define BLE_PA_SUPPORT 1
+#else
+#ifdef BLE_PERIODIC_ADV_DISABLE
+#define BLE_PA_SUPPORT 0
+#else
+#define BLE_PA_SUPPORT 1
+#endif
+#endif
+
+#if defined(EP_1306_SMALL_CODE) && (!BLE_AUDIO_ENABLED)
+#undef BLE_GAP_CENTRAL_ROLE
+#undef BLE_GATT_CLIENT_SUPPORT
+#undef BLE_PA_SUPPORT
+#undef BT_LOG_SIMPLIFY
+#undef BT_REDUCE_CALLBACK_FUNC
+#define BLE_GAP_CENTRAL_ROLE 0
+#define BLE_GATT_CLIENT_SUPPORT 0
+#define BLE_PA_SUPPORT 0
+#define BT_LOG_SIMPLIFY
+#ifndef BTH_IN_ROM
+#define BT_REDUCE_CALLBACK_FUNC
+#endif
 #endif
 
 #ifdef BT_OBEX_SUPPORT
@@ -447,7 +486,7 @@ extern "C" {
 #if defined(__3M_PACK__)
 #define L2CAP_CFG_MTU                                               1021
 #else
-#define L2CAP_CFG_MTU                                               672
+#define L2CAP_CFG_MTU                                               679
 #endif
 
 #define RFCOMM_PPB_HEAD_RESERVE 8

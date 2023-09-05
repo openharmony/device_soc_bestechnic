@@ -126,7 +126,9 @@ typedef int bt_status_t;
 #define BT_STS_INVALID_SERV_VALUE           0x54
 #define BT_STS_INVALID_ADDRESS              0x55
 #define BT_STS_INVALID_STATE                0x56
-
+#define BT_STS_INVALID_HEADER_LEN           0x57
+#define BT_STS_INVALID_DEVICE_ID            0x58
+#define BT_STS_INVALID_CONN_INDEX           0x59
 #define BT_STS_SET_ENABLED_ADV_PARAMS       0x60
 #define BT_STS_COBUF_MALLOC_FAILED          0x61
 #define BT_STS_PPBUF_MALLOC_FAILED          0x62
@@ -158,8 +160,8 @@ typedef int bt_status_t;
 #define BT_STS_SEND_CMD_FAILED              0x7C
 #define BT_STS_POWER_OFF                    0x7D
 #define BT_STS_NO_DEVICE_IN_FILTER_LIST     0x7E
-#define BT_STS_ADV_ENABLED_WHEN_OP_RESOLV   0x7F
-#define BT_STS_SCAN_ENABLED_WHEN_OP_RESOLV  0x80
+#define BT_STS_ADDRESS_RESO_ENABLE          0x7F
+#define BT_STS_RESOLV_DISABLE_ADVTIVITY     0x80
 #define BT_STS_INIT_PENDING_WHEN_OP_RESOLV  0x81
 #define BT_STS_ADV_ENABLED_WHEN_OP_FILTER   0x82
 #define BT_STS_SCAN_ENABLED_WHEN_OP_FILTER  0x83
@@ -329,6 +331,14 @@ typedef int bt_status_t;
 #define BT_STS_SEC_AUTH_REQUIRE             0x125
 #define BT_STS_MAX_PA_LIST_SIZE             0x126
 #define BT_STS_NOT_SUPPORT                  0x127
+#define BT_STS_RX_BLOCK_AUTH_FAIL           0x128
+#define BT_STS_TX_BLOCK_AUTH_FAIL           0x129
+#define BT_STS_EATT_BLOCK_AUTH_FAIL         0x12a
+#define BT_STS_NOT_AUTHENTICATED            0x12b
+#define BT_STS_NOT_AUTHORIZED               0x12c
+#define BT_STS_NOT_ENCRYPTED                0x12d
+#define BT_STS_TERMINATE                    0x12e
+#define BT_STS_NO_BONDED_DEVICE             0x12f
 
 typedef enum {
     BT_GROUP_INDEX_LINK = 0,    // 0x1000
@@ -908,6 +918,7 @@ uint8_t bt_adapter_reset_device_id(struct BT_ADAPTER_DEVICE_T *curr_device, bool
 uint8_t bt_adapter_get_a2dp_codec_type(int device_id);
 uint8_t bt_adapter_get_hfp_sco_codec_type(int device_id);
 uint8_t bt_adapter_count_mobile_link(void);
+uint8_t bt_adapter_count_connected_hfp(void);
 uint8_t bt_adapter_count_streaming_a2dp(void);
 uint8_t bt_adapter_count_streaming_sco(void);
 uint8_t bt_adapter_has_incoming_call(void);

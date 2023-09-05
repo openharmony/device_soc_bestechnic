@@ -85,6 +85,10 @@ typedef enum {
 #define ATT_FLAG_CONST_VALUE 0x02
 #define ATT_FLAG_OPTION_CHAR 0x04
 #define ATT_FLAG_ARRAY_VALID 0x08
+#define ATT_FLAG_IND_AUTH    0x10
+#define ATT_FLAG_IND_ENC     0x20
+#define ATT_FLAG_NTF_AUTH    0x40
+#define ATT_FLAG_NTF_ENC     0x80
 
 #define GATT_NO_PROP   0x00
 #define GATT_BROADCAST 0x01 // permit broadcasts of char value using SCCD, if set, SCCD shall exist
@@ -176,6 +180,13 @@ typedef enum {
         ATT_16BIT_UUID(char_uuid, ATT_RW_PERM_FROM_PROP(char_prop)|char_value_sec_perm), \
     }
 
+#define GATT_DECL_CHAR_WITH_FLAG(char_name, char_uuid, char_prop, char_value_sec_perm, flag) \
+    static const uint8_t char_name[] = { \
+        ATT_16BIT_UUID(GATT_UUID_CHAR_DECLARE, ATT_RD_PERM), \
+        CO_UINT8_VALUE(char_prop), (flag) | \
+        ATT_16BIT_UUID(char_uuid, ATT_RW_PERM_FROM_PROP(char_prop)|char_value_sec_perm), \
+    }
+
 // if the value is read-only, but the server can change it, it is not const value
 #define GATT_DECL_CHAR_WITH_CONST_VALUE(char_name, char_uuid, char_prop, char_value_sec_perm, ...) \
     static const uint8_t char_name[] = { \
@@ -189,6 +200,13 @@ typedef enum {
     static const uint8_t char_name[] = { \
         ATT_16BIT_UUID(GATT_UUID_CHAR_DECLARE, ATT_RD_PERM), \
         CO_UINT8_VALUE(char_prop), ATT_FLAG_OPTION_CHAR | \
+        ATT_16BIT_UUID(char_uuid, ATT_RW_PERM_FROM_PROP(char_prop)|char_value_sec_perm), \
+    }
+
+#define GATT_DECL_OPTIONAL_CHAR_WITH_FLAG(char_name, char_uuid, char_prop, char_value_sec_perm, flag) \
+    static const uint8_t char_name[] = { \
+        ATT_16BIT_UUID(GATT_UUID_CHAR_DECLARE, ATT_RD_PERM), \
+        CO_UINT8_VALUE(char_prop), ATT_FLAG_OPTION_CHAR | (flag) | \
         ATT_16BIT_UUID(char_uuid, ATT_RW_PERM_FROM_PROP(char_prop)|char_value_sec_perm), \
     }
 
@@ -336,12 +354,20 @@ typedef enum {
         ATT_16BIT_CONST_VALUE(GATT_DESC_UUID_REPORT_REFERENCE, ATT_RD_PERM), \
     }
 
-#define GATT_DECL_COSNT_RRCD_DESCRIPTOR(name, report_id, report_type) \
-        static const uint8_t name[] = { \
-            ATT_16BIT_CONST_VALUE(GATT_DESC_UUID_REPORT_REFERENCE, ATT_RD_PERM), \
-            CO_UINT8_VALUE(report_id), \
-            CO_UINT8_VALUE(report_type), \
-        }
+#define GATT_DECL_CONST_RRCD_DESCRIPTOR(name, report_id, report_type) \
+    static const uint8_t name[] = { \
+        ATT_16BIT_CONST_VALUE(GATT_DESC_UUID_REPORT_REFERENCE, ATT_RD_PERM), \
+        CO_UINT8_VALUE(report_id), \
+        CO_UINT8_VALUE(report_type), \
+    }
+
+// Encrypted Data Key Material Characteristic
+#define GATT_DECL_ENC_DATA_KEY_MATERIAL_CHAR(name) \
+    GATT_DECL_CHAR_WITH_FLAG(name, \
+        GATT_CHAR_UUID_ENCRYPTED_DATA_KEY_MATERIAL, \
+        GATT_RD_REQ|GATT_IND_PROP, \
+        ATT_RD_AUTHEN|ATT_RD_AUTHOR, \
+        ATT_FLAG_IND_AUTH)
 
 #define gatt_include_attribute(a) {(attr_byte_array_t*)(&a), sizeof(gatt_decl_inc_service_t)}
 
@@ -379,7 +405,6 @@ typedef struct {
 typedef struct gatt_service_t gatt_service_t;
 typedef struct gatt_character_t gatt_character_t;
 
-#define GATT_LOCAL_ONLY_USE_RPA 0
 #define GATT_SERVER_FEAT_EATT_BEARER       0x01
 #define GATT_CLIENT_FEAT_ROBUST_CACHING    0x01
 #define GATT_CLIENT_FEAT_EATT_BEARER       0x02
@@ -409,6 +434,8 @@ typedef struct {
 } gatt_config_t;
 
 void gatt_init(void);
+bt_status_t gatt_update_enc_data_key_material(const gap_key_material_t *key_material);
+bt_status_t gatt_read_peer_enc_data_key_material(uint16_t connhdl);
 
 typedef struct {
     const uint8_t *character;
@@ -587,8 +614,8 @@ bt_status_t gatts_send_value_indication(uint32_t con_bfs, const gatt_char_notify
 bt_status_t gatts_send_value_notification(uint32_t con_bfs, const gatt_char_notify_t *character, const uint8_t *data, uint16_t len);
 bt_status_t gatts_send_character_value(uint32_t con_bfs, const gatt_char_notify_t *character, const uint8_t *data, uint16_t len);
 uint16_t gatts_get_curr_cccd_config(uint16_t connhdl, const uint8_t *service, uint8_t service_inst_id, const uint8_t *character, uint8_t char_inst_id);
-uint16_t gatts_get_character_16_bit_uuid(const uint8_t *character);
-const uint8_t *gatts_get_character_uuid_le(const uint8_t *character);
+uint16_t gatts_get_char_byte_16_bit_uuid(const uint8_t *character);
+uint16_t gatts_get_char_byte_16_bit_part_uuid(const uint8_t *character);
 uint16_t gatts_get_character_16_bit_part_uuid(const gatt_attribute_t *attr);
 uint16_t gatts_get_service_16_bit_part_uuid(const gatt_attribute_t *attr);
 gatt_svc_t *gatts_get_service(uint16_t connhdl, const uint8_t *service, uint8_t service_inst_id);

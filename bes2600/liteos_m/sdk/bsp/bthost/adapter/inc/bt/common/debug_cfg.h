@@ -51,10 +51,13 @@
 #define PBAP_API_MODULE     32
 #define BAP_MODULE          33
 #define ISO_MODULE          34
-#define BLE_MODULE          35
+#define APP_BLE_MODULE      35
 #define TEST_MODULE         36
 #define COBT_MODULE         37
-#define LOG_MODULE_MAX      38
+#define APP_BT_MODULE       38
+#define A2DP_APP_MODULE     39
+#define HFP_APP_MODULE      40
+#define LOG_MODULE_MAX      41
 
 #define BT_DBG_EX_CONCAT(a, b) a##b
 #define BT_DBG_CONCAT(a, b) BT_DBG_EX_CONCAT(a, b)
@@ -70,14 +73,53 @@
 #define DBG_VERBOSE_LEVEL   4
 #define DBG_MAIN_FLOW_LEVEL 5
 
-#ifdef BT_STACK_LOG_DISABLE
+#if defined(BT_STACK_LOG_DISABLE) || defined(BT_LOG_SIMPLIFY)
 #define HCI_LEVEL           DBG_ERROR_LEVEL
 #define L2CAP_LEVEL         DBG_ERROR_LEVEL
-#define GAP_LEVEL           DBG_ERROR_LEVEL
-#define GATT_LEVEL          DBG_ERROR_LEVEL
 #define SDP_LEVEL           DBG_ERROR_LEVEL
+#define GAP_LEVEL           DBG_ERROR_LEVEL
 #define SMP_LEVEL           DBG_ERROR_LEVEL
+#define GATT_LEVEL          DBG_ERROR_LEVEL
 #define BTM_LEVEL           DBG_ERROR_LEVEL
+#define A2DP_LEVEL          DBG_ERROR_LEVEL
+#define AVRCP_LEVEL         DBG_ERROR_LEVEL
+#define BNEP_LEVEL          DBG_ERROR_LEVEL
+#define HFP_LEVEL           DBG_ERROR_LEVEL
+#define HID_LEVEL           DBG_ERROR_LEVEL
+#define MAP_LEVEL           DBG_ERROR_LEVEL
+#define OBEX_LEVEL          DBG_ERROR_LEVEL
+#define OPP_LEVEL           DBG_ERROR_LEVEL
+#define PAN_LEVEL           DBG_ERROR_LEVEL
+#define PBAP_LEVEL          DBG_ERROR_LEVEL
+#define RFCOMM_LEVEL        DBG_ERROR_LEVEL
+#define SPP_LEVEL           DBG_ERROR_LEVEL
+#define BTIF_LEVEL          DBG_ERROR_LEVEL
+#define DIP_LEVEL           DBG_ERROR_LEVEL
+#define BESAUD_LEVEL        DBG_ERROR_LEVEL
+#define BTGATT_LEVEL        DBG_ERROR_LEVEL
+#define A2DP_API_LEVEL      DBG_ERROR_LEVEL
+#define AVRCP_API_LEVEL     DBG_ERROR_LEVEL
+#define HFP_API_LEVEL       DBG_ERROR_LEVEL
+#define HID_API_LEVEL       DBG_ERROR_LEVEL
+#define MAP_API_LEVEL       DBG_ERROR_LEVEL
+#define ME_API_LEVEL        DBG_ERROR_LEVEL
+#define OPP_API_LEVEL       DBG_ERROR_LEVEL
+#define PAN_API_LEVEL       DBG_ERROR_LEVEL
+#define PBAP_API_LEVEL      DBG_ERROR_LEVEL
+#define BAP_LEVEL           DBG_ERROR_LEVEL
+#define ISO_LEVEL           DBG_ERROR_LEVEL
+#define APP_BLE_LEVEL       DBG_ERROR_LEVEL
+#define APP_BT_LEVEL        DBG_ERROR_LEVEL
+#define A2DP_APP_LEVEL      DBG_ERROR_LEVEL
+#define HFP_APP_LEVEL       DBG_ERROR_LEVEL
+#else
+#define HCI_LEVEL           DBG_ERROR_LEVEL
+#define L2CAP_LEVEL         DBG_INFO_LEVEL
+#define SDP_LEVEL           DBG_INFO_LEVEL
+#define GAP_LEVEL           DBG_VERBOSE_LEVEL
+#define SMP_LEVEL           DBG_VERBOSE_LEVEL
+#define GATT_LEVEL          DBG_INFO_LEVEL
+#define BTM_LEVEL           DBG_INFO_LEVEL
 #define A2DP_LEVEL          DBG_ERROR_LEVEL
 #define AVRCP_LEVEL         DBG_ERROR_LEVEL
 #define BNEP_LEVEL          DBG_ERROR_LEVEL
@@ -103,49 +145,15 @@
 #define OPP_API_LEVEL       DBG_ERROR_LEVEL
 #define PAN_API_LEVEL       DBG_ERROR_LEVEL
 #define PBAP_API_LEVEL      DBG_ERROR_LEVEL
-#define BAP_LEVEL           DBG_ERROR_LEVEL
-#define ISO_LEVEL           DBG_ERROR_LEVEL
-#define BLE_LEVEL           DBG_ERROR_LEVEL
-#define TEST_LEVEL          DBG_VERBOSE_LEVEL
-#else
-#define HCI_LEVEL           DBG_VERBOSE_LEVEL
-#define L2CAP_LEVEL         DBG_VERBOSE_LEVEL
-#define GAP_LEVEL           DBG_VERBOSE_LEVEL
-#define GATT_LEVEL          DBG_INFO_LEVEL
-#define SDP_LEVEL           DBG_INFO_LEVEL
-#define SMP_LEVEL           DBG_VERBOSE_LEVEL
-#define BTM_LEVEL           DBG_VERBOSE_LEVEL // DBG_INFO_LEVEL
-#define A2DP_LEVEL          DBG_ERROR_LEVEL
-#define AVRCP_LEVEL         DBG_ERROR_LEVEL
-#define BNEP_LEVEL          DBG_ERROR_LEVEL
-#define HFP_LEVEL           DBG_ERROR_LEVEL
-#define HID_LEVEL           DBG_ERROR_LEVEL
-#define MAP_LEVEL           DBG_ERROR_LEVEL
-#define OBEX_LEVEL          DBG_ERROR_LEVEL
-#define OPP_LEVEL           DBG_ERROR_LEVEL
-#define PAN_LEVEL           DBG_ERROR_LEVEL
-#define PBAP_LEVEL          DBG_ERROR_LEVEL
-#define RFCOMM_LEVEL        DBG_INFO_LEVEL
-#define SPP_LEVEL           DBG_WARNING_LEVEL
-#define BTIF_LEVEL          DBG_ERROR_LEVEL
-#define DIP_LEVEL           DBG_ERROR_LEVEL
-#define BESAUD_LEVEL        DBG_ERROR_LEVEL
-#define BTGATT_LEVEL        DBG_ERROR_LEVEL
-#define A2DP_API_LEVEL      DBG_ERROR_LEVEL
-#define AVRCP_API_LEVEL     DBG_ERROR_LEVEL
-#define HFP_API_LEVEL       DBG_ERROR_LEVEL
-#define HID_API_LEVEL       DBG_ERROR_LEVEL
-#define MAP_API_LEVEL       DBG_ERROR_LEVEL
-#define ME_API_LEVEL        DBG_ERROR_LEVEL
-#define OPP_API_LEVEL       DBG_ERROR_LEVEL
-#define PAN_API_LEVEL       DBG_ERROR_LEVEL
-#define PBAP_API_LEVEL      DBG_ERROR_LEVEL
 #define BAP_LEVEL           DBG_VERBOSE_LEVEL
 #define ISO_LEVEL           DBG_VERBOSE_LEVEL
-#define BLE_LEVEL           DBG_VERBOSE_LEVEL
-#define TEST_LEVEL          DBG_VERBOSE_LEVEL
+#define APP_BLE_LEVEL       DBG_VERBOSE_LEVEL
+#define APP_BT_LEVEL        DBG_INFO_LEVEL
+#define A2DP_APP_LEVEL      DBG_ERROR_LEVEL
+#define HFP_APP_LEVEL       DBG_ERROR_LEVEL
 #endif
 
+#define TEST_LEVEL          DBG_VERBOSE_LEVEL
 #define COBT_LEVEL          DBG_ERROR_LEVEL
 #define bap_uc_svc_LEVEL    DBG_ERROR_LEVEL
 #define bap_bc_deleg_LEVEL  DBG_ERROR_LEVEL

@@ -26,17 +26,16 @@ extern "C" {
 
 enum HAL_TRNG_RND_SRC_SEL
 {
-    HAL_TRNG_RND_SRC_SHORTEST = 0,
-    HAL_TRNG_RND_SRC_SHORT,
-    HAL_TRNG_RND_SRC_LONG,
-    HAL_TRNG_RND_SRC_LONGEST,
+    HAL_TRNG_RND_SRC_SHORTEST = 0,  // Selects the shortest inverter chain length. This is the reset value
+    HAL_TRNG_RND_SRC_SHORT,         // Selects the short inverter chain length
+    HAL_TRNG_RND_SRC_LONG,          // Selects the long inverter chain length
+    HAL_TRNG_RND_SRC_LONGEST,       // Selects the longest inverter chain length
 };
-typedef unsigned int HAL_TRNG_RND_SRC_SEL_ENUM;
 
 struct HAL_TRNG_CFG_T
 {
     uint32_t                    sample_cntr1; // must not be less than 0x11
-    HAL_TRNG_RND_SRC_SEL_ENUM   rnd_src_sel;
+    enum HAL_TRNG_RND_SRC_SEL   rnd_src_sel;
 };
 
 typedef void (*HAL_TRNG_RUN_CB_T)(const uint32_t *buf, uint32_t len, uint32_t error);

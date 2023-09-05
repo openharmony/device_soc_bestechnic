@@ -27,10 +27,6 @@
 #if LWIP_ETHERNETIF
 #include "lwip/netif.h"
 #endif
-#ifdef __P2P_MODE_SUPPORT__
-#include "wifi_p2p.h"
-#include "bwifi_p2p_interface.h"
-#endif
 
 #ifdef __cplusplus
 extern "C" {

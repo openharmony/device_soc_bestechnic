@@ -462,6 +462,7 @@ bt_proto_conn_t *l2cap_get_att_conn_by_address(hci_conn_type_t conn_type, bt_add
 typedef bool (*att_proto_conn_foreach_t)(bt_proto_conn_t *conn, void *priv);
 int l2cap_foreach_att_proto_conn(att_proto_conn_foreach_t cb, void *priv);
 uint16_t l2cap_get_att_mtu_from_port(hci_conn_type_t conn_type);
+bt_status_t l2cap_send_packet(uint32_t connhdl_len, uint32_t l2cap_handle, const uint8_t *data, void *context);
 bt_status_t l2cap_send_att_packet(uint16_t connhdl, uint32_t l2cap_handle, struct pp_buff *ppb, void *context);
 bt_status_t l2cap_send_smp_packet(uint16_t connhdl, struct pp_buff *ppb);
 bt_l2cap_config_t *l2cap_set_config(void);
