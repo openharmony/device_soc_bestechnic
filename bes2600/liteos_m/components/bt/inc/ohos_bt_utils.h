@@ -2,8 +2,6 @@
 #define __HARMONY_UTILS_H__
 #include "plat_types.h"
 #include "ohos_bt_def.h"
-#include "bt_adaptor_dbg.h"
-#include "adapter_service.h"
 
 #define OHOS_CONN_MAX           5
 
@@ -15,6 +13,5 @@
 //128 bit string format "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 int BleGattsUuidCharToHex(char* uuid_str, uint8_t *uuid);
 int BleGattsUuidHexToChar(const uint8_t *uuid, uint8_t uuid_len, char *uuid_string);
-BtStatus bes_status_to_ohos(bt_status_t bes_status);
 
 #endif

@@ -15,19 +15,18 @@
 
 #include <stdlib.h>
 #include <string.h>
-
 #include "plat_types.h"
 #include "hal_trace.h"
-
 #include "adapter_service.h"
 #include "bes_me_api.h"
+#include "gap_service.h"
 
+#include "ohos_bt_debug.h"
 #include "ohos_bt_gatt.h"
 #include "ohos_bt_def.h"
-//#include "harmony_utils.h"
+#include "ohos_bt_utils.h"
 
-#include "gap_service.h"
-#include "bt_adaptor_dbg.h"
+
 
 /****************************Macro defination***************************/
 #define ADV_ID_INVALID  0XFFFFFFFF

@@ -16,10 +16,12 @@
 #include <string.h>
 #include "plat_types.h"
 #include "hal_trace.h"
+#include "gatt_service.h"
+
+#include "ohos_bt_debug.h"
 #include "ohos_bt_gatt_client.h"
-#include "harmony_utils.h"
-#include  "gatt_service.h"
-#include "bt_adaptor_dbg.h"
+#include "ohos_bt_utils.h"
+
 
 /****************************Macro defination***************************/
 #define OHOS_CACHE_SRV_MAX      20
@@ -135,23 +137,6 @@ static inline gatt_peer_service_t* BleGattcFindSrvByUuid(OhosGattcObj_t *UserGat
     return srv;
 }
 
-static inline gatt_peer_character_t *BleGattcFindcharByUuid(OhosGattcObj_t *UserGattc, uint8_t uuid_len, uint8_t *uuid)
-{
-    gatt_peer_character_t *char_ptr = NULL;
-
-    for (int i=0; i<UserGattc->CacheCharNum; ++i)
-    {
-        if ((uuid_len == UserGattc->CacheChar[i].UuidLen) &&
-            (!memcmp(UserGattc->CacheChar[i].CharUuid, uuid, uuid_len)))
-        {
-            char_ptr = UserGattc->CacheChar[i].Character;
-            break;
-        }
-    }
-
-    return char_ptr;
-}
-
 static inline GattProfileAllServiceCache_t* BleGattcFindSrvByHdl(OhosGattcObj_t *UserGattc, gatt_peer_service_t *service)
 {
     for (int i=0; i<UserGattc->CacheSrvNum; ++i)
@@ -190,6 +175,7 @@ static int BleGattcClosedCb(gatt_prf_t *prf, gatt_profile_callback_param_t param
 
     osMutexWait(BleGattcEnv.mutex_id, osWaitForever);
     memset(&BleGattcEnv.UserClient[MsgPrf->UserId], 0, sizeof(OhosGattcObj_t));
+    BleGattcEnv.UserClientNum--;
     osMutexRelease(BleGattcEnv.mutex_id);
 
     return BT_STS_SUCCESS;
@@ -978,13 +964,13 @@ int BleGattcRegisterNotification(int clientId, BtGattCharacteristic characterist
     char_uuid_len = BleGattsUuidCharToHex(characteristic.characteristicUuid.uuid, char_uuid);
 
     srv_ptr = BleGattcFindSrvByUuid(UserGattc,srv_uuid_len, srv_uuid);
-    //ret = gattc_get_service(ble_gattc_env.stack_prf.prf, srv_uuid_len, srv_uuid, &srv_ptr);
+
     if (!srv_ptr)
     {
         osMutexRelease(BleGattcEnv.mutex_id);
         return OHOS_BT_STATUS_FAIL;
     }
-    //char_ptr = BleGattcFindcharByUuid(UserGattc, char_uuid_len, char_uuid);
+
     ret = gattc_get_character(srv_ptr, char_uuid_len, char_uuid, &char_ptr);
     if (!char_ptr)
     {
@@ -1026,13 +1012,13 @@ int BleGattcWriteCharacteristic(int clientId, BtGattCharacteristic characteristi
     char_uuid_len = BleGattsUuidCharToHex(characteristic.characteristicUuid.uuid, char_uuid);
 
     srv_ptr = BleGattcFindSrvByUuid(UserGattc, srv_uuid_len, srv_uuid);
-    //ret = gattc_get_service(ble_gattc_env.stack_prf.prf, srv_uuid_len, srv_uuid, &srv_ptr);
+
     if (!srv_ptr)
     {
         osMutexRelease(BleGattcEnv.mutex_id);
         return OHOS_BT_STATUS_FAIL;
     }
-    //char_ptr = BleGattcFindcharByUuid(UserGattc,char_uuid_len, char_uuid);
+
     ret = gattc_get_character(srv_ptr, char_uuid_len, char_uuid, &char_ptr);
     if (!char_ptr)
     {
