@@ -185,7 +185,7 @@ typedef enum IRQn
     PAGE_SPY_IRQn               = 118,      /*!< Page Spy Interrupt                 */
     CMU_SLEEP_IRQn              = 119,      /*!< CMU Sleep Interrupt                */
     M55C1_WDT_IRQn              = 120,      /*!< Watchdog Timer Interrupt           */
-    RESERVED_121_IRQn           = 121,      /*!< Reserved Interrupt                 */
+    SYS_JPEG_IRQn               = 121,      /*!< SYS JPEG Interrupt                 */
     CORDIC_IRQn                 = 122,      /*!< Cordic Interrupt                   */
     SYS_I3C0_IRQn               = 123,      /*!< SYS I3C0 Interrupt                 */
     I3C0_IRQn                   = 124,      /*!< I3C0 Interrupt                     */

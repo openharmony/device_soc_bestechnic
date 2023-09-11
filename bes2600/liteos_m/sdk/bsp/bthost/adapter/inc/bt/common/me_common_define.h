@@ -445,6 +445,8 @@ typedef void btif_cmgr_handler_t;
 
 typedef void (*btif_cmgr_callback) (void *handler, uint8_t event, int status);
 
+typedef void (*btif_confirmation_req_callback_t)(struct bdaddr_t *bdaddr, uint32 numeric_value);
+
 typedef struct {
     uint16_t inqInterval;            /* Inquiry scan interval */
     uint16_t inqWindow;              /* Inquiry scan Window */
