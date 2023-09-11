@@ -38,7 +38,7 @@ extern "C" {
 #define SOFTAP_VENDOR_ELEMENTS_MAX_LEN  128     //refer to best2002 configuration
 
 typedef enum {
-    WIFI_IF_STATION,
+    WIFI_IF_STATION = 0,
     WIFI_IF_SOFTAP,
     WIFI_IF_P2P
 } BWIFI_INTF_TYPE_T;

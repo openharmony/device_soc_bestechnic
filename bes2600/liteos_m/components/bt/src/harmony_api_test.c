@@ -17,25 +17,18 @@
 #include <string.h>
 #include "plat_types.h"
 #include "hal_trace.h"
-#include "harmony_utils.h"
-
+#include "eshell.h"
+#include "factory_section.h"
 #include "adapter_service.h"
 #include "bes_me_api.h"
 
-#include "bt_adaptor_dbg.h"
-
+#include "ohos_bt_utils.h"
+#include "ohos_bt_debug.h"
+#include "ohos_bt_gap.h"
 #include "ohos_bt_gatt.h"
 #include "ohos_bt_gatt_server.h"
 #include "ohos_bt_gatt_client.h"
 #include "softbus_adapter_ble_gatt_server.h"
-
-#define BLE_DEBUG 0
-
-#if BLE_DEBUG
-#include "customer_api_test.h"
-#else
-#include "eshell.h"
-#endif
 
 /****************************Macro defination***************************/
 static const int MAX_SERVICE_CHAR_NUM = 8;
@@ -86,7 +79,7 @@ static void OhosScanResultCb(BtScanResultData *scanResultdata)
 
 static void OhosScanStateChangeCb(int32_t resultCode, bool isStartScan)
 {
-    LOG_I("[%s][%d]: result=%d, en=%d", __func__, __LINE__, resultCode, isStartScan);
+    LOG_I("[%s][%d]: result=%ld, en=%d", __func__, __LINE__, resultCode, isStartScan);
 }
 
 static BleScanCallbacks ohos_scan_callback =
@@ -260,27 +253,27 @@ static void  OhosDescriptorAddCb(int status, int serverId, BtUuid *uuid,
     }
 }
 
-void OhosServiceStartCb(int status, int serverId, int srvcHandle)
+static void OhosServiceStartCb(int status, int serverId, int srvcHandle)
 {
     LOG_I("[%s][%d]: state=%d,srv_hdl=%d", __func__, __LINE__, status, srvcHandle);
 }
 
-void OhosServiceStopCb(int status, int serverId, int srvcHandle)
+static void OhosServiceStopCb(int status, int serverId, int srvcHandle)
 {
     LOG_I("[%s][%d]: state=%d,srv_hdl=%d", __func__, __LINE__, status, srvcHandle);
 }
 
-void OhosServiceDeleteCb(int status, int serverId, int srvcHandle)
+static void OhosServiceDeleteCb(int status, int serverId, int srvcHandle)
 {
     LOG_I("[%s][%d]: state=%d,srv_hdl=%d", __func__, __LINE__, status, srvcHandle);
 }
 
-void OhosRequestReadCb(BtReqReadCbPara readCbPara)
+static void OhosRequestReadCb(BtReqReadCbPara readCbPara)
 {
     LOG_I("[%s][%d]: conn=%d,attr_hdl=%d", __func__, __LINE__, readCbPara.connId, readCbPara.attrHandle);
 }
 
-void OhosRequestWriteCb(BtReqWriteCbPara writeCbPara)
+static void OhosRequestWriteCb(BtReqWriteCbPara writeCbPara)
 {
     LOG_I("[%s][%d]: conn=%d,attr_hdl=%d", __func__, __LINE__, writeCbPara.connId, writeCbPara.attrHandle);
     DUMP8("0x%x ", writeCbPara.value, writeCbPara.length);
@@ -299,17 +292,17 @@ void OhosRequestWriteCb(BtReqWriteCbPara writeCbPara)
     }
 }
 
-void OhosResponseConfirmationCb(int status, int handle)
+static void OhosResponseConfirmationCb(int status, int handle)
 {
     LOG_I("[%s][%d]: attr_hdl=%d", __func__, __LINE__, handle);
 }
 
-void OhosIndicationSentCb(int connId, int status)
+static void OhosIndicationSentCb(int connId, int status)
 {
     LOG_I("[%s][%d]: status=%d", __func__, __LINE__, status);
 }
 
-void OhosMtuChangeCb(int connId, int mtu)
+static void OhosMtuChangeCb(int connId, int mtu)
 {
     LOG_I("[%s][%d]: mtu=%d", __func__, __LINE__, mtu);
 }
@@ -333,7 +326,184 @@ static BtGattServerCallbacks ohos_service_callback =
     .mtuChangeCb  = OhosMtuChangeCb,
 };
 
-static void ohos_adv_start_handle(uint32_t BufPtr, uint32_t BufLen)
+static void OhosGapStateChangedCb(const int transport, const int status)
+{
+    LOG_I("[%s][%d]: state=%d", __func__, __LINE__, status);
+}
+
+static  void OhosGapAclStateChangedCb(const BdAddr *bdAddr, GapAclState state, unsigned int reason)
+{
+    LOG_I("[%s][%d]: state=%d, reason=%d", __func__, __LINE__, state, reason);
+    DUMP8("%02x ", bdAddr, 6);
+}
+
+static void OhosGapDiscoveryStateChangedCb(int status)
+{
+    LOG_I("[%s][%d]: state=%d", __func__, __LINE__, status);
+}
+
+static void OhosGapDiscoveryResultCb(const BdAddr *bdAddr)
+{
+    LOG_I("[%s][%d]:", __func__, __LINE__);
+    DUMP8("%02x ", bdAddr, 6);
+}
+
+static void OhosGapPairRequestedCb(const BdAddr *bdAddr, int transport)
+{
+    LOG_I("[%s][%d]: transport=%d", __func__, __LINE__ , transport);
+    DUMP8("%02x ", bdAddr, 6);
+    PairRequestReply(bdAddr, transport, true);
+}
+
+static void OhosGapPairConfirmedCb(const BdAddr *bdAddr, int transport, int reqType, int number)
+{
+    LOG_I("[%s][%d]: %d,%d,%x", __func__, __LINE__ , transport, reqType, number);
+    DUMP8("%02x ", bdAddr, 6);
+    SetDevicePairingConfirmation(bdAddr, transport, true);
+}
+
+static void OhosGapScanModeChangedCb(int mode)
+{
+    LOG_I("[%s][%d]: mode=%d", __func__, __LINE__ , mode);
+}
+
+static void OhosGapLocalDeviceNameChangedCb(const unsigned char *deviceName, unsigned char length)
+{
+    LOG_I("[%s][%d]: len=%d, %s", __func__, __LINE__, length, deviceName);
+}
+
+static void OhosGapLocalDeviceAddrChangedCb(const BdAddr *bdAddr)
+{
+    LOG_I("[%s][%d]: ", __func__, __LINE__);
+    DUMP8("%02x ", bdAddr, 6);
+}
+
+
+static void OhosGapPairStatusChangedCb(const BdAddr *bdAddr, int status)
+{
+    LOG_I("[%s][%d]: status=%d", __func__, __LINE__, status);
+    DUMP8("%02x ", bdAddr, 6);
+}
+
+static void OhosGapRemoteUuidChangedCb(const BdAddr *bdAddr, BtUuid uuid)
+{
+    LOG_I("[%s][%d]:", __func__, __LINE__);
+    DUMP8("%02x ", uuid.uuid, uuid.uuidLen);
+    DUMP8("%02x ", bdAddr, 6);
+}
+
+static void OhosGapRemoteNameChangedCb(const BdAddr *bdAddr,
+    const unsigned char *deviceName, unsigned char length)
+{
+    LOG_I("[%s][%d]:length=%d, %s", __func__, __LINE__, length, deviceName);
+    DUMP8("%02x ", bdAddr, 6);
+}
+
+static void OhosGapRemoteAliasChangedCb(const BdAddr *bdAddr, const unsigned char *alias, unsigned char length)
+{
+    LOG_I("[%s][%d]:", __func__, __LINE__);
+    DUMP8("%02x ", bdAddr, 6);
+    DUMP8("%02x ", alias, length);
+}
+
+static void OhosGapRemoteCodChangedCb(const BdAddr *bdAddr, int cod)
+{
+    LOG_I("[%s][%d]:cod=0x%x", __func__, __LINE__, cod);
+    DUMP8("%02x ", bdAddr, 6);
+}
+
+static void OhosGapRemoteBatteryLevelChangedCb(const BdAddr *bdAddr, int batteryLevel)
+{
+    LOG_I("[%s][%d]:batteryLevel=0x%x", __func__, __LINE__, batteryLevel);
+    DUMP8("%02x ", bdAddr, 6);
+}
+
+static void OhosGapReadRemoteRssiEventCb(const BdAddr *bdAddr, int rssi, int status)
+{
+    LOG_I("[%s][%d]:rssi=%d, status=%d", __func__, __LINE__, rssi, status);
+    DUMP8("%02x ", bdAddr, 6);
+}
+
+static void OhosGapIsAcceptConnOnSafeModeCb(const BdAddr *bdAddr, bool *res)
+{
+    LOG_I("[%s][%d]:res=%d", __func__, __LINE__, *res);
+    DUMP8("%02x ", bdAddr, 6);
+}
+
+static BtGapCallBacks ohos_gap_callback =
+{
+    .stateChangeCallback               = OhosGapStateChangedCb,
+    .aclStateChangedCallbak            = OhosGapAclStateChangedCb,
+    .scanModeChangedCallback           = OhosGapScanModeChangedCb,
+    .pairStatusChangedCallback         = OhosGapPairStatusChangedCb,
+    .deviceNameChangedCallback         = OhosGapLocalDeviceNameChangedCb,
+    .deviceAddrChangedCallback         = OhosGapLocalDeviceAddrChangedCb,
+    .pairRequestedCallback             = OhosGapPairRequestedCb,
+    .pairConfiremedCallback            = OhosGapPairConfirmedCb,
+    .discoveryStateChangedCallback     = OhosGapDiscoveryStateChangedCb,
+    .discoveryResultCallback           = OhosGapDiscoveryResultCb,
+    .remoteUuidChangedCallback         = OhosGapRemoteUuidChangedCb,
+    .remoteNameChangedCallback         = OhosGapRemoteNameChangedCb,
+    .remoteAliasChangedCallback        = OhosGapRemoteAliasChangedCb,
+    .remoteCodChangedCallback          = OhosGapRemoteCodChangedCb,
+    .remoteBatteryLevelChangedCallback = OhosGapRemoteBatteryLevelChangedCb,
+    .readRemoteRssiEventCallback       = OhosGapReadRemoteRssiEventCb,
+    .isAcceptConnOnSafeModeCallback    = OhosGapIsAcceptConnOnSafeModeCb,
+};
+
+static inline void bt_cmd_param_parse(int argc, char *argv[], int *data)
+{
+    int param_num = argc-1;
+    LOG_I("[test] param_num=%d\r\n", param_num);
+    for (int i=0; i<param_num; ++i)
+    {
+        sscanf(argv[i+1], "%d", data+i);
+    }
+}
+
+static void bt_init_stack(int argc, char *argv[])
+{
+    LOG_I("[test] bt stack init");
+    InitBtStack();
+
+    GapRegisterCallbacks(&ohos_gap_callback);
+    BleGattRegisterCallbacks(&ohos_adv_callback);
+    BleRegisterScanCallbacks(&ohos_scan_callback, &ohos_test_env.scanner_id);
+
+    // gatts callback
+    BtUuid appUuid;
+    char uuid[2] = {0x01, 0x02};
+    appUuid.uuidLen = 2;
+    appUuid.uuid = uuid;
+    BleGattsRegisterCallbacks(&ohos_service_callback);
+    ohos_test_env.service_id = BleGattsRegister(appUuid);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_stack_init", "none", bt_init_stack);
+
+static void bt_set_address(int argc, char *argv[])
+{
+    int param[6] = {0};
+    uint8_t bt_addr[6] = {0};
+
+    bt_cmd_param_parse(argc, argv, param);
+    bt_addr[0] = param[0];
+    bt_addr[1] = param[1];
+    bt_addr[2] = param[2];
+    bt_addr[3] = param[3];
+    bt_addr[4] = param[4];
+    bt_addr[5] = param[5];
+    LOG_I("[test] set_address, addr=%x:%x:%x:%x:%x:%x\r\n",
+        bt_addr[0], bt_addr[1], bt_addr[2], bt_addr[3],bt_addr[4], bt_addr[5]);
+
+     factory_section_set_bt_address(bt_addr);
+     factory_section_set_ble_address(bt_addr);
+
+    bes_bt_me_set_bt_address(bt_addr);
+    bes_bt_me_set_ble_address(bt_addr);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_set_address", "none", bt_set_address);
+
+static void bt_ble_adv_start(int argc, char *argv[])
 {
     int ret = OHOS_BT_STATUS_SUCCESS;
     int data_len;
@@ -368,13 +538,15 @@ static void ohos_adv_start_handle(uint32_t BufPtr, uint32_t BufLen)
     ret = BleStartAdvEx(&ohos_test_env.adv_id, rawData, advParam);
     LOG_I("[%s][%d]: advId=%d, state=%d", __func__, __LINE__, 0, ret);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_adv_start", "none", bt_ble_adv_start);
 
-static void ohos_adv_stop_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_adv_stop(int argc, char *argv[])
 {
     BleStopAdv(ohos_test_env.adv_id);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_adv_stop", "none", bt_ble_adv_stop);
 
-static void ohos_adv_set_data_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_adv_set_data(int argc, char *argv[])
 {
     int data_len;
     unsigned char advData[20] = {0};
@@ -395,8 +567,9 @@ static void ohos_adv_set_data_handle(uint32_t BufPtr, uint32_t BufLen)
 
     BleSetAdvData(ohos_test_env.adv_id, rawData);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_adv_set_data", "none", bt_ble_adv_set_data);
 
-static void ohos_scan_start_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_scan_start(int argc, char *argv[])
 {
     BleScanConfigs configs = {0};
     BleScanNativeFilter filter[2] = {0};
@@ -413,13 +586,15 @@ static void ohos_scan_start_handle(uint32_t BufPtr, uint32_t BufLen)
 
     BleStartScanEx(ohos_test_env.scanner_id, &configs, filter, sizeof(filter)/sizeof(filter[0]));
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_scan_start", "none", bt_ble_scan_start);
 
-static void ohos_scan_stop_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_scan_stop(int argc, char *argv[])
 {
     BleStopScan(ohos_test_env.adv_id);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_scan_stop", "none", bt_ble_scan_stop);
 
-static void ohos_cli_creat_conn_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_cli_creat_conn(int argc, char *argv[])
 {
     int ret;
 
@@ -435,34 +610,39 @@ static void ohos_cli_creat_conn_handle(uint32_t BufPtr, uint32_t BufLen)
 
     LOG_I("[%s][%d]: clientId=%d, state=%d", __func__, __LINE__, ohos_test_env.client_id, ret);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_creat_conn", "none", bt_ble_cli_creat_conn);
 
-static void ohos_cli_set_priority_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_cli_set_priority(int argc, char *argv[])
 {
     BleGattcSetPriority(ohos_test_env.client_id, (BdAddr *)scan_filter_addr1, OHOS_BT_GATT_PRIORITY_HIGH);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_set_priority", "none", bt_ble_cli_set_priority);
 
-static void ohos_cli_creat_conn_fast_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_cli_creat_conn_fast(int argc, char *argv[])
 {
     BleGattcSetFastestConn(ohos_test_env.client_id, true);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_creat_conn_fast", "none", bt_ble_cli_creat_conn_fast);
 
-static void ohos_cli_cancel_handle(uint32_t BufPtr, uint32_t BufLen)
-{
-    ohos_cli_creat_conn_handle(BufPtr, BufLen);
-    BleGattcDisconnect(ohos_test_env.client_id);
-}
-
-static void ohos_cli_disconn_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_cli_cancel_conn(int argc, char *argv[])
 {
     BleGattcDisconnect(ohos_test_env.client_id);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_cancel_conn", "none", bt_ble_cli_cancel_conn);
 
-static void ohos_cli_Search_srv_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_cli_disconn(int argc, char *argv[])
+{
+    BleGattcDisconnect(ohos_test_env.client_id);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_disconn", "none", bt_ble_cli_disconn);
+
+static void bt_ble_cli_search_srv(int argc, char *argv[])
 {
     BleGattcSearchServices(ohos_test_env.client_id);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_search_srv", "none", bt_ble_cli_search_srv);
 
-static void ohos_cli_get_srv_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_cli_get_srv(int argc, char *argv[])
 {
     BtUuid Uuid;
 
@@ -470,8 +650,9 @@ static void ohos_cli_get_srv_handle(uint32_t BufPtr, uint32_t BufLen)
     Uuid.uuid    = SOFTBUS_SERVICE_UUID;
     BleGattcGetService(ohos_test_env.client_id, Uuid);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_get_srv", "none", bt_ble_cli_get_srv);
 
-static void ohos_cli_read_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_cli_read(int argc, char *argv[])
 {
 /*
     int char_num = 0;
@@ -483,12 +664,19 @@ static void ohos_cli_read_handle(uint32_t BufPtr, uint32_t BufLen)
     BleGattcGetService(ohos_test_env.client_id, Uuid);
 */
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_read", "none", bt_ble_cli_read);
 
-static void ohos_cli_wirte_handle(    int char_num, int writeType)
+static void bt_ble_cli_wirte(int argc, char *argv[])
 {
+    int param[2] = {0};
+    int char_num;
+    int writeType;
     BtGattCharacteristic char_uuid = {0};
     const char value[] = {5,6,7,8,10};
 
+    bt_cmd_param_parse(argc, argv, param);
+    char_num = param[0];
+    writeType = param[1];
     char_uuid.serviceUuid.uuidLen = strlen(SOFTBUS_SERVICE_UUID);
     char_uuid.serviceUuid.uuid    = SOFTBUS_SERVICE_UUID;
     if (char_num == 1)
@@ -504,12 +692,15 @@ static void ohos_cli_wirte_handle(    int char_num, int writeType)
         BleGattcWriteCharacteristic(ohos_test_env.client_id, char_uuid, writeType, sizeof(value), value);
     }
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_wirte", "none", bt_ble_cli_wirte);
 
-static void ohos_cli_reg_ntf_handle(int char_num)
+static void bt_ble_cli_reg_ntf(int argc, char *argv[])
 {
     int ret;
+    int char_num = 0;
     BtGattCharacteristic Uuid;
 
+    bt_cmd_param_parse(argc, argv, &char_num);
     Uuid.serviceUuid.uuidLen = strlen(SOFTBUS_SERVICE_UUID);
     Uuid.serviceUuid.uuid    = SOFTBUS_SERVICE_UUID;
 
@@ -527,8 +718,9 @@ static void ohos_cli_reg_ntf_handle(int char_num)
     ret = BleGattcRegisterNotification(ohos_test_env.client_id, Uuid, true);
     LOG_I("[%s][%d]: clientId=%d, state=%d", __func__, __LINE__, ohos_test_env.client_id, ret);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_reg_ntf", "none", bt_ble_cli_reg_ntf);
 
-static void ohos_srv_add_srv_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_srv_add_srv(int argc, char *argv[])
 {
     BtUuid Uuid;
     int properties = 0;
@@ -569,25 +761,35 @@ static void ohos_srv_add_srv_handle(uint32_t BufPtr, uint32_t BufLen)
     permissions = SOFTBUS_GATT_PERMISSION_READ | SOFTBUS_GATT_PERMISSION_WRITE;
     BleGattsAddDescriptor(ohos_test_env.service_id, ohos_test_env.srvcHandle, Uuid, permissions);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_add_srv", "none", bt_ble_srv_add_srv);
 
-static void ohos_srv_start_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_srv_start(int argc, char *argv[])
 {
     int ret;
 
     ret = BleGattsStartService(ohos_test_env.service_id, ohos_test_env.srvcHandle);
     LOG_I("[%s][%d]: clientId=%d, state=%d", __func__, __LINE__, ohos_test_env.client_id, ret);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_start", "none", bt_ble_srv_start);
 
-static void ohos_srv_stop_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_srv_stop(int argc, char *argv[])
 {
     BleGattsStopService(ohos_test_env.service_id, ohos_test_env.srvcHandle);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_stop", "none", bt_ble_srv_stop);
 
-static void ohos_srv_send_ntf_handle(int char_num, int confirm)
+static void bt_ble_srv_send_ntf(int argc, char *argv[])
 {
+    int input_param[2] = {0};
+    int char_num;
+    int confirm;
     GattsSendIndParam param;
     char send_data[] = {1,2,3,4};
 
+    bt_cmd_param_parse(argc, argv, input_param);
+
+    char_num = input_param[0];
+    confirm = input_param[1];
     param.connectId  = ohos_test_env.service_conn_id;
     param.confirm = confirm;
     if (char_num == 1)
@@ -603,18 +805,21 @@ static void ohos_srv_send_ntf_handle(int char_num, int confirm)
 
     BleGattsSendIndication(ohos_test_env.service_id, &param);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_send_ntf", "none", bt_ble_srv_send_ntf);
 
-static void ohos_srv_delete_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_srv_delete(int argc, char *argv[])
 {
     BleGattsDeleteService(ohos_test_env.service_id, ohos_test_env.srvcHandle);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_delete", "none", bt_ble_srv_delete);
 
-static void ohos_srv_dis_conn_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_srv_dis_conn(int argc, char *argv[])
 {
     BleGattsDisconnect(ohos_test_env.service_id, ohos_test_env.bdAddr, ohos_test_env.service_conn_id);
 }
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_dis_conn", "none", bt_ble_srv_dis_conn);
 
-static void ohos_uuid_tran_test_handle(uint32_t BufPtr, uint32_t BufLen)
+static void bt_ble_uuid_tran_test(int argc, char *argv[])
 {
     uint8_t uuid_len;
     char uuid_tring[37] = {0};
@@ -630,275 +835,108 @@ static void ohos_uuid_tran_test_handle(uint32_t BufPtr, uint32_t BufLen)
     LOG_I("[%s][%d]: %d", __func__, __LINE__ , uuid_len);
     LOG_I("[%s][%d]: %s", __func__, __LINE__ , uuid_tring);
 }
-
-#if BLE_DEBUG
-
-static void bes_ohos_cli_reg_ntf_handle(uint32_t BufPtr, uint32_t BufLen)
-{
-    int char_num = 0;
-
-    sscanf((char *)BufPtr, "%d", &char_num);
-    ohos_cli_reg_ntf_handle(char_num);
-}
-
-static void bes_ohos_cli_wirte_handle(uint32_t BufPtr, uint32_t BufLen)
-{
-    int char_num = 0;
-    int writeType = 0;
-
-    sscanf((char *)BufPtr, "%d,%d", &char_num, &writeType);
-    ohos_cli_wirte_handle(char_num, writeType);
-}
-
-static void bes_ohos_srv_send_ntf_handle(uint32_t BufPtr, uint32_t BufLen)
-{
-    int char_num = 0;
-    int confirm = 0;
-
-    sscanf((char *)BufPtr, "%d,%d", &char_num, &confirm);
-    ohos_srv_send_ntf_handle(char_num, confirm);
-}
-
-static const customer_adapt_handle_t bluet_adapt_test_handle[]=
-{
-    // gap cmd
-
-    // gatt cmd
-    {"ohos_adv_start", ohos_adv_start_handle},
-    {"ohos_adv_set_data", ohos_adv_set_data_handle},
-    {"ohos_adv_stop", ohos_adv_stop_handle},
-    {"ohos_scan_start", ohos_scan_start_handle},
-    {"ohos_scan_stop", ohos_scan_stop_handle},
-
-    // gatt client cmd
-    {"ohos_cli_creat_conn", ohos_cli_creat_conn_handle},
-    {"ohos_cli_set_filter_list", ohos_cli_set_priority_handle},
-    {"ohos_cli_creat_conn_fast", ohos_cli_creat_conn_fast_handle},
-    {"ohos_cli_cancel_conn", ohos_cli_cancel_handle},
-    {"ohos_cli_disconn", ohos_cli_disconn_handle},
-    {"ohos_cli_search", ohos_cli_Search_srv_handle},
-    {"ohos_cli_get_srv", ohos_cli_get_srv_handle},
-    {"ohos_cli_read", ohos_cli_read_handle},
-    {"ohos_cli_reg_ntf", bes_ohos_cli_reg_ntf_handle},
-    {"ohos_cli_wirte", bes_ohos_cli_wirte_handle},
-
-    // gatt server cmd
-    {"ohos_srv_add_srv", ohos_srv_add_srv_handle},
-    {"ohos_srv_start_srv", ohos_srv_start_handle},
-    {"ohos_srv_send_ntf", ohos_srv_send_ntf_handle},
-    {"ohos_srv_stop_srv", ohos_srv_stop_handle},
-    {"ohos_srv_delete_srv", ohos_srv_delete_handle},
-    {"ohos_srv_disconn", ohos_srv_dis_conn_handle},
-
-    {"ohos_uuid_tran_test", ohos_uuid_tran_test_handle},
-};
-
-uint8_t ohos_get_cmd_list(const customer_adapt_handle_t **cmd_list)
-{
-    // gatt callback
-    BleGattRegisterCallbacks(&ohos_adv_callback);
-    BleRegisterScanCallbacks(&ohos_scan_callback, &ohos_test_env.scanner_id);
-
-    // gatts callback
-    BtUuid appUuid;
-    char uuid[2] = {0x01, 0x02};
-    appUuid.uuidLen = 2;
-    appUuid.uuid = uuid;
-    BleGattsRegisterCallbacks(&ohos_service_callback);
-    ohos_test_env.service_id = BleGattsRegister(appUuid);
-
-    *cmd_list = bluet_adapt_test_handle;
-    return ARRAY_SIZE(bluet_adapt_test_handle);
-}
-#else
-
-static inline void bt_cmd_param_parse(int argc, char *argv[], int *data)
-{
-    int param_num = argc-1;
-    printf("[test] param_num=%d\r\n", param_num);
-    for (int i=0; i<param_num; ++i)
-    {
-        sscanf(argv[i+1], "%d", data+i);
-    }
-}
-
-static void bt_init_stack(int argc, char *argv[])
-{
-    printf("[test] bt stack init");
-    InitBtStack();
-
-    BleGattRegisterCallbacks(&ohos_adv_callback);
-    BleRegisterScanCallbacks(&ohos_scan_callback, &ohos_test_env.scanner_id);
-
-    // gatts callback
-    BtUuid appUuid;
-    char uuid[2] = {0x01, 0x02};
-    appUuid.uuidLen = 2;
-    appUuid.uuid = uuid;
-    BleGattsRegisterCallbacks(&ohos_service_callback);
-    ohos_test_env.service_id = BleGattsRegister(appUuid);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_stack_init", "none", bt_init_stack);
-
-static void bt_set_address(int argc, char *argv[])
-{
-    int param[6] = {0};
-    uint8_t bt_addr[6] = {0};
-
-    bt_cmd_param_parse(argc, argv, param);
-    bt_addr[0] = param[0];
-    bt_addr[1] = param[1];
-    bt_addr[2] = param[2];
-    bt_addr[3] = param[3];
-    bt_addr[4] = param[4];
-    bt_addr[5] = param[5];
-    printf("[test] set_address, addr=%x:%x:%x:%x:%x:%x\r\n",
-        bt_addr[0], bt_addr[1], bt_addr[2], bt_addr[3],bt_addr[4], bt_addr[5]);
-
-    bes_bt_me_set_bt_address(bt_addr);
-    bes_bt_me_set_ble_address(bt_addr);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_set_address", "none", bt_set_address);
-
-static void bt_ble_adv_start(int argc, char *argv[])
-{
-    ohos_adv_start_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_adv_start", "none", bt_ble_adv_start);
-
-static void bt_ble_adv_stop(int argc, char *argv[])
-{
-    ohos_adv_stop_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_adv_stop", "none", bt_ble_adv_stop);
-
-static void bt_ble_adv_set_data(int argc, char *argv[])
-{
-    ohos_adv_set_data_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_adv_set_data", "none", bt_ble_adv_set_data);
-
-static void bt_ble_scan_start(int argc, char *argv[])
-{
-    ohos_scan_start_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_scan_start", "none", bt_ble_scan_start);
-
-static void bt_ble_scan_stop(int argc, char *argv[])
-{
-    ohos_scan_stop_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_scan_stop", "none", bt_ble_scan_stop);
-
-static void bt_ble_cli_creat_conn(int argc, char *argv[])
-{
-    ohos_cli_creat_conn_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_creat_conn", "none", bt_ble_cli_creat_conn);
-
-static void bt_ble_cli_set_priority(int argc, char *argv[])
-{
-    ohos_cli_set_priority_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_set_priority", "none", bt_ble_cli_set_priority);
-
-static void bt_ble_cli_creat_conn_fast(int argc, char *argv[])
-{
-    ohos_cli_creat_conn_fast_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_creat_conn_fast", "none", bt_ble_cli_creat_conn_fast);
-
-static void bt_ble_cli_cancel_conn(int argc, char *argv[])
-{
-    ohos_cli_cancel_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_cancel_conn", "none", bt_ble_cli_cancel_conn);
-
-static void bt_ble_cli_disconn(int argc, char *argv[])
-{
-    ohos_cli_disconn_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_disconn", "none", bt_ble_cli_disconn);
-
-static void bt_ble_cli_search_srv(int argc, char *argv[])
-{
-    ohos_cli_Search_srv_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_search_srv", "none", bt_ble_cli_search_srv);
-
-static void bt_ble_cli_get_srv(int argc, char *argv[])
-{
-    ohos_cli_get_srv_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_get_srv", "none", bt_ble_cli_get_srv);
-
-static void bt_ble_cli_read(int argc, char *argv[])
-{
-    ohos_cli_read_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_read", "none", bt_ble_cli_read);
-
-static void bt_ble_cli_wirte(int argc, char *argv[])
-{
-    int param[2] = {0};
-
-    bt_cmd_param_parse(argc, argv, param);
-    ohos_cli_wirte_handle(param[0], param[1]);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_wirte", "none", bt_ble_cli_wirte);
-
-static void bt_ble_cli_reg_ntf(int argc, char *argv[])
-{
-    int param = 0;
-
-    bt_cmd_param_parse(argc, argv, &param);
-    ohos_cli_reg_ntf_handle(param);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_cli_reg_ntf", "none", bt_ble_cli_reg_ntf);
-
-static void bt_ble_srv_add_srv(int argc, char *argv[])
-{
-    ohos_srv_add_srv_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_add_srv", "none", bt_ble_srv_add_srv);
-
-static void bt_ble_srv_start(int argc, char *argv[])
-{
-    ohos_srv_start_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_start", "none", bt_ble_srv_start);
-
-static void bt_ble_srv_stop(int argc, char *argv[])
-{
-    ohos_srv_stop_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_stop", "none", bt_ble_srv_stop);
-
-static void bt_ble_srv_send_ntf(int argc, char *argv[])
-{
-    int param[2] = {0};
-
-    bt_cmd_param_parse(argc, argv, param);
-    ohos_srv_send_ntf_handle(param[0], param[1]);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_send_ntf", "none", bt_ble_srv_send_ntf);
-
-static void bt_ble_srv_delete(int argc, char *argv[])
-{
-    ohos_srv_delete_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_delete", "none", bt_ble_srv_delete);
-
-static void bt_ble_srv_dis_conn(int argc, char *argv[])
-{
-    ohos_srv_dis_conn_handle(0, 0);
-}
-ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_srv_dis_conn", "none", bt_ble_srv_dis_conn);
-
-static void bt_ble_uuid_tran_test(int argc, char *argv[])
-{
-    ohos_uuid_tran_test_handle(0, 0);
-}
 ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "bt_ble_uuid_tran_test", "none", bt_ble_uuid_tran_test);
 
-#endif
+static void ohos_gap_bt_on_off(int argc, char *argv[])
+{
+    int ret = 0;
+    int enable = {0};
+
+    bt_cmd_param_parse(argc, argv, &enable);
+
+    if (enable)
+    {
+        ret = EnableBt();
+    }
+    else
+    {
+        ret = DisableBt();
+    }
+
+    LOG_I("[%s][%d]: ret=%d", __func__, __LINE__ , ret);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "ohos_gap_bt_on_off", "none", ohos_gap_bt_on_off);
+
+static void ohos_gap_ble_on_off(int argc, char *argv[])
+{
+    int ret = 0;
+    int enable = {0};
+
+    bt_cmd_param_parse(argc, argv, &enable);
+
+    if (enable)
+    {
+        ret = EnableBle();
+    }
+    else
+    {
+        ret = DisableBle();
+    }
+
+    LOG_I("[%s][%d]: ret=%d", __func__, __LINE__ , ret);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "ohos_gap_ble_on_off", "none", ohos_gap_ble_on_off);
+
+static void ohos_gap_get_bt_state(int argc, char *argv[])
+{
+    LOG_I("[%s][%d]: state=%d", __func__, __LINE__ , GetBtState());
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "ohos_gap_get_bt_state", "none", ohos_gap_get_bt_state);
+
+static void ohos_gap_ble_is_enable(int argc, char *argv[])
+{
+    int en = 0;
+
+    en = IsBleEnabled();
+
+    LOG_I("[%s][%d]: en=%d", __func__, __LINE__ , en);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "ohos_gap_ble_is_enable", "none", ohos_gap_ble_is_enable);
+
+static void ohos_gap_get_local_addr(int argc, char *argv[])
+{
+    bool state;
+    uint8_t addr[6] = {0};
+
+    state = GetLocalAddr(addr, 6);
+
+    LOG_I("[%s][%d]: state=%d", __func__, __LINE__ , state);
+    DUMP8("%02x ", addr, 6);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "ohos_gap_get_local_addr", "none", ohos_gap_get_local_addr);
+
+static void ohos_gap_set_local_name(int argc, char *argv[])
+{
+    bool state;
+
+    state = SetLocalName((uint8_t *)SCAN_FILTER_DEV_NAME1, strlen(SCAN_FILTER_DEV_NAME1));
+
+    LOG_I("[%s][%d]: state=%d", __func__, __LINE__ , state);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "ohos_gap_set_local_name", "none", ohos_gap_set_local_name);
+
+static void ohos_gap_set_bt_scan_mode(int argc, char *argv[])
+{
+    bool state;
+    int param[2] = {0};
+
+    bt_cmd_param_parse(argc, argv, param);
+    state = SetBtScanMode(param[0], param[1]);
+
+    LOG_I("[%s][%d]: state=%d", __func__, __LINE__ , state);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "ohos_gap_set_bt_scan_mode", "none", ohos_gap_set_bt_scan_mode);
+
+
+static void ohos_gap_set_fast_scan(int argc, char *argv[])
+{
+    int isEnable;
+    bool state;
+
+    bt_cmd_param_parse(argc, argv, &isEnable);
+
+    state = SetFastScan(isEnable);
+
+    LOG_I("[%s][%d]: state=%d", __func__, __LINE__ , state);
+}
+ESHELL_DEF_COMMAND(ESHELL_CMD_GRP_BT_COMMON, "ohos_gap_set_fast_scan", "none", ohos_gap_set_fast_scan);

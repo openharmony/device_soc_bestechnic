@@ -480,6 +480,7 @@ struct hci_ev_io_capability_response {
 #define HCI_EV_USER_CONFIRMATION_REQUEST    0x33
 struct hci_ev_user_confirmation_request {
     struct bdaddr_t bdaddr;
+    uint32 numeric_value;
 }__attribute__ ((packed));
 
 #define HCI_EV_USER_PASSKEY_REQUEST      0x34

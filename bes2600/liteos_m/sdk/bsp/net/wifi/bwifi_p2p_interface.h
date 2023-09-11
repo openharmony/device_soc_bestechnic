@@ -26,7 +26,6 @@
 #if LWIP_ETHERNETIF
 #include "lwip/netif.h"
 #endif
-#include "bwifi_interface.h"
 
 #ifdef __cplusplus
 extern "C" {

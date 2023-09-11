@@ -19,6 +19,7 @@ config("public") {
 
 kernel_module("bt_adapter") {
   sources = [
+    "src/harmony_bt_gap.c",
     "src/harmony_ble_gatt.c",
     "src/harmony_ble_client.c",
     "src/harmony_ble_server.c",
@@ -27,11 +28,12 @@ kernel_module("bt_adapter") {
   ]
   include_dirs = [
     "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/utils/eshell/",
+    "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/stack/bt_profiles/inc",
     "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/adapter/inc",
     "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/adapter/inc/bt/common/",
-    "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/stack/bt_profiles/inc",
     "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/adapter/inc/adapter_service/",
     "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/bthost/adapter/inc/bt/me/",
+    "//device/soc/bestechnic/bes2600/liteos_m/sdk/bsp/services/nv_section/factory_section/",
     "//device/soc/bestechnic/bes2600/liteos_m/components/bt/inc/"
   ]
   defines = []

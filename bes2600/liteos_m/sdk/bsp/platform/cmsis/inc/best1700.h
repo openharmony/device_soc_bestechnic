@@ -33,6 +33,10 @@
 
 #include _TO_STRING(CONCAT_NAME(CHIP_ID_LITERAL, _bth.h))
 
+#elif defined(CHIP_SUBSYS_DSP)
+
+#include _TO_STRING(CONCAT_NAME(CHIP_ID_LITERAL, _dsp.h))
+
 #else
 
 #ifdef __cplusplus
@@ -140,7 +144,7 @@ typedef enum IRQn
     MCU_DSPC0_DONE1_IRQn        =  80,      /*!< Intersys MCU to DSPC0 Data1 Done Interrupt */
     MCU_DSPC0_DONE2_IRQn        =  81,      /*!< Intersys MCU to DSPC0 Data2 Done Interrupt */
     SYS_QSPI_IRQn               =  82,      /*!< QSPI Interrupt                     */
-    RESERVED_83_IRQn            =  83,      /*!< Reserved Interrupt                 */
+    SYS_JPEG_IRQn               =  83,      /*!< JPEG Interrupt                     */
     RESERVED_84_IRQn            =  84,      /*!< Reserved Interrupt                 */
     RESERVED_85_IRQn            =  85,      /*!< Reserved Interrupt                 */
     RESERVED_86_IRQn            =  86,      /*!< Reserved Interrupt                 */

@@ -100,6 +100,10 @@ bt_status_t bes_bt_me_set_bt_address(const uint8_t *local_addr);
 
 bt_status_t bes_bt_me_set_ble_address(const uint8_t *local_addr);
 
+bt_status_t bes_bt_me_set_bt_name(char *localName, uint8_t length);
+
+bt_status_t bes_bt_me_set_ble_name(char *localName, unsigned char length);
+
 void bes_bt_me_set_stay_active_mode(bool keep_active_mode, BT_ACTIVE_MODE_KEEP_USER_T user, uint32_t link_id);
 
 uint8_t bes_bt_me_get_device_id_from_address(const bt_bdaddr_t *remote);
@@ -192,6 +196,8 @@ bt_remver_t bes_bt_me_acl_get_remote_version(uint16_t conn_handle);
 
 bt_status_t bes_bt_me_acl_set_link_monitor(uint16_t conn_handle, uint8_t control_flag, uint8_t report_format,
         uint32_t data_format, uint8_t report_unit);
+
+void bes_bt_me_response_acl_conn_req(bt_bdaddr_t *remote, bool accept);
 
 uint8_t bes_bt_me_acl_get_event_type(const btif_event_t *event);
 
@@ -288,6 +294,13 @@ btif_remote_device_t *bes_bt_get_remote_dev_by_device_id(uint8_t device_id);
 void bes_bt_conn_ibrt_disconnected_handle(struct btm_conn_item_t *btm_conn);
 
 void bes_bt_device_snoop_acl_disconnected(uint8_t device_id, void* addr);
+
+void bes_bt_me_set_accessible_mode(btif_accessible_mode_t mode,
+                                        const btif_access_mode_info_t *info);
+
+void bes_bt_me_confirmation_register_callback(btif_confirmation_req_callback_t callback);
+
+void bes_bt_me_confirmation_resp(struct bdaddr_t *bdaddr, bool accept);
 
 #ifdef __IAG_BLE_INCLUDE__
 void bes_bt_me_stop_fast_connectable_ble_adv(void);

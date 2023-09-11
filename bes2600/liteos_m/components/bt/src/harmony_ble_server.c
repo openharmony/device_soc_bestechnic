@@ -16,10 +16,12 @@
 #include "string.h"
 #include "plat_types.h"
 #include "hal_trace.h"
-#include "ohos_bt_gatt_server.h"
-#include "harmony_utils.h"
 #include "gatt_service.h"
-#include "bt_adaptor_dbg.h"
+
+#include "ohos_bt_gatt_server.h"
+#include "ohos_bt_utils.h"
+#include "ohos_bt_debug.h"
+
 
 /****************************Macro defination***************************/
 #define OHOS_GATTS_EVENT_MAX        10

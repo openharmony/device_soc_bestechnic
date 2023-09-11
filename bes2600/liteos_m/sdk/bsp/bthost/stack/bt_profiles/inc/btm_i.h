@@ -125,6 +125,7 @@ enum btm_name_event
 };
 
 typedef void (*btm_pairing_callback_t)(enum btm_pairing_event event,void *pdata);
+typedef void (*btm_confirmation_req_callback_t)(struct bdaddr_t *bdaddr, uint32 numeric_value);
 
 typedef void (*btm_chip_init_ready_callback_t)(int status);
 
@@ -870,6 +871,7 @@ struct btm_ctrl_t {
     uint8 pairing_flag;  /*tell whether the device in pairing state, 1:yes, 0:no*/
     uint32 pairing_timeout;
     void (*btm_pairing_notify_callback)(enum btm_pairing_event event,void *pdata);
+    void (*btm_confirmation_req_callback)(struct bdaddr_t *bdaddr, uint32 numeric_value);
     uint8 security_waitfor_linkkey_reply;
     struct bdaddr_t security_waitfor_linkkey_reply_bdaddr;
 
@@ -1026,6 +1028,8 @@ void btm_start_pairing(	struct bdaddr_t remote_addr, btm_pairing_callback_t call
 void btm_unpair_reomte(struct bdaddr_t remote_addr, btm_pairing_callback_t callback);
 
 void btm_pairing_register_callback(btm_pairing_callback_t callback);
+void btm_confirmation_register_callback(btm_confirmation_req_callback_t callback);
+int8 btm_confirmation_resp(struct bdaddr_t *bdaddr, bool accept);
 
 void btm_pairing_exit(void);
 

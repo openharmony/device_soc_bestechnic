@@ -16,8 +16,7 @@
 #ifndef __HAL_KEY_H__
 #define __HAL_KEY_H__
 
-#include "hal_gpio.h"
-#include "hal_gpadc.h"
+#include "hal_iomux.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -135,6 +135,7 @@ struct HAL_USBHOST_SETUP_XFER_T {
     uint8_t chan_in;
     uint8_t *data_buf;
     uint16_t buf_len;
+    uint16_t rx_len;
 };
 
 int hal_usbhost_open(HAL_USBHOST_PORT_HANDLER port_cb, HAL_USBHOST_DELAY_FUNC delay_fn);

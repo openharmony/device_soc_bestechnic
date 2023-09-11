@@ -1360,6 +1360,13 @@ enum APP_BT_REQ_T {
     APP_BT_REQ_NUM
 };
 
+enum BT_ACL_CONN_TYPE
+{
+    BT_ACL_CONNECT_REQ  = 0,
+    BT_ACL_CONNECT      = 1,
+    BT_ACL_DISCONNECT   = 2
+};
+
 typedef struct app_bt_search_result {
     bt_bdaddr_t *addr;
     const char *name;
