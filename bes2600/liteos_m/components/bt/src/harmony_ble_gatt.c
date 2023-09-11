@@ -22,9 +22,8 @@
 #include "adapter_service.h"
 #include "bes_me_api.h"
 
-#include "ohos_bt_def.h"
-#include "ohos_bt_gap.h"
 #include "ohos_bt_gatt.h"
+#include "ohos_bt_def.h"
 //#include "harmony_utils.h"
 
 #include "gap_service.h"
@@ -735,43 +734,3 @@ int SetScanReportChannelToLpDevice(int32_t ScannerId, bool enable)
     return OHOS_BT_STATUS_UNSUPPORTED;
 }
 
-bool IsBleEnabled()
-{
-    printf("called virtual %s\n", __FUNCTION__);
-    return true;
-}
-
-bool GetLocalAddr(unsigned char *mac, unsigned int len)
-{
-    printf("called %s\n", __FUNCTION__);
-    uint8_t *bt_addr = factory_section_get_bt_address();
-    if (bt_addr == NULL) {
-        return false;
-    }
-    memcpy(mac, bt_addr, len);
-    return true;
-}
-
-bool SetDevicePairingConfirmation(const BdAddr *bdAddr, int transport, bool accept)
-{
-    printf("called virtual %s\n", __FUNCTION__);
-    return true;
-}
-
-bool PairRequestReply(const BdAddr *bdAddr, int transport, bool accept)
-{
-    printf("called virtual %s\n", __FUNCTION__);
-    return true;
-}
-
-int GapRegisterCallbacks(BtGapCallBacks *func)
-{
-    printf("called virtual %s\n", __FUNCTION__);
-    return 0;
-}
-
-int sched_yield(void)
-{
-    printf("called virtual %s\n", __FUNCTION__);
-    return 0;
-}
