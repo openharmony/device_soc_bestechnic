@@ -583,7 +583,11 @@ int BleStartAdvEx(int *advId, const StartAdvRawData rawData, BleAdvParams advPar
     uint8_t adv_handle;
     gap_adv_param_t param = {0};
 
+    param.use_legacy_pdu = 1;
     param.fast_advertising = 1;
+    param.enable_scan_req_notify = 1;
+    param.primary_adv_phy = GAP_PHY_LE_1M;
+    param.secondary_adv_phy = GAP_PHY_LE_1M;
     param.adv_timing.min_adv_fast_interval_ms = advParam.minInterval *5/8;
     param.adv_timing.max_adv_fast_interval_ms = advParam.maxInterval *5/8;
 
