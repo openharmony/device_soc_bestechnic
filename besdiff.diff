@@ -1,0 +1,22 @@
+diff --git a/bes2600/liteos_m/components/bt/src/harmony_ble_gatt.c b/bes2600/liteos_m/components/bt/src/harmony_ble_gatt.c
+index 75fe4b1..019c0ac 100644
+--- a/bes2600/liteos_m/components/bt/src/harmony_ble_gatt.c
++++ b/bes2600/liteos_m/components/bt/src/harmony_ble_gatt.c
+@@ -612,7 +612,7 @@ int BleStartAdvEx(int *advId, const StartAdvRawData rawData, BleAdvParams advPar
+             break;
+     }
+ 
+-    param.own_addr_type = advParam.ownAddrType;
++    param.own_addr_type = BT_ADDR_TYPE_PUB_IA; //advParam.ownAddrType;
+     param.peer_type = advParam.peerAddrType;
+     memcpy(param.peer_addr.address, advParam.peerAddr.addr, 6);
+     param.policy = advParam.advFilterPolicy;
+@@ -733,3 +733,8 @@ int SetScanReportChannelToLpDevice(int32_t ScannerId, bool enable)
+     return OHOS_BT_STATUS_UNSUPPORTED;
+ }
+ 
++int sched_yield(void)
++{
++    printf("called virtual %s\n", __FUNCTION__);
++    return 0;
++}

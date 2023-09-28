@@ -737,3 +737,8 @@ int SetScanReportChannelToLpDevice(int32_t ScannerId, bool enable)
     return OHOS_BT_STATUS_UNSUPPORTED;
 }
 
+int sched_yield(void)
+{
+    printf("called virtual %s\n", __FUNCTION__);
+    return 0;
+}
