@@ -178,7 +178,7 @@ static int BleGattsCharReadCb(gatt_svc_t *svc, gatt_server_callback_param_t para
     if (ConnInfo)
     {
         osMutexWait(BleGattsEnv.mutex_id, osWaitForever);
-        readCbPara.connId = svc->con_idx;
+        readCbPara.connId = svc->connhdl;
         readCbPara.transId = OHOS_BT_TRANSPORT_LE;
         readCbPara.bdAddr = (BdAddr *)&param.char_read->conn->peer_addr;
         readCbPara.attrHandle = BleGattsGetUserAttHdl(param.char_read->char_attr);
@@ -211,7 +211,7 @@ static int BleGattsDescReadCb(gatt_svc_t *svc, gatt_server_callback_param_t para
         if (uuid16 != GATT_DESC_UUID_CHAR_CLIENT_CONFIG)
         {
             osMutexWait(BleGattsEnv.mutex_id, osWaitForever);
-            readCbPara.connId = svc->con_idx;
+            readCbPara.connId = svc->connhdl;
             readCbPara.transId = OHOS_BT_TRANSPORT_LE;
             readCbPara.bdAddr = (BdAddr *)&param.desc_read->conn->peer_addr;
             readCbPara.attrHandle = BleGattsGetUserAttHdl(param.desc_read->char_attr);
@@ -240,7 +240,7 @@ static int BleGattsCharWriteCb(gatt_svc_t *svc, gatt_server_callback_param_t par
     if (ConnInfo)
     {
         osMutexWait(BleGattsEnv.mutex_id, osWaitForever);
-        writeCbPara.connId   = svc->con_idx;
+        writeCbPara.connId   = svc->connhdl;
         writeCbPara.transId  = OHOS_BT_TRANSPORT_LE;
         writeCbPara.bdAddr   = (BdAddr *)param.char_write->conn->peer_addr.address;
         writeCbPara.attrHandle = BleGattsGetUserAttHdl(param.char_write->char_attr);
@@ -274,7 +274,7 @@ static int BleGattsDescWriteCb(gatt_svc_t *svc, gatt_server_callback_param_t par
         if (uuid16 != GATT_DESC_UUID_CHAR_CLIENT_CONFIG)
         {
             osMutexWait(BleGattsEnv.mutex_id, osWaitForever);
-            writeCbPara.connId   = svc->con_idx;
+            writeCbPara.connId   = svc->connhdl;
             writeCbPara.transId  = OHOS_BT_TRANSPORT_LE;
             writeCbPara.bdAddr   = (BdAddr *)param.desc_write->conn->peer_addr.address;
             writeCbPara.attrHandle = BleGattsGetUserAttHdl(param.desc_write->char_attr);
@@ -304,19 +304,19 @@ static int BleGattsDescWriteCb(gatt_svc_t *svc, gatt_server_callback_param_t par
 
 static int BleGattsNtfTxDoneCb(gatt_svc_t *svc, gatt_server_callback_param_t param)
 {
-    BleGattsEnv.EventCb->indicationSentCb(svc->con_idx, OHOS_BT_STATUS_SUCCESS);
+    BleGattsEnv.EventCb->indicationSentCb(svc->connhdl, OHOS_BT_STATUS_SUCCESS);
     return BT_STS_SUCCESS;
 }
 
 static int BleGattsIndicateCfmCb(gatt_svc_t *svc, gatt_server_callback_param_t param)
 {
-    BleGattsEnv.EventCb->indicationSentCb(svc->con_idx, param.cfm->error_code);
+    BleGattsEnv.EventCb->indicationSentCb(svc->connhdl, param.cfm->error_code);
     return BT_STS_SUCCESS;
 }
 
 static int BleGattsMtuChangedCb(gatt_svc_t *svc, gatt_server_callback_param_t param)
 {
-    BleGattsEnv.EventCb->mtuChangeCb(svc->con_idx, param.mtu_changed->mtu);
+    BleGattsEnv.EventCb->mtuChangeCb(svc->connhdl, param.mtu_changed->mtu);
     return BT_STS_SUCCESS;
 }
 
@@ -391,7 +391,7 @@ int BleGattsRegister(BtUuid appUuid)
 
     BleGattsEnv.EventCb->registerServerCb(OHOS_BT_STATUS_SUCCESS, BleGattsEnv.ServiceId, &BleGattsEnv.AppUser);
 
-    return BleGattsEnv.ServiceId;
+    return OHOS_BT_STATUS_SUCCESS;
 }
 
 int BleGattsUnRegister(int serverId)
