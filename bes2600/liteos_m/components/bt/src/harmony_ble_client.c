@@ -26,6 +26,8 @@
 /****************************Macro defination***************************/
 #define OHOS_CACHE_SRV_MAX      20
 #define OHOS_CACHE_CHAR_MAX     10
+#define OHOS_CLI_ATT_MTU_DEF    512
+#define OHOS_CLI_PRF_SIZE       7
 
 #define OHOS_ClIENT_INVALID_ID  0xFFFFFFFF
 /****************************Type defination****************************/
@@ -696,6 +698,7 @@ static int BleGapConnCallback(uintptr_t init, gap_init_event_t event, gap_init_c
 int BleGattcRegister(BtUuid appUuid)
 {
     int clientId = OHOS_ClIENT_INVALID_ID;
+    gattc_cfg_t gattc_info = {0};
 
     if (!BleGattcEnv.mutex_id)
     {
@@ -738,7 +741,12 @@ int BleGattcRegister(BtUuid appUuid)
     BleGattcEnv.UserClientNum++;
     osMutexRelease(BleGattcEnv.mutex_id);
 
-    BleGattcEnv.UserClient[clientId].PrfId = gattc_register_profile(sizeof(OhosGattcPrf_t), BleGattcProfileCallback, true);
+    gattc_info.prf_size       = OHOS_CLI_PRF_SIZE;
+    gattc_info.preferred_mtu  = OHOS_CLI_ATT_MTU_DEF;
+    gattc_info.eatt_preferred = false;
+    gattc_info.enc_required   = true;
+
+    BleGattcEnv.UserClient[clientId].PrfId = gattc_register_profile(BleGattcProfileCallback, &gattc_info);
 
     return clientId;
 }
@@ -900,7 +908,8 @@ int BleGattcSearchServices(int clientId)
     memset(UserGattc->CacheChar, 0, sizeof(UserGattc->CacheChar));
     osMutexRelease(BleGattcEnv.mutex_id);
 
-    ret = gatt_discover_all_primary_services(UserGattc->StackPrf.prf);
+    ret = gatt_discover_all_primary_services(BleGattcEnv.UserClient[clientId].PrfId,
+        BleGattcEnv.UserClient[clientId].ConnInfo.connhdl);
 
     if (BT_STS_SUCCESS != ret)
     {
