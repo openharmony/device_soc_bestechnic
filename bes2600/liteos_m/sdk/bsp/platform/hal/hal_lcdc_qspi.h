@@ -119,6 +119,19 @@ void hal_lcdc_qspi_te_gpio_irq_enable(void);
 void hal_lcdc_qspi_te_gpio_irq_disable(void);
 
 
+/**
+ * @brief hal_lcdc_qspi_gen_start - start qspi frame transfer
+ */
+int hal_lcdc_qspi_gen_start(void);
+
+
+/**
+ * @brief hal_lcdc_qspi_cs_sel - active or deactive spi cs pin
+ * Only for best1502x.
+ */
+void hal_lcdc_qspi_cs_sel(bool active);
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -22,14 +22,15 @@ enum frame_header_data_type {
     FRAME_HEADER_DOWNLOAD_INFO     =  0xB1,
     FRAME_HEADER_DOWNLOAD_DATA     =  0xB2,
     FRAME_HEADER_DOWNLOAD_END      =  0xB3,
-    FRAME_HEADER_RUN_CODE          =  0xB4,
+    FRAME_HEADER_RUN_PGM           =  0xB4,
     FRAME_HEADER_SYS_REBOOT        =  0xB5,
     FRAME_HEADER_SYS_SHUTDOWN      =  0xB6,
-    FRAME_HEADER_SYS_FLASH_BOOT    =  0xB7,
+
     FRAME_HEADER_SYS_SET_BOOT_MODE =  0xB8,
     FRAME_HEADER_SYS_CLR_BOOT_MODE =  0xB9,
     FRAME_HEADER_SYS_GET_BOOT_MODE =  0xBA,
-    TYPE_CONN_GET_FLASH_FW_VERSION =  0xBB,
+    FRAME_HEADER_FLASH_READ        =  0xBD,
+    FRAME_HEADER_RUN_FLASH         =  0xBE,
 };
 
 struct FRAME_STRUCTURE_T {
@@ -67,13 +68,21 @@ struct sdio_run_firmware_t {
     uint32_t addr;
 };
 
-struct fw_version_t {
-	uint32_t migc_num;
-	uint32_t crc32;
+struct fw_header_t {
+    uint32_t migc_num;
+    uint16_t param0;
+    uint16_t param1;
+    uint32_t crc32;
+    uint32_t param2;
 };
 
 struct sdio_boot_mode_t {
     uint32_t boot_mode;
+};
+
+struct fw_flash_data_t {
+    u32 addr;
+    u32 len;
 };
 
 void wifi_sdio_firmware_download(void);

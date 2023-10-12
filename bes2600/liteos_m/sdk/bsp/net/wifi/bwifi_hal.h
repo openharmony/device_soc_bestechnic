@@ -29,6 +29,11 @@ extern "C" {
 #define WIFI_COEX_MODE_FDD_HYBRID_BIT   (1<<1)
 #define COEX_METRICS_PREFIX             "EPTA:"
 
+#ifdef __P2P_MODE_SUPPORT__
+#define BWIFI_P2P_INIT "P2P_INIT"
+#define BWIFI_P2P_DEINIT "P2P_DEINIT"
+#endif
+
 typedef enum bwifi_security_type {
     BWIFI_SECURITY_NONE,              /*!< open access point */
     BWIFI_SECURITY_WEP40,             /*!< phrase conforms to WEP */
@@ -234,6 +239,11 @@ enum EXT_VENDOR_CMD {
     REG_WIFI_MAC_MGMT_FRAME_RX_CB,
     GET_NET_IF,
     SET_TDD_STAION_P2P_DUR,
+    SET_LMAC_LOG_LEVEL,
+    SET_LMAC_LOG_MODE,
+    SET_MC_SCAN_PARAM,
+    WIFI_SOFTAP_ADD_ENTRY,
+    WIFI_SOFTAP_DEL_ENTRY,
 };
 
 struct ext_vendor_cmd_info_hdr {
@@ -264,6 +274,29 @@ struct bwifi_frame_info {
     uint16_t    rx_channel;
 };
 
+typedef enum bwifi_protocol_type {
+    BWIFI_PROTOCOL_HT,              /* HT */
+    BWIFI_PROTOCOL_VHT,             /* VHT */
+    BWIFI_PROTOCOL_HE,              /* HE */
+} BWIFI_PROTOCOL_TYPE_T;
+
+typedef enum bwifi_bandwidth_type {
+    BWIFI_BANDWIDTH_20M,            /* 20M */
+    BWIFI_BANDWIDTH_40M,            /* 40M */
+    BWIFI_BANDWIDTH_80M,            /* 80M */
+} BWIFI_BANDWIDTH_TYPE_T;
+
+struct bwifi_peer_info {
+    uint8_t mac_addr[ETH_ALEN];
+    BWIFI_PROTOCOL_TYPE_T protocol_type;
+    BWIFI_BANDWIDTH_TYPE_T band_width;
+};
+
+struct bwifi_softap_config_ext {
+    struct ext_vendor_cmd_info_hdr      hdr;
+    struct bwifi_peer_info              info;
+};
+
 struct set_wifi_ext_custom_ie {
     struct ext_vendor_cmd_info_hdr      hdr;
     uint8_t                             *ie_info;
@@ -288,6 +321,35 @@ struct get_net_if {
     struct netif *net_if;
 };
 #endif
+
+#if (WIFI_STACK_VER == 2)
+#define LMAC_MAC_MODULE_LEN     7
+struct lmac_mode_level {
+    struct ext_vendor_cmd_info_hdr hdr;
+    char module[LMAC_MAC_MODULE_LEN+1];
+    int level;
+};
+#endif
+
+struct lmac_log_mode {
+    struct ext_vendor_cmd_info_hdr hdr;
+    uint8_t log_mode;
+};
+
+typedef enum {
+    WIFI_IF_STATION = 0,
+    WIFI_IF_SOFTAP,
+    WIFI_IF_P2P
+} BWIFI_INTF_TYPE_T;
+
+struct set_mc_scan_param {
+    struct ext_vendor_cmd_info_hdr hdr;
+    uint8_t channel;
+    uint8_t scan_num;
+    uint16_t duration;
+    uint8_t mode_en;
+    uint8_t chan_base;
+};
 
 struct bwifi_hal_ops {
     /* wifi power status 0 - power on, 1 - power off */
@@ -689,8 +751,8 @@ struct bwifi_hal_ops {
 #endif
 
     /**
-     * epta_param_config - set epta parameter for wifi/bt TDD coexistance 
-     * @wifi_dur: wifi duration (ms) 
+     * epta_param_config - set epta parameter for wifi/bt TDD coexistance
+     * @wifi_dur: wifi duration (ms)
      * @bt_dur: bt duration (ms)
      * @mode: epta work mode
      *   0: periodic arbitrate by software, using wifi_dur and bt_dur to alloc active time for wifi and bt,

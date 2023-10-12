@@ -240,6 +240,9 @@ extern "C" {
 
 #define HFP_HF_SDP_FEAT_MASK    0x001f
 #define HFP_HF_SDP_FEAT_WBS     0x0020
+#if defined(HFP_SUPPORT_LC3_SWB)
+#define HFP_HF_SDP_FEAT_LC3_SWB 0x0100
+#endif
 
 #define HFP_AG_FEAT_3WAY        0x00000001
 #define HFP_AG_FEAT_ECNR        0x00000002
@@ -256,6 +259,9 @@ extern "C" {
 
 #define HFP_AG_SDP_FEAT_MASK    0x001f
 #define HFP_AG_SDP_FEAT_WBS     0x0020
+#if defined(HFP_SUPPORT_LC3_SWB)
+#define HFP_AG_SDP_FEAT_LC3_SWB 0x0100
+#endif
 
 #if defined(HFP_1_6_ENABLE)
 #define HFP_HF_FEATURES ( \
@@ -269,7 +275,11 @@ extern "C" {
                 HFP_HF_FEAT_VR    | \
                 HFP_HF_FEAT_ESCO_S4_T2 \
                 )
+#if defined(HFP_SUPPORT_LC3_SWB)
+#define HFP_HF_SDP_FEATURES ((HFP_HF_FEATURES & HFP_HF_SDP_FEAT_MASK) | HFP_HF_SDP_FEAT_WBS | HFP_HF_SDP_FEAT_LC3_SWB)
+#else
 #define HFP_HF_SDP_FEATURES ((HFP_HF_FEATURES & HFP_HF_SDP_FEAT_MASK) | HFP_HF_SDP_FEAT_WBS)
+#endif
 
 #define HFP_AG_FEATURES ( \
                 HFP_AG_FEAT_3WAY     | \
@@ -279,7 +289,11 @@ extern "C" {
                 HFP_AG_FEAT_CODEC    | \
                 HFP_AG_FEAT_ESCO_S4_T2 \
                 )
+#if defined(HFP_SUPPORT_LC3_SWB)
+#define HFP_AG_SDP_FEATURES ((HFP_AG_FEATURES & HFP_AG_SDP_FEAT_MASK) | HFP_AG_SDP_FEAT_WBS | HFP_AG_SDP_FEAT_LC3_SWB)
+#else
 #define HFP_AG_SDP_FEATURES ((HFP_AG_FEATURES & HFP_AG_SDP_FEAT_MASK) | HFP_AG_SDP_FEAT_WBS)
+#endif
 #else
 #define HFP_HF_FEATURES ( \
                 HFP_HF_FEAT_CLI   | \
@@ -482,7 +496,7 @@ extern "C" {
 #define L2CAP_ENFC_MIN_MTU                                          64
 
 #define L2CAP_MHDT_CFG_MTU                                          2820
-#define L2CAP_LE_CFG_MTU                                            251
+#define L2CAP_LE_CFG_MTU                                            251 // shall equal to HCI_LE_ACL_TX_DATA_SIZE
 #if defined(__3M_PACK__)
 #define L2CAP_CFG_MTU                                               1021
 #else

@@ -34,6 +34,10 @@ void hal_pcie_state_check(void);
 
 void hal_pcie_register_irq(void);
 
+void hal_pcie_suspend(void);
+
+void hal_pcie_resume(void);
+
 #ifdef __cplusplus
 }
 #endif

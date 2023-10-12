@@ -21,7 +21,6 @@ extern "C" {
 #endif
 
 #include "plat_addr_map.h"
-
 #include "plat_types.h"
 
 enum HAL_CPUDUMP_ID_T {
@@ -33,6 +32,15 @@ enum HAL_CPUDUMP_ID_T {
 #endif
 #ifdef WIFI_CPUDUMP_BASE
     HAL_CPUDUMP_ID_WF,
+#endif
+#ifdef SENS_CPUDUMP_BASE
+    HAL_CPUDUMP_ID_SENS,
+#endif
+#if defined(SYS_CPUDUMP_BASE) && defined(BTH_AS_MAIN_MCU)
+    HAL_CPUDUMP_ID_SYS,
+#endif
+#if defined(BTH_CPUDUMP_BASE) && !defined(BTH_AS_MAIN_MCU)
+    HAL_CPUDUMP_ID_BTH,
 #endif
 
     HAL_CPUDUMP_ID_QTY

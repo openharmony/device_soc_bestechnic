@@ -110,6 +110,10 @@ extern "C" {
 #define RAMXRET_SIZE                            RAMRET_SIZE
 #endif
 
+#ifndef RAMX_NS_SIZE
+#define RAMX_NS_SIZE                            RAM_NS_SIZE
+#endif
+
 #ifdef MAIN_RAM_USE_TCM
 #define RAM_TO_RAMX(a)                          (a)
 #define RAMX_TO_RAM(a)                          (a)

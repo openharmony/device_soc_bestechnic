@@ -36,6 +36,7 @@ struct besbt_cfg_t{
     bool sniff;
     bool dont_auto_report_delay_report;
     bool vendor_codec_en;
+    bool hfp_support_lc3_swb_en;
     bool force_use_cvsd;
     bool support_enre_mode;
     bool bt_hid_cod_enable;
@@ -89,6 +90,7 @@ struct besbt_cfg_t{
     bool a2dp_sink_disable_avrcp_sdp_tg;
     bool a2dp_source_pts_test;
     bool pts_test_dont_bt_role_switch;
+    bool le_audio_enabled;
 };
 extern struct besbt_cfg_t besbt_cfg;
 

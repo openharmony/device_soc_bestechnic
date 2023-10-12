@@ -67,7 +67,7 @@ typedef enum IRQn
     BT_IRQn                     =   3,      /*!< BT All Interrupt                   */
     SYS_IRQn                    =   4,      /*!< SYS All Interrupt                  */
     WIFI_IRQn                   =   5,      /*!< WIFI All Interrupt                 */
-    CORE1_IRQn                  =   6,      /*!< The Other Core All Interrupt       */
+    BTHC1_IRQn                  =   6,      /*!< The Other Core All Interrupt       */
     WAKEUP_IRQn                 =   7,      /*!< Wakeup Interrupt                   */
     ISDONE3_IRQn                = WAKEUP_IRQn,
     AON_WDT_IRQn                =   8,      /*!< AON Watchdog Timer Interrupt       */
@@ -244,12 +244,24 @@ typedef enum IRQn
 #define GPIO_IRQn               AON_IRQn
 #define GPADC_IRQn              INVALID_IRQn
 #define PWRKEY_IRQn             INVALID_IRQn
+#ifdef CHIP_ROLE_CP
+#define DMA0_IRQn               GPDMA_IRQn
+#define TIMER00_IRQn            AON_TIMER20_IRQn
+#define TIMER01_IRQn            AON_TIMER21_IRQn
+#define TIMER10_IRQn            BTH_TIMER20_IRQn
+#define TIMER11_IRQn            BTH_TIMER21_IRQn
+#else
+#define DMA0_IRQn               AUDMA_IRQn
+#ifndef CP_AS_SUBSYS
+#define DMA1_IRQn               GPDMA_IRQn
+#endif
 #define TIMER00_IRQn            AON_TIMER20_IRQn
 #define TIMER01_IRQn            AON_TIMER21_IRQn
 #define TIMER10_IRQn            BTH_TIMER00_IRQn
 #define TIMER11_IRQn            BTH_TIMER01_IRQn
 #define TIMER20_IRQn            BTH_TIMER10_IRQn
 #define TIMER21_IRQn            BTH_TIMER11_IRQn
+#endif
 #define WDT_IRQn                AON_WDT_IRQn
 #define DSP_WDT_IRQn            DSPC0_WDT_IRQn
 
@@ -271,13 +283,19 @@ typedef enum IRQn
 
 /* --------  Configuration of Core Peripherals  ----------------------------------- */
 #define __CM33_REV                0x0000U   /* Core revision r0p1 */
-#define __SAUREGION_PRESENT       0U        /* SAU regions present */
 #define __MPU_PRESENT             1U        /* MPU present */
 #define __VTOR_PRESENT            1U        /* VTOR present */
 #define __NVIC_PRIO_BITS          3U        /* Number of Bits used for Priority Levels */
 #define __Vendor_SysTickConfig    0U        /* Set to 1 if different SysTick Config is used */
 #define __FPU_PRESENT             1U        /* FPU present */
 #define __DSP_PRESENT             1U        /* DSP extension present */
+#define __SAUREGION_PRESENT       1U        /* SAU regions present */
+
+#ifdef ARM_CMNS
+#if defined(RTOS) && defined(KERNEL_RTX5)
+#define RTE_CMSIS_RTOS2_RTX5_ARMV8M_NS
+#endif
+#endif
 
 #include "core_cm33.h"                      /* Processor and core peripherals */
 

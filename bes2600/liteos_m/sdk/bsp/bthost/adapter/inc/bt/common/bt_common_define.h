@@ -854,7 +854,7 @@ typedef struct ble_bdaddr_t
 {
     uint8_t addr[6];
     uint8_t addr_type;
-} ble_bdaddr_t;
+} __attribute__ ((packed)) ble_bdaddr_t;
 
 typedef enum {
     HCI_CONN_TYPE_INVALID = 0,

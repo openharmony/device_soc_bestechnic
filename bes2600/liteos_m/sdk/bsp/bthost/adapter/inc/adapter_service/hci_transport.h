@@ -76,7 +76,7 @@ typedef enum {
 
 #define HCI_BT_ACL_TX_DATA_SIZE 1021 // initial value, shall overwrite by read buffer size comand
 #define HCI_BT_SCO_TX_DATA_SIZE 255
-#define HCI_LE_ACL_TX_DATA_SIZE 251
+#define HCI_LE_ACL_TX_DATA_SIZE 251 // max size of LE ACL HCI data packet (excluding header), i.e. the max le l2cap pdu size
 #define HCI_LE_ISO_TX_DATA_SIZE 480
 
 #define HCI_NUM_CMD_TX_CONTROLLER_BUFFERS     6 // initial value, shall overwrite by read buffer size comand

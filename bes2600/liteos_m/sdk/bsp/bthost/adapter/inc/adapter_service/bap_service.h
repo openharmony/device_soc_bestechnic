@@ -37,6 +37,8 @@ bt_status_t bap_start_direct_connection(bt_addr_type_t own_addr_type, bt_addr_ty
 
 #define BAP_INVALID_CIG_ID 0xFF
 #define BAP_INVALID_CIS_ID 0xFF
+#define BAP_INVALID_BIG_ID 0xFF
+#define BAP_INVALID_BIS_ID 0xFF
 
 #define BAP_ISO_CODEC_CFG_MAX_LEN 30
 

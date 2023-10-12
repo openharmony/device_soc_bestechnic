@@ -250,8 +250,8 @@ typedef int bt_status_t;
 #define BT_STS_GAP_GEN_LRPA                 0xd6
 #define BT_STS_GATT_CLIENT_SUPP_FEATURE     0xd7
 #define BT_STS_GATT_SERVER_SUPP_FEATURE     0xd8
-#define BT_STS_GATT_PEER_DEVICE_NAME        0xd9
-#define BT_STS_GATT_PEER_APPEARANCE         0xda
+#define BT_STS_GATT_DEVICE_NAME             0xd9
+#define BT_STS_GATT_APPEARANCE              0xda
 #define BT_STS_GATT_CENTRAL_ADDR_RESOLUTION 0xdb
 #define BT_STS_ONLY_USE_RPA_AFTER_BONDING   0xdc
 #define BT_STS_PERIPH_PERFERRED_CONN_PARAMS 0xdd
@@ -339,6 +339,11 @@ typedef int bt_status_t;
 #define BT_STS_NOT_ENCRYPTED                0x12d
 #define BT_STS_TERMINATE                    0x12e
 #define BT_STS_NO_BONDED_DEVICE             0x12f
+#define BT_STS_TOO_MANY_ACTIVE_CCCD         0x130
+#define BT_STS_PEER_SERVICE_CHANGED         0x131
+#define BT_STS_DATABASE_HASH                0x132
+#define BT_STS_GEN_DATABASE_HASH_FAILED     0x133
+#define BT_STS_SERVICE_CHANGED              0x134
 
 typedef enum {
     BT_GROUP_INDEX_LINK = 0,    // 0x1000
@@ -524,9 +529,6 @@ typedef enum {
 
     BT_EVENT_GAP_GLOBAL_EVENT_START,    // 0x2040
     BT_EVENT_GAP_GLOBAL_EVENT_END = BT_EVENT_GAP_GLOBAL_EVENT_START + 0xf,
-
-    BT_EVENT_GAP_PA_SYNC_EVENT_START,  // 0x2050
-    BT_EVENT_GAP_PA_SYNC_EVENT_END = BT_EVENT_GAP_PA_SYNC_EVENT_START + 0xf,
 
     BT_EVENT_BAP_EVENT_START = BT_EVENT_ID_GROUP_START(BT_GROUP_INDEX_BAP),
     BT_EVENT_BAP_EVENT_END = BT_EVENT_BAP_EVENT_START + 0xf,

@@ -87,6 +87,7 @@ typedef enum IRQn
     I2S1_IRQn                   =  23,      /*!< I2S1 Interrupt                     */
     BT_IRQn                     =  24,      /*!< BT to MCU Interrupt                */
     CODEC_TX_PEAK_IRQn          =  25,      /*!< CODEC TX PEAK Interrupt            */
+    CAP_SENSOR_IRQn             =  CODEC_TX_PEAK_IRQn,  /*!< CAP SENSOR Interrupt   */
     UART2_IRQn                  =  26,      /*!< UART2 Interrupt                    */
     MCU_TIMER10_IRQn            =  27,      /*!< Timer10 Interrupt                  */
     MCU_TIMER11_IRQn            =  28,      /*!< Timer11 Interrupt                  */

@@ -256,6 +256,7 @@ struct hf_indicator {
 
 #define CODEC_ID_CVSD 0x01
 #define CODEC_ID_MSBC 0x02
+#define CODEC_ID_LC3_SWB  0x03  // For LC3_SWB
 
 struct hfp_codec {
     uint8_t type;
@@ -291,8 +292,11 @@ struct hshf_control {
     uint8_t negotiated_codec;
     bool is_ag_role;
     bool sco_wait_codec_sync;
-
+#if defined(HFP_SUPPORT_LC3_SWB)
+    struct hfp_codec hfp_codecs[3];
+#else
     struct hfp_codec hfp_codecs[2];
+#endif
 
     struct indicator ag_ind[HFP_INDICATOR_LAST];
 
@@ -448,6 +452,7 @@ bool hfp_context_get_number(struct hfp_response *context, unsigned int *val);
 
 struct hshf_control *hfp_search_address(struct bdaddr_t *bdaddr);
 bool hfp_msbc_is_enable(uint8_t device_id, struct bdaddr_t *bdaddr);
+bool hfp_lc3_swb_is_enable(uint8_t device_id, struct bdaddr_t *bdaddr);
 bool hf_indicator_feat_supported(struct hshf_control *chan);
 
 struct hfp_ag_call_info

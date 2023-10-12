@@ -78,6 +78,7 @@ bool hal_intersys_get_wakeup_flag(void);
 
 void hal_intersys_wakeup_btcore(void);
 
+void hal_intersys_dump_register(void);
 #ifdef __cplusplus
 }
 #endif

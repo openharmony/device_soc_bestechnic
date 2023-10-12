@@ -23,8 +23,22 @@ extern "C" {
 #include "stdint.h"
 #include "stdbool.h"
 
+#include "hal_lcdc.h"
+
 typedef void (*HAL_DSI_TE_GPIO_IRQ_HANDLER)(void);
 typedef void (*HAL_DSI_ULPS_CB_HANDLER)(uint32_t param);
+
+enum HAL_DSI_MODE_E {
+    DSI_COMMAND_MODE = 0,
+    DSI_VIDEO_MODE,
+};
+
+enum HAL_DSI_LANE_E {
+    DSI_LANE_1 = 1,
+    DSI_LANE_2,
+    DSI_LANE_3,
+    DSI_LANE_4,
+};
 
 struct HAL_DSI_CFG_T {
     uint32_t active_width;
@@ -100,19 +114,27 @@ struct HAL_DSI_CFG_T {
 };
 
 /**
- * @brief hal_dsi_init - init dsi phy
+ * @brief hal_dsi_init - init dsi controller & phy
  *
- * @param h_res : panel horizontal resolution
+ * @param width : panel horizontal resolution
+ * @param mode : command mode or video mode
+ * @param lane : 1/2 lane mode
+ * @param color_fmt: RGB888/RGB565/RGB666...
  */
-void hal_dsi_init(uint16_t h_res);
+void hal_dsi_init(uint16_t width, enum HAL_DSI_MODE_E mode, enum HAL_DSI_LANE_E lane,
+                  enum hal_lcdc_dsi_cfmt_e color_fmt);
 
 /**
- * @brief hal_dsi_reset - reset phy, besause hs mode phy work error,
- *                        lp cmd send has some errors.
- *
- * @param h_res : panel horizontal resolution
+ * @brief hal_dsi_exit - disable dsi controller & phy
  */
-void hal_dsi_reset(uint16_t h_res);
+void hal_dsi_exit(void);
+
+/**
+ * @brief hal_dsi_reset - re-init dsi controller & phy
+ *
+ * @param width : panel horizontal resolution
+ */
+void hal_dsi_reset(uint16_t width);
 
 /**
  * @brief hal_dsi_send_cmd - send cmd by lp mode
@@ -177,6 +199,11 @@ uint32_t hal_dsi_get_unov_flags(void);
  * hal_dsi_teirq_enable - enable dsi te irq
  */
 void hal_dsi_teirq_enable(void);
+
+/**
+ * hal_dsi_teirq_disable - disable dsi te irq
+ */
+void hal_dsi_teirq_disable(void);
 
 /**
  * hal_dsi_irq_disable - disable dsi all irqs

@@ -776,6 +776,9 @@ struct btm_conn_item_t
 
     bool isSimplePairingCompleted;
 
+    uint8_t l2cap_wait_enc_timer;
+    uint8_t enc_key_size;
+
 #if mHDT_SUPPORT
     //move to le ACL link later
     uint32  le_mhdt_remote_feature;//bit0(BLE4M),bit8(BLE Audio ABR),get from TC hci command
@@ -905,6 +908,9 @@ struct btm_ctrl_t {
 
     btm_init_start_callback_t btm_init_start_cb;
 
+    uint8_t allow_resp_trigger_auth;
+    uint8_t min_enc_key_size;
+
 #if mHDT_SUPPORT
     btm_mhdt_mode_change_callback_t btm_mhdt_mode_change_cb;
     uint8_t bt_mhdt_host_support;//local bt host mhdt support,used for enable/disable bt mHDT feature
@@ -974,7 +980,7 @@ void btm_process_read_remote_extended_feature_complete_evt(struct hci_evt_packet
 void btm_process_cmd_complete_inquiry_cancel (uint8 *data);
 void btm_process_cmd_complete_remote_name_cancel(uint8 *data);
 void btm_process_cmd_complete_evt(struct hci_evt_packet_t *pkt);
-void btm_process_return_linkkeys_evt (struct hci_evt_packet_t *pkt); 
+void btm_process_return_linkkeys_evt (struct hci_evt_packet_t *pkt);
 void btm_acl_handle_nocopy(uint16 conn_handle, uint16 data_len, uint8 *data_p);
 
 struct btm_ctrl_t *btm_get_ctrl_ptr(void);
@@ -1296,6 +1302,7 @@ int8 btlib_hcicmd_user_passkey_request_neg_reply(struct bdaddr_t *bdaddr);
 int8 btlib_hcicmd_write_simple_pairing_mode(uint8 enable);
 int8 btlib_hcicmd_dbg_le_tx_power_request(uint16 conn_handle,  uint8 enable, int8 delta, uint8 rx_rate);
 int8 btlib_hcicmd_ble_audio_dbg_trc_enable_cmd(uint32_t trc_enable_opcode);
+int8 btlib_hcicmd_dbg_ibrt_update_time_slice(uint8_t nb, struct link_env* multi_ibrt);
 typedef void (*ble_audio_hci_debug_trace_handler)(uint8_t* p_buf, uint16_t buf_len);
 void register_hci_debug_trace_callback(ble_audio_hci_debug_trace_handler func);
 #if BLE_AUDIO_ENABLED
@@ -1304,7 +1311,7 @@ int8 btlib_hcicmd_dbg_set_iso_quality_rep_thr(uint16 conn_handle,               
     uint16 crc_err_pkts_thr, uint16 rx_unreceived_pkts_thr, uint16 duplicate_pkts_thr);
 #endif
 
-#if (mHDT_SUPPORT) || (mHDT_LE_SUPPORT) 
+#if (mHDT_SUPPORT) || (mHDT_LE_SUPPORT)
 #define HCI_DBG_MHDT_EVENT                                          0xe9
 #define TCI_SUBEVENT_LE_READ_REMOTE_PROPRIETARY_FEATURE_COMPLETE    0x04
 #define TCI_SUBEVENT_LE_READ_LOCAL_PROPRIETARY_FEATURE_COMPLETE     0x05
@@ -1431,7 +1438,7 @@ struct hci_ev_cmd_complete_write_mhdt_timeout
 {
     uint8 subcode;  //TCI_SUBCODE_WRITE_MHDT_TIMEOUT
     uint8 status;
-    uint16 conn_handle; 
+    uint16 conn_handle;
 }__attribute__ ((packed));
 
 //slave report to its host when mhdt timeout time changed
@@ -1453,7 +1460,7 @@ struct hci_ev_cmd_complete_read_mhdt_timeout
 {
     uint8 subcode;  //TCI_SUBCODE_READ_MHDT_TIMEOUT
     uint8 status;
-    uint16 conn_handle; 
+    uint16 conn_handle;
     uint16 mhdt_timeout;
 }__attribute__ ((packed));
 

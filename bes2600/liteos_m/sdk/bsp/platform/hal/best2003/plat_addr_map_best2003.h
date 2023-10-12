@@ -229,10 +229,10 @@ extern "C" {
 
 #ifndef PSRAM_BASE
 #define PSRAM_BASE                              0x34000000
-#define PSRAM_NC_BASE                           0x30000000
-#define PSRAMX_BASE                             0x14000000
-#define PSRAMX_NC_BASE                          0x10000000
 #endif
+#define PSRAM_NC_BASE                           (PSRAM_BASE - 0x4000000)
+#define PSRAMX_BASE                             (PSRAM_BASE - 0x20000000)
+#define PSRAMX_NC_BASE                          (PSRAMX_BASE - 0x4000000)
 
 #ifndef PSRAMUHS_BASE
 #define PSRAMUHS_BASE                           0x3C000000
