@@ -17,9 +17,83 @@
 #include "cmsis_os2.h"
 #include "plat_addr_map.h"
 #include "hal_cache.h"
-#include "hal_dsi.h"
+// #include "hal_dsi.h"
 #include "hdf_log.h"
 #include "mipi_dsi_core.h"
+
+
+struct HAL_DSI_CFG_T {
+    uint32_t active_width;
+    uint32_t active_height;//screen size
+    uint32_t h_front_porch;
+    uint32_t h_back_porch;
+    uint32_t v_front_porch;
+    uint32_t v_back_porch;
+    uint32_t total_width;
+    uint32_t total_height;
+
+    // pn video
+    uint32_t y_mem_pitch;
+    uint32_t uv_mem_pitch;
+    uint32_t c_mem_pitch;
+    uint32_t image_h_sa;
+    uint32_t image_v_sa;
+    uint32_t image_width;
+    uint32_t image_height;
+    uint32_t zm_image_width;
+    uint32_t zm_image_height;
+
+    // pn graphic
+    uint32_t g_mem_pitch;
+    uint32_t graphic_h_sa;
+    uint32_t graphic_v_sa;
+    uint32_t graphic_width;
+    uint32_t graphic_height;
+    uint32_t zm_graphic_width;
+    uint32_t zm_graphic_height;
+
+    // tv graphic
+    uint32_t g_tv_mem_pitch;
+    uint32_t tvg_h_sa;
+    uint32_t tvg_v_sa;
+    uint32_t tvg_width;
+    uint32_t tvg_height;
+    uint32_t zm_tvg_width;
+    uint32_t zm_tvg_height;
+
+    // pn cursor
+    uint32_t cursor_h_sa;
+    uint32_t cursor_v_sa;
+    uint32_t cursor_width;
+    uint32_t cursor_height;
+    int hwc_color1;
+    int hwc_color2;
+
+    //background
+    int blankcolor;
+
+    // pn viedo setting
+    int cos0;
+    int sin0;
+    int c_mult_s;
+    int saturation;
+    int brightness;
+    int contrast;
+
+    // pn keys
+    int cfg_alpha_y;
+    int cfg_ckey_y;
+    int cfg_ckey_y1;
+    int cfg_ckey_y2;
+    int cfg_alpha_u;
+    int cfg_ckey_u;
+    int cfg_ckey_u1;
+    int cfg_ckey_u2;
+    int cfg_alpha_v;
+    int cfg_ckey_v;
+    int cfg_ckey_v1;
+    int cfg_ckey_v2;
+};
 
 #define HDF_LOG_TAG mipi_dsi
 

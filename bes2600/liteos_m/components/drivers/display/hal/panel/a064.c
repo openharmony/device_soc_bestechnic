@@ -18,7 +18,9 @@
 #include "hdf_device_desc.h"
 #include "hal_gpio.h"
 #include "hal_iomux.h"
-#include "hal_dsi.h"
+// #include "hal_dsi.h"
+#include "hal_lcdc.h"
+
 #ifdef LOSCFG_DRIVERS_HDF_CONFIG_MACRO
 #include "hcs_macro.h"
 #include "hdf_config_macro.h"
