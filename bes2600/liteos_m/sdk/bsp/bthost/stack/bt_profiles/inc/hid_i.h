@@ -157,6 +157,7 @@ int hid_send_control(struct hid_control_t *hid_ctl, uint8_t ctrl_op);
 
 void hid_sensor_send_input_report(struct hid_control_t *hid_ctl, const struct bt_hid_sensor_report_t *data);
 
+void hid_consumer_send_ctrl_key(struct hid_control_t *hid_ctl, uint8_t ctrl_key);
 #ifdef __cplusplus
 }
 #endif

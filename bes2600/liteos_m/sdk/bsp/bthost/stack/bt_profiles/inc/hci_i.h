@@ -16,7 +16,6 @@
 #ifndef __HCI_I_H__
 #define __HCI_I_H__
 #include "bt_common_define.h"
-#include "me_common_define.h"
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -480,7 +479,7 @@ struct hci_ev_io_capability_response {
 #define HCI_EV_USER_CONFIRMATION_REQUEST    0x33
 struct hci_ev_user_confirmation_request {
     struct bdaddr_t bdaddr;
-    uint32 numeric_value;
+    uint32_t numeric_value;
 }__attribute__ ((packed));
 
 #define HCI_EV_USER_PASSKEY_REQUEST      0x34
@@ -1622,6 +1621,21 @@ struct hci_ble_audio_dbg_trc_enable_cmd
     uint32_t trc_enable_opcode;
 } __attribute__ ((packed));
 
+#define HCI_DBG_IBRT_UPDATE_TIME_SLICE_CMD_OPCODE   0xFD00
+
+struct link_env
+{
+    uint8_t link_id;
+    uint32_t timeslice;
+}__attribute__((packed));
+
+struct hci_dbg_ibrt_update_time_slice_struct
+{
+    uint8_t update;
+    uint8_t num_link_env;
+    struct link_env link_env[0];
+} __attribute__((packed));
+
 #define HCI_LE_READ_BUFFER_SIZE             0x2002
 #define HCI_LE_READ_BUFFER_SIZE_V2          0x2060
 struct hci_le_read_buffer_size_cmpl
@@ -2037,7 +2051,7 @@ struct hci_le_set_ext_scan_rsp_data_cmpl {
  * (Limit Reached 0x43) has been reached. It shall not generated if the Host disables the advertising set.
  *
  * This event shall only be generated if adv was enabled using the HCI_LE_Set_Ext_Adv_Enable command. The
- * Connection_Handle is only valid when advertising ends because a connection was created. 
+ * Connection_Handle is only valid when advertising ends because a connection was created.
  *
  * If the Max_Ext_Adv_Events in HCI_LE_Set_Ext_Adv_Enable was non-zero. the Num_Completed_Ext_Adv_Events shall
  * be set to the num of completed ext adv events the Controller had transmitted when either the duration elapsed
@@ -3647,7 +3661,7 @@ struct hci_ev_le_big_info_adv_report { // shall be generated even if the Control
 struct hci_le_big_create_sync {
     uint8_t big_handle; // 0x00 to 0xEF, used to identify the BIG
     uint16_t sync_handle; // 0x0000 to 0x0EFF, identifier of the pa train
-    uint8_t encryption; // 0x00 unencrypted, 0x01 encrypted
+    uint8_t encryption; // 0x00 unencrypted Broadcast_Code invalid, 0x01 encrypted Broadcast_Code valid
     uint8_t broadcast_code[16]; // used for deriving the session key for decrypting payloads of BISes in the BIG
     uint8_t mse; // 0x00 controler can schedule reception of any num of se up to NSE, 0x01 to 0x1F max num of se should be used
     uint16_t big_sync_timeout; // 0x0A to 0x4000, per 10ms, 100ms to 163.84s, sync timeout for the BIG
@@ -3821,7 +3835,6 @@ struct hci_ev_le_pa_response_data_item {
     uint8_t data_length;
     uint8_t data[1];
 } __attribute__ ((packed));
-
 struct hci_ev_le_pa_response_report {
     uint8_t subcode; // 0x28
     uint8_t adv_handle; // 0x00 to 0xEF, identify a pa train
@@ -3845,7 +3858,7 @@ struct hci_ev_le_pa_response_report {
  *
  * If the Host issue HCI_LE_Add_Device_To_PA_List or HCI_LE_Remove_Device_From_PA_List or
  * HCI_LE_Clear_PA_List when an HCI_LE_PA_Create_Sync is pending, the Controller shall return the error
- * code Command Disallowed (0x0C). 
+ * code Command Disallowed (0x0C).
  *
  * The HCI_LE_Read_PA_List is used to read the total number of PA list entries that can be stored
  * in the Controller. Note: The number of entries that can be stored is not fixed and the Controller

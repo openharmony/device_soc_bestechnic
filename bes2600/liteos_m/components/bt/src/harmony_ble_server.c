@@ -310,7 +310,7 @@ static int BleGattsNtfTxDoneCb(gatt_svc_t *svc, gatt_server_callback_param_t par
 
 static int BleGattsIndicateCfmCb(gatt_svc_t *svc, gatt_server_callback_param_t param)
 {
-    BleGattsEnv.EventCb->indicationSentCb(svc->connhdl, param.cfm->error_code);
+    BleGattsEnv.EventCb->indicationSentCb(svc->connhdl, param.confirm->error_code);
     return BT_STS_SUCCESS;
 }
 

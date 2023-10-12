@@ -17,7 +17,6 @@
 #define __L2CAP_I_H__
 #include "bluetooth.h"
 #include "btm_i.h"
-#include "l2cap_common_define.h"
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -444,6 +443,8 @@ void l2cap_process_echo_res_analyze_data(uint8 device_id, uint16 conhdl, uint8* 
 typedef void (*l2cap_process_bredr_smp_req_callback_func)(uint8 device_id, uint16 conn_handle, uint16 len, uint8 *data);
 void register_l2cap_process_bredr_smp_req_callback(l2cap_process_bredr_smp_req_callback_func func);
 int8 l2cap_send_bredr_security_manager_rsp(uint8 device_id, uint16 conn_handle, uint16 len, uint8 *data);
+int8 l2cap_send_echo_req(uint8 device_id, struct l2cap_conn *conn, uint16 len, const uint8* data);
+int8 l2cap_send_echo_rsp(uint8 device_id, uint16 conn_handle, uint8 sigid, uint16 len, const uint8* data);
 
 typedef void (*bt_proto_conn_open_close_t)(l2cap_conn_t* l2cap_conn, bt_proto_conn_t *proto_conn, bool open);
 bt_proto_conn_t *l2cap_proto_conn_find_or_add(const bt_bdaddr_t *remote, bluetooth_proto_id_t proto_id);
@@ -476,6 +477,7 @@ void l2cap_find_and_free_pending_avdtp_channel(struct bdaddr_t* remote);
 uint16 l2cap_get_converted_psm_from_handle(uint32 l2cap_handle);
 uint16_t l2cap_get_tx_mtu(uint32 l2cap_handle);
 bool l2cap_is_valid_dynamic_psm(uint16 psm);
+l2cap_channel_t *l2cap_channel_search_dcid(l2cap_conn_t *conn, uint16 dcid);
 struct pp_buff *l2cap_data_ppb_alloc_with_ca_line(uint32 datalen, void *context, uint32_t ca, uint32_t line, bool auto_grow_alloc);
 #define l2cap_data_ppb_alloc(datalen, context) l2cap_data_ppb_alloc_with_ca_line(datalen, context, (uint32_t)(uintptr_t)__builtin_return_address(0), __LINE__, false)
 int8 l2cap_send_data_ppb( uint32 l2cap_handle, struct pp_buff *ppb);

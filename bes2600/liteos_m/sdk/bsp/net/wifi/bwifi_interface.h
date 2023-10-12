@@ -38,12 +38,6 @@ extern "C" {
 #define SOFTAP_VENDOR_ELEMENTS_MAX_LEN  128     //refer to best2002 configuration
 
 typedef enum {
-    WIFI_IF_STATION = 0,
-    WIFI_IF_SOFTAP,
-    WIFI_IF_P2P
-} BWIFI_INTF_TYPE_T;
-
-typedef enum {
     BWIFI_STATUS_IDLE            = 0,
     BWIFI_STATUS_DISCONNECTING   = 1,
     BWIFI_STATUS_SCANNING        = 2,
@@ -467,6 +461,7 @@ int bwifi_set_softap_config(char *ssid,
                             uint8_t hidden,
                             BWIFI_SEC_TYPE_T security,
                             char *passwd);
+
 /*
  * Set softap's maximum client number
  * @sta_num: Maximum number of STAs
@@ -493,7 +488,15 @@ int bwifi_add_softap_vendor_elements(const uint8_t *ie, size_t ie_len);
  * Returns: 0 on success, nagtive on failure
  */
 int bwifi_softap_get_station_list(struct bwifi_mac_addr *mac_list, int *count);
-
+#if LWIP_SUPPORT
+/*
+ * Get softap's client ip address
+ * @mac: client's mac address
+ * @ip: Pointer to buffer to store the ip address
+ * Returns: 0 on success, nagtive on failure
+ */
+int bwifi_softap_get_station_ip(struct bwifi_mac_addr mac, in_addr_t *ip);
+#endif
 #endif
 
 /*
@@ -730,6 +733,44 @@ int bwifi_ext_vendor_cmd(struct ext_vendor_cmd_info_hdr *hdr);
  * Returns: current connect timeout value
  */
 int bwifi_set_connect_timeout(int timeout);
+
+#if (WIFI_STACK_VER == 2)
+/**
+ * bwifi_set_lmac_module_log_level - set lmac modules log level
+ * @module: module name string  match with rwnx_lmac_modules[]
+ * @level: module log level
+ * Returns: 0 - success, other - failure
+ */
+int bwifi_set_lmac_module_log_level(char *module, int level);
+#endif
+
+#ifdef DUMP_FW_LOG_TO_DRIVER
+/**
+ * bwifi_set_lmac_log_mode - set lmac log mode
+ * @log_mode: see NX_PRINT values
+ * Returns: 0 - success, other - failure
+ */
+int bwifi_set_lmac_log_mode(uint8_t log_mode);
+#endif
+
+int bwifi_set_mc_scan_param(uint8_t channel, uint8_t scan_num, uint16_t duration, uint8_t mode_en, uint8_t chan_base);
+
+/**
+ * bwifi_softap_add_entry - add an entry
+ * @mac_addr:  sta mac address to added, not NULL
+ * @protocol_type: sta's protocol used, see BWIFI_PROTOCOL_TYPE_T
+ * @band_width: sta's bandwidth used, see BWIFI_BANDWIDTH_TYPE_T
+ * Returns：0 - success, other - failure
+*/
+int bwifi_softap_add_entry(uint8_t *mac_addr, BWIFI_PROTOCOL_TYPE_T protocol_type,
+                           BWIFI_BANDWIDTH_TYPE_T band_width);
+
+/**
+ * bwifi_softap_del_entry - delete an entry
+ * @mac_addr: sta mac address to delete, NULL to del all sta
+ * Returns：0 - success, other - failure
+*/
+int bwifi_softap_del_entry(uint8_t *mac_addr);
 
 #ifdef __cplusplus
 }

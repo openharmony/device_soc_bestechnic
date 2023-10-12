@@ -28,6 +28,7 @@ extern "C" {
 #define GAP_INVALID_ADV_HANDLE 0xFF
 #define GAP_INVALID_SCAN_HANDLE 0xFF
 #define GAP_INVALID_INIT_HANDLE 0xFF
+#define GAP_INVALID_ADV_SET_ID 0xFF
 #define GAP_PA_NO_SUBEVENT 0xFF
 
 #define GAP_INVALID_SYNC_HANDLE 0xFFFF
@@ -237,6 +238,78 @@ typedef struct {
     bool is_exist;
 } gap_encrypted_data_key_material_t;
 
+#define GATT_MAX_SERVER_CCCD 36
+#define GATT_MAX_CACHE_SERVICES 8
+#define GATT_MAX_CACHE_CHARS 64
+#define GATT_MAX_CACHE_128_SERVICES 3
+#define GATT_MAX_CACHE_128_CHARS 8
+
+typedef struct {
+    uint8_t cccd_seqn: 6; // max 63 cccd
+    uint8_t notify: 1;
+    uint8_t indicate: 1;
+} __attribute__ ((packed)) gatt_server_cccd_t;
+
+typedef struct {
+    uint16_t char_handle;
+    uint16_t char_end_handle;
+    uint16_t char_value_handle;
+    uint16_t cccd_handle;
+    uint8_t service_seqn: 5;
+    uint8_t in_128_service: 1;
+    uint8_t reliable_write: 1;
+    uint8_t writable_aux: 1;
+    uint8_t char_prop;
+    uint16_t char_uuid;
+} __attribute__ ((packed)) gatt_char_cache_t;
+
+typedef struct {
+    uint16_t char_handle;
+    uint16_t char_end_handle;
+    uint16_t char_value_handle;
+    uint16_t cccd_handle;
+    uint8_t service_seqn: 5;
+    uint8_t in_128_service: 1;
+    uint8_t reliable_write: 1;
+    uint8_t writable_aux: 1;
+    uint8_t char_prop;
+    uint8_t uuid_128_le[16];
+} __attribute__ ((packed)) gatt_128_char_cache_t;
+
+typedef struct {
+    uint16_t start_handle;
+    uint16_t end_handle;
+    uint16_t service_uuid;
+} __attribute__ ((packed)) gatt_service_cache_t;
+
+typedef struct {
+    uint16_t start_handle;
+    uint16_t end_handle;
+    uint8_t uuid_128_le[16];
+} __attribute__ ((packed)) gatt_128_service_cache_t;
+
+typedef struct {
+    uint8_t server_cache_is_exist: 1;
+    uint8_t service_change_unaware: 1;
+    uint8_t gatt_client_supp_robust_caching: 1;
+    uint8_t gatt_client_supp_eatt_bearer: 1;
+    uint8_t gatt_client_supp_recv_multi_notify: 1;
+    uint8_t gatt_server_supp_eatt_bearer: 1;
+    uint8_t gatt_server_has_service_changed_char: 1;
+    uint8_t gatt_server_has_database_hash_char: 1;
+    gatt_server_cccd_t server_cccd[GATT_MAX_SERVER_CCCD];
+}  __attribute__ ((packed)) gatt_server_cache_t;
+
+typedef struct {
+    ble_bdaddr_t peer_addr;
+    uint8_t client_cache_seqn;
+    uint8_t peer_database_hash[16];
+    gatt_service_cache_t peer_service[GATT_MAX_CACHE_SERVICES];
+    gatt_128_service_cache_t peer_128_service[GATT_MAX_CACHE_128_SERVICES];
+    gatt_char_cache_t peer_character[GATT_MAX_CACHE_CHARS];
+    gatt_128_char_cache_t peer_128_character[GATT_MAX_CACHE_128_CHARS];
+}  __attribute__ ((packed)) gatt_client_cache_t;
+
 typedef struct {
     bt_bdaddr_t peer_addr;
     bt_addr_type_t peer_type;
@@ -257,6 +330,9 @@ typedef struct {
     uint8_t ediv[2];
     uint8_t local_ediv[2];
     uint8_t enc_key_size;
+    uint8_t has_client_cache: 1;
+    gatt_server_cache_t server_cache;
+    gatt_client_cache_t *client_cache;
 } gap_bond_sec_t;
 
 typedef struct {
@@ -265,15 +341,15 @@ typedef struct {
     uint32_t conn_ready: 1;
     uint32_t authencated: 1;
     uint32_t encrypted: 1;
-    uint32_t aes_ccm_enc: 1;
+    uint32_t directed: 1;
     uint32_t new_link_key_notified: 1;
+    uint32_t smp_let_app_confirm: 1;
     uint32_t smp_pairing_ongoing: 1;
     uint32_t smp_encrypt_ongoing: 1;
     uint32_t auth_mitm_protection: 1;
     uint32_t reconn_eatt_after_enc: 1;
     uint32_t att_tx_sec_block: 1;
     uint32_t att_rx_sec_block: 1;
-    uint32_t is_mtu_exchanged: 1;
     uint32_t peer_pairing_is_bonding: 1;
     uint32_t local_pairing_is_bonding: 1;
     uint32_t peer_pairing_support_ct2: 1;
@@ -298,18 +374,20 @@ typedef struct {
     uint16_t central_addr_reso_support: 1;
     uint16_t only_use_rpa_after_bonding: 1;
     uint16_t peripheral_has_perfer_conn_params: 1;
-    uint16_t server_database_hash_support: 1;
-    uint16_t gatt_server_supp_eatt_bearer: 1;
     uint16_t gatt_client_supp_robust_caching: 1;
     uint16_t gatt_client_supp_eatt_bearer: 1;
-    uint16_t gatt_client_supp_multi_value_notify: 1;
+    uint16_t gatt_client_supp_recv_multi_notify: 1;
+    uint16_t gatt_server_supp_eatt_bearer: 1;
+    uint16_t gatt_server_has_service_changed_char: 1;
+    uint16_t gatt_server_has_database_hash_char: 1;
     uint16_t device_appearance;
     uint8_t name_length; // max 248 utf-8 string
+    gap_security_levels_t sec_levels;
     uint32_t le_features;
     uint32_t high_le_features;
     uint8_t *device_name;
     uint8_t *enc_data_key_material_char;
-    gap_security_levels_t sec_levels;
+    uint8_t service_database_hash[16];
     gap_conn_prefer_params_t peripheral_prefer_conn_params;
     struct list_node srvc_list;
 } gap_peer_info_t;
@@ -333,8 +411,11 @@ typedef struct {
     const bt_bdaddr_t *hci_bt_addr;
     const bt_bdaddr_t *hci_le_addr;
     const bt_bdaddr_t *hci_random_addr;
+    uint8_t ble_dev_name[32];
+    uint32_t sign_counter;
     uint8_t irk[16];
     uint8_t csrk[16];
+    uint8_t local_database_hash[16];
     uint8_t max_filter_list_size;
     uint8_t max_resolving_list_size;
     uint8_t max_pa_list_size;
@@ -353,11 +434,12 @@ typedef struct {
     uint16_t gatt_server_supp_eatt_bearer: 1;
     uint16_t gatt_client_supp_eatt_bearer: 1;
     uint16_t gatt_client_supp_robust_caching: 1;
-    uint16_t gatt_client_supp_multi_value_notify: 1;
+    uint16_t gatt_client_supp_recv_multi_notify: 1;
     uint16_t peripheral_has_prefer_conn_params: 1;
     uint16_t use_random_identity_address: 1;
     uint16_t reso_address_by_host: 1;
     uint16_t address_reso_support: 1;
+    uint16_t total_cccd_count;
     gap_security_levels_t sec_levels;
     gap_encrypted_data_key_material_t key_material;
     gap_conn_prefer_params_t perheral_prefer_conn_params;
@@ -649,6 +731,7 @@ void gap_dump_ble_status(void);
 int gap_conn_foreach(gap_conn_foreach_func_t func, void *param);
 const char *gap_local_bt_name(uint8_t *len);
 const char *gap_local_le_name(uint8_t *len);
+void gap_set_local_le_name(const char *name, uint8_t len_hint);
 const bt_bdaddr_t *gap_hci_bt_address(void);
 const bt_bdaddr_t *gap_hci_le_address(void);
 const bt_bdaddr_t *gap_factory_bt_address(void);
@@ -670,6 +753,7 @@ void gap_add_ble_device_record(const gap_bond_sec_t *bond);
 void gap_del_ble_device_record(const bt_bdaddr_t *peer_addr);
 void gap_del_ble_device_record_by_index(uint32_t i);
 void gap_del_all_ble_device_record(void);
+void gap_update_local_database_hash(void);
 gap_conn_timing_config_t gap_default_conn_timing(void);
 ble_bdaddr_t gap_get_peer_resolved_address(uint16_t connhdl);
 
@@ -697,6 +781,7 @@ bt_status_t gap_set_device_appearance(uint16_t appearance);
 bt_status_t gap_set_short_name_max_length(uint8_t len);
 bt_status_t gap_set_server_database_hash_support(bool support);
 bt_status_t gap_set_client_robust_caching_support(bool support);
+bt_status_t gap_clear_client_cache_by_handle(uint16_t connhdl);
 
 /*
  * Features
@@ -825,7 +910,8 @@ bt_status_t gap_start_smp_encrypt(uint16_t connhdl);
 bt_status_t gap_bredr_start_ltk_derivation(uint16_t connhdl);
 bt_status_t gap_set_security_level(uint16_t connhdl, gap_link_sec_level_t sec_level);
 bt_status_t gap_set_data_sign_security(uint16_t connhdl, gap_data_sign_level_t data_sign_level);
-bt_status_t gap_set_key_strength(uint16_t connhdl, uint8_t key_size, uint8_t accept_method);
+bt_status_t gap_set_key_strength(uint16_t connhdl, uint8_t key_size);
+bt_status_t gap_set_accepted_pairing_method(uint16_t connhdl, uint8_t accept_method);
 bt_status_t gap_start_authentication(uint16_t connhdl);
 bt_status_t gap_start_authentication_by_address(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr);
 bt_status_t gap_set_use_passkey_entry_method(uint16_t connhdl, bool passkey_entry);
@@ -966,10 +1052,12 @@ bool gap_dt_add_raw_data(gap_dt_buf_t *buf, const uint8_t *data, uint16_t len);
 bool gap_dt_add_flags(gap_dt_buf_t *buf, uint8_t discoverable, bool simu_bredr_support);
 bool gap_dt_add_local_le_name(gap_dt_buf_t *buf, bool use_legacy_pdu);
 bool gap_dt_add_tx_power(gap_dt_buf_t *buf, uint8_t tx_power_level);
+bool gap_dt_add_manufacturer_data(gap_dt_buf_t *buf, uint16_t company_identifier_code, const uint8_t *data, uint8_t len);
 bool gap_dt_add_peripheral_conn_interval(gap_dt_buf_t *buf, uint16_t min_interval_1_25ms, uint16_t max_interval_1_25ms);
 bool gap_dt_add_service_data(gap_dt_buf_t *buf, uint16_t service_uuid, const uint8_t *data, uint8_t len);
 bool gap_set_le_service_16_uuid(gap_dt_buf_t *buf, const uint16_t *uuid, uint16_t count);
 bool gap_set_le_service_128_uuid(gap_dt_buf_t *buf, const gap_uuid_128_t *uuid_le, uint16_t count);
+
 bool gap_dt_buf_is_empty(const gap_dt_buf_t *buf);
 const uint8_t *gap_dt_buf_data(const gap_dt_buf_t *buf);
 uint16_t gap_dt_buf_len(const gap_dt_buf_t *buf);
@@ -1083,6 +1171,7 @@ typedef struct {
     const uint8_t *data;
     uint8_t data_length;
     uint8_t adv_set_id;
+    uint16_t sync_handle;
     uint16_t pa_interval;
     int8_t tx_power;
     int8_t rssi;
@@ -1171,7 +1260,7 @@ uint8_t gap_resolving_list_max_size(void);
 #define GAP_MAX_LEGACY_ADV_DATA_LEN 31
 #define GAP_MAX_EXTEND_ADV_DATA_LEN 251
 
-#define GAP_LE_LIMIT_ADV_TIMEOUT (180*1000) // 180s, max advertising time in limited discoverable mode, required value
+#define GAP_LE_LIMIT_ADV_TIMEOUT (30*1000) // max 180s, max advertising time in limited discoverable mode, required value
 
 typedef enum {
     GAP_ADV_DATA      = 0x00,
@@ -1396,6 +1485,7 @@ typedef struct {
     bool fast_advertising;
     bool continue_advertising;
     bool start_bg_advertising;
+    bool directed_advertising;
     uint8_t activity_priority;
     uint8_t adv_stop_timer;
     bool pa_is_enabled;
@@ -1456,17 +1546,44 @@ typedef struct {
     bt_status_t error_code;
 } gap_scan_stopped_t;
 
+typedef struct {
+    uint16_t sync_handle; // 0x0000 to 0x0EFE, sync_handle identifying the pa train
+    uint8_t num_bis; // 0x01 to 0x1F, value of the Num_BIS subfield of the BIGInfo field
+    uint8_t nse; // 0x01 to 0x1F, value of the NSE subfield of the BIGInfo field
+    uint16_t iso_interval; // iso_interval subfield of the BIGInfo field
+    uint8_t bn; // 0x01 to 0x07, BN subfield of the BIGInfo field
+    uint8_t pto; // 0x00 to 0x0F, pre-transmission offset, PTO subfield of the BIGInfo field
+    uint8_t irc; // 0x01 to 0x0F, IRC subfield of the BIGInfo field
+    uint16_t max_pdu; // 0x01 to 0xFB, max_pdu subfiled of the BIGInfo
+    uint32_t sdu_interval; // sdu_interval subfield of the BIGInfo field
+    uint16_t max_sdu; // 0x01 to 0x0FFF, max_sdu subfield of the BIGInfo
+    gap_le_phy_t big_phy; // 0x01 the BIG is transmitted on the LE 1M PHY, 0x02 LE 2M, 0x03 LE Coded
+    uint8_t framed; // 0x00 unframed 0x01 framed
+    uint8_t encrypted; // 0x00 BIG carries unencrypted data, 0x01 BIG carries encrypted data
+} gap_big_info_adv_report_t;
+
+typedef struct gap_pa_sync_establish_t gap_pa_sync_establish_t;
+typedef struct gap_pa_sync_terminated_t gap_pa_sync_terminated_t;
+
 typedef union {
     void *param_ptr;
     gap_scan_started_t *scan_started;
     gap_scan_stopped_t *scan_stopped;
     const gap_adv_report_t *adv_report;
+    const gap_pa_sync_establish_t *pa_sync_estb;
+    const gap_pa_sync_terminated_t *pa_sync_term;
+    const gap_adv_report_t *per_adv_report;
+    const gap_big_info_adv_report_t *big_info_report;
 } gap_scan_callback_param_t;
 
 typedef enum {
     GAP_SCAN_EVENT_STARTED = BT_EVENT_GAP_SCAN_EVENT_START,
     GAP_SCAN_EVENT_STOPPED,
     GAP_SCAN_EVENT_ADV_REPORT,
+    GAP_SCAN_EVENT_PA_SYNC_ESTABLISHED,
+    GAP_SCAN_EVENT_PA_SYNC_TERMINATED,
+    GAP_SCAN_EVENT_PA_REPORT,
+    GAP_SCAN_EVENT_BIG_INFO_REPORT,
 } gap_scan_event_t;
 
 typedef int (*gap_scan_callback_t)(uintptr_t scan, gap_scan_event_t event, gap_scan_callback_param_t param);
@@ -1639,7 +1756,7 @@ bt_status_t gap_advertiser_start_pawr_initiating(uint8_t adv_handle, uint8_t sub
  *
  */
 
-typedef struct {
+typedef struct gap_pa_sync_establish_t {
     bt_status_t error_code;
     uint16_t pa_sync_hdl;
     bool is_over_past;
@@ -1657,25 +1774,14 @@ typedef struct {
     uint8_t response_slot_spacing_0_125ms; // 0x00 no response slots, 0x02 to 0xFF * 0.125ms (0.25ms to 31.875ms)
 } gap_pa_sync_establish_t;
 
-typedef struct {
+typedef struct gap_pa_sync_terminated_t {
     uint16_t pa_sync_hdl;
     uint8_t reason;
 } gap_pa_sync_terminated_t;
 
-typedef union {
-    void *param_ptr;
-    const gap_pa_sync_establish_t *pa_sync_estb;
-    const gap_pa_sync_terminated_t *pa_sync_term;
-    const gap_adv_report_t *per_adv_report;
-} gap_pa_sync_callback_param_t;
-
-typedef enum {
-    GAP_PA_SYNC_EVENT_ESTABLISHED = BT_EVENT_GAP_PA_SYNC_EVENT_START,
-    GAP_PA_SYNC_EVENT_TERMINATED,
-    GAP_PA_SYNC_EVENT_PA_REPORT,
-} gap_pa_sync_event_t;
-
-typedef int (*gap_pa_sync_callback_t)(uintptr_t pa_sync_hdl, gap_pa_sync_event_t event, gap_pa_sync_callback_param_t param);
+typedef gap_scan_event_t gap_pa_sync_event_t;
+typedef gap_scan_callback_param_t gap_pa_sync_callback_param_t;
+typedef gap_scan_callback_t gap_pa_sync_callback_t;
 
 typedef struct {
     uint8_t options;

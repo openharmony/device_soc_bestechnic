@@ -175,7 +175,7 @@ typedef enum IRQn
     SCI_IRQn                    = 111,      /*!< SCI Interrupt                      */
     M55C1_WDT_IRQn              = 112,      /*!< Watchdog Timer Interrupt           */
     CRC_IRQn                    = 113,      /*!< CRC Interrupt                      */
-    CHECKSUM_IRQn               = 114,      /*!< CHECKSUM Interrupt                 */
+    CHKSUM_IRQn                 = 114,      /*!< CHECKSUM Interrupt                 */
     I3C0_IRQn                   = 115,      /*!< I3C0 Interrupt                     */
     FULLMAP_MMU_PSRAM1_IRQn     = 116,      /*!< Fullmap MMU PSRAM Interrupt        */
     LM_SENSOR_IRQn              = 117,      /*!< LM Sensor Interrupt                */
@@ -188,7 +188,6 @@ typedef enum IRQn
 
 #define DSP2MCU_DATA_IRQn       DSPC0_MCU_DATA_IRQn
 #define DSP2MCU_DATA1_IRQn      DSPC0_MCU_DATA1_IRQn
-#define DSP2MCU_DATA2_IRQn      DSPC0_MCU_DATA2_IRQn
 #define MCU2DSP_DONE_IRQn       MCU_DSPC0_DONE_IRQn
 #define MCU2DSP_DONE1_IRQn      MCU_DSPC0_DONE1_IRQn
 

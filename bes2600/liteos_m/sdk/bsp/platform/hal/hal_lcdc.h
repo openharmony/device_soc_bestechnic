@@ -45,11 +45,15 @@ extern "C" {
  * @LCDC_LAYER_LBACK  : gra Background Layer
  * @LCDC_LAYER_LWB    : Write Back Output Layer
  * @LCDC_LAYER_SPU    : smart panel layer
+ * @LCDC_LAYER_LTVG   : tvg layer
+ * @LCDC_LAYER_LDEC   : decnano layer
  */
 
 enum hal_lcdc_layer_e {
     LCDC_LAYER_LFORE = 0,
     LCDC_LAYER_LBACK,
+    LCDC_LAYER_LTVG,
+    LCDC_LAYER_LDEC,
     LCDC_LAYER_LWB,
     LCDC_LAYER_SPU,
 };
@@ -59,14 +63,14 @@ enum hal_lcdc_layer_e {
  * @DSI_RGB888    : 28
  * @DSI_RGB666    : 29
  * @DSI_RGB565    : 30
- * @SI_RGB101010  : 31
+ * @DSI_RGB101010  : 31
  */
 
 enum hal_lcdc_dsi_cfmt_e {
     DSI_RGB888 = 28,
     DSI_RGB666,
     DSI_RGB565,
-    SI_RGB101010,
+    DSI_RGB101010,
 };
 
 /**
@@ -86,6 +90,32 @@ enum hal_lcdc_dsi_dswap_e {
     DSI_BD_RBG,
     DSI_BD_GRB,
     DSI_BD_RGB
+};
+
+/**
+ * enum hal_lcdc_dec_tile_mode_e - decnano tile mode
+ */
+enum hal_lcdc_dec_tile_mode_e {
+    LCDC_DEC_LINEAR = 0,
+    LCDC_DEC_TILED,
+};
+
+/**
+ * enum hal_lcdc_dec_compress_mode_e - decnano compress mode
+ */
+enum hal_lcdc_dec_compress_mode_e {
+    LCDC_DEC_DISABLE = 0,
+    LCDC_DEC_NON_SAMPLE,
+    LCDC_DEC_H_SAMPLE,
+    LCDC_DEC_HV_SAMPLE,
+};
+
+/**
+ * enum hal_lcdc_dec_format_e - decnano color format
+ */
+enum hal_lcdc_dec_format_e {
+    LCDC_DEC_ARGB = 0,
+    LCDC_DEC_XRGB,
 };
 
 
@@ -553,18 +583,49 @@ void hal_lcdc_sleep(void);
 
 void hal_lcdc_wakeup(void);
 
-void hal_lcdc_qspi_init(uint32_t width, uint32_t higth);
+/* for DSI video mode */
 
-int hal_lcdc_qspi_send_cmd(uint8_t *buf, uint32_t len);
+/**
+ * hal_lcdc_video_mode_enable - enable lcdc setting for DSI video mode.
+ * call it in front of other lcdc init functions.
+ */
+void hal_lcdc_video_mode_enable(bool enable);
 
-int hal_lcdc_qspi_send_data(const uint8_t *layer);
+/**
+ * hal_lcdcl_dumb_enable - enable video frame transfer.
+ */
+void hal_lcdcl_dumb_enable(bool enable);
 
-int hal_lcdc_qspi_read(uint8_t *cmd, uint32_t cmd_len, uint8_t *rBuf, uint32_t rSize);
-
-//video mode
-void hal_lcdcl_dumb_enable( bool enable);
+/**
+ * hal_lcdc_dumb_vsync_mode - enable VSYNC sigal on dumb panel.
+ */
 void hal_lcdc_dumb_vsync_mode(uint8_t mode);
+
+/**
+ * hal_lcdc_source_switch - switch the dumb panel as source
+ */
 void hal_lcdc_source_switch(bool isdumb);
+
+/**
+ * hal_lcdc_dec_set_color_format - set decnano color format
+ */
+void hal_lcdc_dec_set_color_format(enum hal_lcdc_dec_format_e cfmt);
+
+/**
+ * hal_lcdc_dec_set_tile_mode - set decnano tile mode
+ */
+void hal_lcdc_dec_set_tile_mode(enum hal_lcdc_dec_tile_mode_e mode);
+
+/**
+ * hal_lcdc_dec_set_compress_mode - set decnano tile mode
+ */
+void hal_lcdc_dec_set_compress_mode(enum hal_lcdc_dec_compress_mode_e comp);
+
+/**
+ * hal_lcdc_dec_swap_rb - swap decnano red & blue
+ */
+void hal_lcdc_dec_swap_rb(bool en);
+
 //test mode
 void hal_lcdc_test_mode(bool enable);
 

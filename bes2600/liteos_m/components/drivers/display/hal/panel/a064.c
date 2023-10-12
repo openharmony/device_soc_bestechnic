@@ -272,7 +272,8 @@ static int32_t PanelCheckStatus(struct PanelData *panel)
             break;
         }
         HDF_LOGE("%s: reset", __func__);
-        hal_dsi_init(WIDTH);
+        // hal_dsi_init(WIDTH);
+        hal_dsi_init(WIDTH, DSI_VIDEO_MODE,priv.panelInfo.mipi.lane,DSI_RGB888);
         osDelay(DSI_INIT_DELAY);
         for (int32_t i = 0; i < sizeof(g_OnCmd) / sizeof(g_OnCmd[0]); i++) {
             ret = MipiDsiTx(priv.mipiHandle, &(g_OnCmd[i]));

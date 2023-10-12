@@ -64,8 +64,8 @@ MEMORY
  RAMX (rx) : ORIGIN = (((0x00200000 + 0x20000 - 0x00200000 + 0x20000000) + 0x20000) - 0x20000000 + 0x00200000), LENGTH = 0x200000-0x20000-0x20000-0-0-0x80000 - 0x16000
  FRAMX (rwx) : ORIGIN = (((0x00200000 + 0x20000 - 0x00200000 + 0x20000000) + 0x20000) - 0x20000000 + 0x00200000) + 0x200000-0x20000-0x20000-0-0-0x80000 - 0x16000, LENGTH = 0x16000
  PSRAM (rwx) : ORIGIN = 0x34000000, LENGTH = 0x2000000-0
- PSRAM_NC (rwx) : ORIGIN = 0x30000000, LENGTH = 0x2000000-0
- PSRAMX (rx) : ORIGIN = 0x14000000, LENGTH = 0x2000000-0
+ PSRAM_NC (rwx) : ORIGIN = (0x34000000 - 0x4000000), LENGTH = 0x2000000-0
+ PSRAMX (rx) : ORIGIN = (0x34000000 - 0x20000000), LENGTH = 0x2000000-0
  PSRAMUHS (rwx) : ORIGIN = (0x3C000000 + 0x800000-0), LENGTH = 0
  PSRAMUHS_NC (rwx) : ORIGIN = (0x38000000 + 0x800000-0), LENGTH = 0
  PSRAMUHSX (rx) : ORIGIN = (0x1C000000 + 0x800000-0), LENGTH = 0
@@ -1161,7 +1161,7 @@ SECTIONS
  __flash_text_data_start__ += SIZEOF(.flashx_text);
  __psram_text_data_start__ = ORIGIN(PSRAM);
  __psram_text_data_start_flash__ = __flash_text_data_start__;
- .psram_text (((__psram_text_data_start__) - 0x34000000 + 0x14000000)) : AT (__psram_text_data_start_flash__)
+ .psram_text (((__psram_text_data_start__) - 0x34000000 + (0x34000000 - 0x20000000))) : AT (__psram_text_data_start_flash__)
  {
 /*
 		__psramx_text_start__ .;
@@ -1201,7 +1201,7 @@ SECTIONS
   __psram_bss_end__ = .;
  } > PSRAM
  __psram_nc_data_start_flash__ = __psram_text_data_end_flash__;
- .psram_nc_data (((.) - 0x34000000 + 0x30000000)) : AT (__psram_nc_data_start_flash__)
+ .psram_nc_data (((.) - 0x34000000 + (0x34000000 - 0x4000000))) : AT (__psram_nc_data_start_flash__)
  {
   __psram_nc_data_start__ = .;
   *(.psram_nc_rodata*)
@@ -1219,7 +1219,7 @@ SECTIONS
   . = ALIGN(32);
   __psram_nc_bss_end__ = .;
  } > PSRAM_NC
- .psram_heap_bss (((.) - 0x30000000 + 0x34000000)) (NOLOAD) : AT (ADDR(.psram_heap_bss))
+ .psram_heap_bss (((.) - (0x34000000 - 0x4000000) + 0x34000000)) (NOLOAD) : AT (ADDR(.psram_heap_bss))
  {
   __psram_reserved_start__ = .;
   *(.psram_reserved*)

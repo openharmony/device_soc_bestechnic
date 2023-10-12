@@ -83,7 +83,7 @@ static const uint32_t bes2003_audma_fifo_addr[GPDMA_PERIPH_NUM] = {
     UART2_BASE + 0x000,     // UART2 RX
     UART2_BASE + 0x000,     // UART2 TX
     BTDUMP_BASE + 0x34,     // BTDUMP
-    0,                      // NULL
+    SDMMC0_BASE + 0x200,    // SDMMC0
     BTPCM_BASE + 0x1C0,     // BTPCM RX
     BTPCM_BASE + 0x1C8,     // BTPCM TX
     UART1_BASE + 0x000,     // UART1 RX
@@ -106,7 +106,7 @@ static const enum HAL_DMA_PERIPH_T bes2003_audma_fifo_periph[GPDMA_PERIPH_NUM] =
     HAL_GPDMA_UART2_RX,
     HAL_GPDMA_UART2_TX,
     HAL_AUDMA_BTDUMP,
-    HAL_DMA_PERIPH_NULL,
+    HAL_GPDMA_SDMMC0,
     HAL_AUDMA_BTPCM_RX,
     HAL_AUDMA_BTPCM_TX,
     HAL_GPDMA_UART1_RX,

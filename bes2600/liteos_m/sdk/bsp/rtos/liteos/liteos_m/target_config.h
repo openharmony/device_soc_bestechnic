@@ -39,8 +39,12 @@
 
 #include "plat_addr_map.h"
 #include _TO_STRING(CONCAT_SUFFIX(CHIP_ID_LITERAL, h))
-#include "los_compiler.h"
 
+#include "cmsis.h"
+#include "los_compiler.h"
+#ifdef CP_BUILD
+#include "hal_timer.h"
+#endif
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {
@@ -51,6 +55,7 @@ extern "C" {
 #define __weak                                 __attribute__((weak))
 #endif
 
+#ifdef CP_BUILD
 /* =============================================================================
                                         System clock module configuration
 ============================================================================= */
@@ -59,13 +64,17 @@ extern "C" {
  * System clock (unit: HZ)
  */
 #if defined(OSTICK_USE_FAST_TIMER)
-#define OS_SYS_CLOCK            (6000000UL)
-#elif defined(OS_CLOCK_NOMINAL)
-#define OS_SYS_CLOCK            OS_CLOCK_NOMINAL
+#define OS_SYS_CLOCK            (1000UL)
 #else
-#define OS_SYS_CLOCK            (16000UL)
+#if defined(CHIP_BEST2002) || defined(CHIP_BEST2003)
+#define OS_SYS_CLOCK            (6000000UL)
+#else
+#define OS_SYS_CLOCK            CONFIG_SYSTICK_HZ
 #endif
-
+#endif
+#else
+#define OS_SYS_CLOCK            (6000000UL)
+#endif
 
 /**
  * @ingroup los_config
@@ -150,7 +159,9 @@ extern "C" {
  * @ingroup los_config
  * Maximum supported number of tasks except the idle task rather than the number of usable tasks
  */
+#ifndef LOSCFG_BASE_CORE_TSK_LIMIT
 #define LOSCFG_BASE_CORE_TSK_LIMIT                          150
+#endif
 
 /**
  * @ingroup los_config
@@ -177,7 +188,7 @@ extern "C" {
  * Longest execution time of tasks with the same priorities
  */
 #ifndef LOSCFG_BASE_CORE_TIMESLICE_TIMEOUT
-#define LOSCFG_BASE_CORE_TIMESLICE_TIMEOUT                  20000
+#define LOSCFG_BASE_CORE_TIMESLICE_TIMEOUT                  10
 #endif
 
 /**
@@ -243,7 +254,9 @@ extern "C" {
  * @ingroup los_config
  * Maximum supported number of semaphores
  */
+#ifndef LOSCFG_BASE_IPC_SEM_LIMIT
 #define LOSCFG_BASE_IPC_SEM_LIMIT                           256
+#endif
 
 /* =============================================================================
                                        Mutex module configuration
@@ -260,7 +273,9 @@ extern "C" {
  * @ingroup los_config
  * Maximum supported number of mutexes
  */
+#ifndef LOSCFG_BASE_IPC_MUX_LIMIT
 #define LOSCFG_BASE_IPC_MUX_LIMIT                           512
+#endif
 
 /* =============================================================================
                                        Queue module configuration
@@ -277,8 +292,9 @@ extern "C" {
  * @ingroup los_config
  * Maximum supported number of queues rather than the number of usable queues
  */
+#ifndef LOSCFG_BASE_IPC_QUEUE_LIMIT
 #define LOSCFG_BASE_IPC_QUEUE_LIMIT                         256
-
+#endif
 
 /* =============================================================================
                                        Software timer module configuration
@@ -295,7 +311,9 @@ extern "C" {
  * @ingroup los_config
  * Maximum supported number of software timers rather than the number of usable software timers
  */
+#ifndef LOSCFG_BASE_CORE_SWTMR_LIMIT
 #define LOSCFG_BASE_CORE_SWTMR_LIMIT                        256
+#endif
 
 /**
  * @ingroup los_config
@@ -493,8 +511,11 @@ extern UINT8 __os_heap_start__[];
 #define LOSCFG_KERNEL_SIGNAL 1
 #define LOSCFG_KERNEL_CPUP 1
 #define LOSCFG_KERNEL_PM 1
+#define LOSCFG_KERNEL_PM_DEBUG 1
 #define LOSCFG_KERNEL_PM_TASK_PTIORITY 1
 #define LOSCFG_KERNEL_PM_TASK_STACKSIZE 1024
+
+
 /* =============================================================================
                                        printf configuration
 ============================================================================= */

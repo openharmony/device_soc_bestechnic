@@ -104,6 +104,7 @@ bt_status_t rfcomm_connect(const bt_bdaddr_t *remote, uint16_t local_server_chan
 bt_status_t rfcomm_connect_server_channel(const bt_bdaddr_t *remote, uint16_t local_server_channel, uint16_t remote_server_channel, void *priv);
 bt_status_t rfcomm_write(uint32_t rfcomm_handle, struct pp_buff *ppb);
 bt_status_t rfcomm_disconnect(uint32_t rfcomm_handle, uint8_t reason);
+uint8 rfcomm_get_tx_credit_by_rfcomm_handle(uint32_t rfcomm_handle);
 
 #ifdef IBRT
 void rfcomm_ibrt_slave_release_dlc(uint8_t device_id, uint8_t dlci);

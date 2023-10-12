@@ -28,8 +28,10 @@ struct pp_buff_flag_t {
     uint16_t defer_free_rx_ppb: 1;
     uint16_t insert_to_tx_header: 1;
     uint16_t dont_report_tx_done: 1;
+    uint16_t tx_cont_fragment: 1;
     uint16_t dont_auto_free_by_hci: 1;
     uint16_t wait_cmpl_status_event: 1;
+    uint16_t is_hci_rx_desc_ppb: 1;
     uint16_t is_sent_by_ble: 1;
 };
 

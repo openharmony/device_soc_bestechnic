@@ -172,13 +172,17 @@ uint32_t hal_i2c_cancel_active_task(enum HAL_I2C_ID_T id);
 /* for master task mode end */
 
 /* for slave and simple master mode */
+typedef void (*HAL_I2C_SLAVE_TRANSFER_HANDLER_T)(enum HAL_I2C_ID_T id, uint32_t transport_dir,
+                                            const uint8_t *tx_buf, uint32_t tx_len,
+                                            const uint8_t *rx_buf, uint32_t rx_len,
+                                            enum HAL_I2C_ERRCODE_T errcode);
+typedef void (*HAL_I2C_RD_REQ_HANDLER_T)(enum HAL_I2C_ID_T id, uint32_t reg_addr, uint8_t **tx_buf,
+                                            uint32_t *tx_len, enum HAL_I2C_ERRCODE_T errcode);
 typedef void (*HAL_I2C_INT_HANDLER_T)(enum HAL_I2C_ID_T id, enum HAL_I2C_INT_STATUS_T status, uint32_t errocode);
 uint32_t hal_i2c_slv_simple_send_raw(enum HAL_I2C_ID_T id, const uint8_t *tx_buf, uint32_t tx_len, uint32_t yield);
 uint32_t hal_i2c_slv_simple_send(enum HAL_I2C_ID_T id, const uint8_t *tx_buf, uint32_t tx_len, uint32_t yield);
 uint32_t hal_i2c_slv_simple_recv(enum HAL_I2C_ID_T id, uint8_t *rx_buf, uint32_t rx_len, uint32_t yield);
-uint32_t hal_i2c_slv_task_send_raw(enum HAL_I2C_ID_T id, const uint8_t *tx_buf, uint32_t tx_len, uint32_t transfer_id, HAL_I2C_TRANSFER_HANDLER_T handler);
-uint32_t hal_i2c_slv_task_send(enum HAL_I2C_ID_T id, const uint8_t *tx_buf, uint32_t tx_len, uint32_t transfer_id, HAL_I2C_TRANSFER_HANDLER_T handler);
-uint32_t hal_i2c_slv_task_recv(enum HAL_I2C_ID_T id, uint8_t *rx_buf, uint32_t rx_len, uint32_t transfer_id, HAL_I2C_TRANSFER_HANDLER_T handler);
+uint32_t hal_i2c_slv_task_send_recv(enum HAL_I2C_ID_T id, uint8_t *rx_buf, uint32_t rx_len, uint32_t transfer_id, HAL_I2C_SLAVE_TRANSFER_HANDLER_T handler, HAL_I2C_RD_REQ_HANDLER_T rd_req_handler);
 uint32_t hal_i2c_set_interrupt_handler(enum HAL_I2C_ID_T id, HAL_I2C_INT_HANDLER_T handler);
 uint32_t hal_i2c_mst_write(enum HAL_I2C_ID_T id, uint32_t device_addr, const uint8_t *buf, uint32_t buf_len, uint32_t *act_len, uint32_t restart, uint32_t stop, uint32_t yield);
 uint32_t hal_i2c_mst_read(enum HAL_I2C_ID_T id, uint32_t device_addr, uint8_t *buf, uint32_t buf_len, uint32_t *act_len, uint32_t restart, uint32_t stop, uint32_t yield);

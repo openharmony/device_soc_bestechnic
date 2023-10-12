@@ -20,11 +20,6 @@ extern "C"{
 #endif
 
 void app_ble_test_cmd_init(void);
-void ble_audio_dflt_update_role(void);
-void ble_audio_dflt_config(void);
-bool ble_audio_dflt_check_device_is_master(uint8_t *address);
-const unsigned char* ble_audio_dflt_read_peer_tws_addr(void);
-void ble_audio_test_config_dynamic_audio_sharing_master(void);
 
 #ifdef __cplusplus
 }

@@ -490,6 +490,10 @@ void hal_cmu_usb_clock_enable(void);
 
 void hal_cmu_usb_clock_disable(void);
 
+void hal_cmu_usb3_clock_enable(void);
+
+void hal_cmu_usb3_clock_disable(void);
+
 void hal_cmu_bt_clock_enable(void);
 
 void hal_cmu_bt_clock_disable(void);
@@ -641,6 +645,14 @@ void hal_cmu_gamu_wakeup(void);
 void hal_cmu_pngdec_clock_enable(void);
 
 void hal_cmu_pngdec_clock_disable(void);
+
+void hal_cmu_crc_clock_enable(void);
+
+void hal_cmu_crc_clock_disable(void);
+
+void hal_cmu_checksum_clock_enable(void);
+
+void hal_cmu_checksum_clock_disable(void);
 
 #ifdef __cplusplus
 }

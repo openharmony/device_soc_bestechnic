@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright 2015-2019 BES.
+ * Copyright 2015-2023 BES.
  * All rights reserved. All unpublished rights reserved.
  *
  * No part of this work may be used or reproduced in any form or by any
@@ -134,6 +134,8 @@ enum HAL_DMA_PERIPH_T {
     HAL_GPDMA_I2C4_TX           = 41,
     HAL_GPDMA_I2C5_RX           = 42,
     HAL_GPDMA_I2C5_TX           = 43,
+    HAL_GPDMA_QSPI_RX           = 44,
+    HAL_GPDMA_QSPI_TX           = 45,
 
     HAL_AUDMA_CODEC_RX          = 50,
     HAL_AUDMA_CODEC_TX          = 51,

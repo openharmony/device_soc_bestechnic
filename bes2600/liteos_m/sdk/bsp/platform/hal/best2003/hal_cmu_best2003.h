@@ -492,6 +492,8 @@ void hal_cmu_dsi_phy_reset_set(void);
 
 void hal_cmu_dsi_phy_reset_clear(void);
 
+void hal_cmu_dsi_get_pixel_clock(uint32_t *pixclk_mhz, uint16_t *pixclk_div);
+
 void hal_cmu_dsi_clock_enable(void);
 
 void hal_cmu_dsi_clock_disable(void);
@@ -500,7 +502,11 @@ void hal_cmu_dsi_reset_set(void);
 
 void hal_cmu_dsi_reset_clear(void);
 
-uint32_t hal_cmu_get_dsp_pll_source_clock(void);
+void hal_cmu_dsi_sleep(void);
+
+void hal_cmu_dsi_wakeup(void);
+
+void hal_cmu_csi_get_pixel_clock(uint32_t *pixclk_mhz, uint16_t *pixclk_div);
 
 void hal_cmu_csi_clock_enable(uint32_t pixclk_mhz);
 
@@ -516,17 +522,15 @@ void hal_cmu_lcdc_reset_set(void);
 
 void hal_cmu_lcdc_reset_clear(void);
 
-void hal_cmu_shutdown_hook(void);
-
-void hal_cmu_dsi_sleep(void);
-
-void hal_cmu_dsi_wakeup(void);
-
 void hal_cmu_lcdc_sleep(void);
 
 void hal_cmu_lcdc_wakeup(void);
 
 int hal_cmu_dsp_set_freq(enum HAL_CMU_FREQ_T freq);
+
+uint32_t hal_cmu_get_dsp_pll_source_clock(void);
+
+void hal_cmu_shutdown_hook(void);
 
 #ifdef CNTRL_VPA_DYNAMIC
 void hal_cmu_mcu2cp_done3_irq_enable(void(*handler)(void));

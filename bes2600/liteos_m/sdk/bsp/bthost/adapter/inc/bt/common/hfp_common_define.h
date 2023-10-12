@@ -80,6 +80,7 @@ typedef enum {
     BT_HFP_SCO_CODEC_NONE = 0,
     BT_HFP_SCO_CODEC_CVSD = 1,
     BT_HFP_SCO_CODEC_MSBC = 2,
+    BT_HFP_SCO_CODEC_LC3_SWB = 3,     // For LC3_SWB Codec
     BT_HFP_SCO_CODEC_XXXX = 16,    // Cunstomer Codec
 } hfp_sco_codec_t;
 
