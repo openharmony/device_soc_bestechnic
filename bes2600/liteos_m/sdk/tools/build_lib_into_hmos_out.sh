@@ -24,7 +24,7 @@ flash_size=$5
 BUILD_PIECE="false"
 flash_config=""
 rel_flash_config=""
-MAKEFILE="./bsp/platform/main/Makefile"
+MAKEFILE="./../../../aos_bsp/platform/main/Makefile"
 if [ ! -f $MAKEFILE ]; then
     echo -e "${MAKEFILE} not exist!"
     BUILD_PIECE="true"
@@ -127,25 +127,20 @@ else
     OPT_LITEOS_BOOT2A="${temp_cmd} ${temp_extra_cmd} "
 fi
 
-mkdir -p bsp/out/ota_boot1
-mkdir -p bsp/out/ota_boot2a
 
-cp -rf prebuild/ota_boot1.bin bsp/out/ota_boot1
-cp -rf prebuild/ota_boot2a.bin bsp/out/ota_boot2a
+cd ../../../aos_bsp
 
-cd bsp
-rm -rf bsp/out/best2600w_liteos/
 chmod a+x tools/build_best2600w_ohos_into_lib.sh
 
 tools/build_best2600w_ohos_into_lib.sh \
--a="$OPT_LITEOS_A7 $build_type" \
--m="$OPT_LITEOS_MAIN NO_LIBC=1 BOARD_OS_WRAP_MALLOC=1 $rel_filter $rel_flash_config  NO_LIBC=1 MODULE_KERNEL_STUB_INC=1 EXTERN_ROOT_PATH=./../../../../../../../ $build_type" \
--c="$OPT_LITEOS_CP $build_type  " \
+-a="$OPT_LITEOS_A7  LIB_BIN_IN_SRC_DIR=0  $build_type" \
+-m="$OPT_LITEOS_MAIN NO_LIBC=1 LIB_BIN_IN_SRC_DIR=0 BOARD_OS_WRAP_MALLOC=1 OTA_CODE_OFFSET=0 NET_LWIP_SUPPORT=1 LWIP_SUPPORT=1 $rel_filter $rel_flash_config $flash_config NO_LIBC=1 MODULE_KERNEL_STUB_INC=1 EXTERN_ROOT_PATH=./../../../../ $build_type" \
+-c="$OPT_LITEOS_CP $build_type $flash_config " \
 -s="$OPT_LITEOS_MAIN_MINI_SE $build_type" \
--l="$OPT_LITEOS_MINI NO_LIBC=1 BOARD_OS_WRAP_MALLOC=1 $rel_flash_config  MODULE_KERNEL_STUB_INC=1 EXTERN_ROOT_PATH=./../../../../../../../ $build_type" \
--x="$OPT_LITEOS_BOOT1 $build_type  " \
--y="$OPT_LITEOS_BOOT2A $build_type  " \
+-l="$OPT_LITEOS_MINI NO_LIBC=1 BOARD_OS_WRAP_MALLOC=1 $rel_flash_config $flash_config MODULE_KERNEL_STUB_INC=1 EXTERN_ROOT_PATH=./../../../../ $build_type" \
+-x="$OPT_LITEOS_BOOT1 $build_type $flash_config " \
+-y="$OPT_LITEOS_BOOT2A $build_type $flash_config " \
 -d=" BUILD_SE=$build_trustzone BUILD_MINI=$build_mini_sys $rel_branch BUILD_PIECE=$BUILD_PIECE" \
-SDK=1 $flash_config $rel
+SDK=1 GX6D=1 $rel
 
-cd ../
+cd -

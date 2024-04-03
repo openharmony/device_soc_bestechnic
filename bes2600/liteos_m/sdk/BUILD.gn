@@ -29,10 +29,10 @@
 
 import("//build/lite/config/component/lite_component.gni")
 import("//build/lite/config/subsystem/lite_subsystem.gni")
-import("//kernel/liteos_m/liteos.gni")
+import("//kernel/$ohos_kernel_type/liteos.gni")
 
 out_product_path = "${ohos_root_path}out/${board_name}/${product_name}"
-
+BSP_PATH = "${ohos_root_path}/device/soc/bestechnic/aos_bsp"
 # build sdk into lib
 build_ext_component("build_sdk_into_lib") {
   exec_path = rebase_path(".")
@@ -65,7 +65,7 @@ foreach(bin_file, bin_list) {
     build_ext_component(copy_lib_name) {
       exec_path = rebase_path(".")
       out_lib_path = "${out_product_path}/libs/"
-      bsp_lib_path = "./bsp/out/${bsp_target_name}/libbsp${bsp_target_name}.a"
+      bsp_lib_path = "$BSP_PATH/out/${bsp_target_name}/lib${bsp_target_name}.a"
       command = "cp -rf ${bsp_lib_path} ${out_lib_path}"
       deps = [ ":build_sdk_into_lib" ]
     }
@@ -89,21 +89,22 @@ kernel_module(module_name) {
 
 config("public") {
   include_dirs = [
-    "bsp/rtos/liteos/liteos_m",
-    "bsp/rtos/liteos/liteos_m/kal/cmsis",
-    "bsp/platform/cmsis/inc",
-    "bsp/platform/hal",
-    "bsp/platform/drivers/ana",
-    "bsp/services/wifi_app/wifi_console",
-    "bsp/utils/crc32",
-    "bsp/utils/kfifo",
-    "bsp/net/wifi",
-    "bsp/platform/hal/best2003",
-    "bsp/services/norflash_api/",
+    "$BSP_PATH/rtos/liteos/liteos_m",
+    "$BSP_PATH/rtos/liteos/liteos_m/kal/cmsis",
+    "$BSP_PATH/platform/cmsis/inc",
+    "$BSP_PATH/platform/hal",
+    "$BSP_PATH/platform/drivers/ana",
+    "$BSP_PATH/services/wifi_app/wifi_console",
+    "$BSP_PATH/utils/crc32",
+    "$BSP_PATH/utils/kfifo",
+    "$BSP_PATH/net/wifi",
+    "$BSP_PATH/platform/hal/best2003",
+    "$BSP_PATH/services/norflash_api/",
+    "$BSP_PATH/platform/cmsis/inc/",
   ]
-  ldflags = [ "-Wl,-T" + rebase_path("bsp/out/best2600w_liteos/_best2003.lds") ]
+  ldflags = [ "-Wl,-T" + rebase_path("$BSP_PATH/out/best2600w_liteos/_best2003.lds") ]
   libs = [
-    "bspbest2600w_liteos",
+    "best2600w_liteos",
     "c",
     "m",
     "stdc++",

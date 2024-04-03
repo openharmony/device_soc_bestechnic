@@ -189,3 +189,19 @@ void RestoreSystemWrapper(const char *crashMessage)
 
 
 void IoTWatchDogKick(void) {}
+
+struct group *getgrnam (const char *__name)
+{
+    return 0;
+}
+
+void ExecReboot(const char *value)
+{
+    return;
+}
+
+
+int GetParamValue(const char *symValue, unsigned int symLen, char *paramValue, unsigned int paramLen)
+{
+    return (strncpy_s(paramValue, paramLen, symValue, symLen) == 0) ? 0 : -1;
+}
