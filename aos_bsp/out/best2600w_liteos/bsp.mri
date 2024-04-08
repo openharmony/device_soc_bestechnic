@@ -1,0 +1,34 @@
+create libbspbest2600w_liteos.a
+addlib libbest2600w_liteos.a
+addlib rtos/liteos/liteos_m//built-in.a
+addlib services/cp_boot//built-in.a
+addmod platform/hal/hal_key.o
+addmod platform/hal/hal_ir.o
+addmod platform/hal/hal_gpio_v1.o
+addmod platform/hal/hal_memsc.o
+addmod platform/hal/hal_cmu_common.o
+addmod platform/hal/hal_timer.o
+addmod platform/hal/hal_sleep.o
+addmod platform/hal/hal_csi.o
+addmod platform/hal/hal_sysfreq.o
+addmod platform/hal/hal_pwm.o
+addmod platform/hal/hal_trace_mod.o
+addmod platform/hal/hal_spi.o
+addmod platform/hal/hal_trace.o
+addmod platform/hal/best2003/hal_cmu_best2003.o
+addmod platform/hal/best2003/hal_sec_best2003.o
+addmod platform/hal/best2003/hal_iomux_best2003.o
+addmod platform/hal/best2003/hal_analogif_best2003.o
+addmod platform/hal/best2003/hal_psc_best2003.o
+addmod platform/hal/hal_wdt.o
+addmod platform/hal/hal_uart.o
+addmod platform/hal/hal_gpadc.o
+addmod platform/hal/hal_phyif.o
+addmod platform/hal/hal_sleep_core_pd.o
+addmod platform/hal/hal_dma.o
+addmod platform/hal/hal_psram_v2.o
+addmod platform/hal/hal_overlay.o
+addmod platform/hal/hal_dsi.o
+addmod platform/hal/hal_gpio_v2.o
+save
+end

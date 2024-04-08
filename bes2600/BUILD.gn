@@ -119,7 +119,7 @@ if (ohos_kernel_type == "liteos_m") {
         foreach(force_link_lib, bin_file.force_link_libs) {
           ldflags += [ "-l${force_link_lib}" ]
         }
-        ldflags += [ "-lbsp${bsp_target_name}" ]
+        ldflags += [ "-l${bsp_target_name}" ]
         ldflags += [ "-Wl,--no-whole-archive" ]
 
         libs = [
@@ -171,7 +171,7 @@ if (ohos_kernel_type == "liteos_m") {
       copy_bin_name = "copy_${exe_bin}_to_gui"
       build_ext_component(copy_bin_name) {
         exec_path = rebase_path("${out_product_path}")
-        print(" copy signature bin exec_path", exec_path)
+        print("copy signature bin exec_path", exec_path)
         deps = []
         if (bin_sig == "true") {
           copy_src = "./auto_build_tool/hash_sig"
@@ -200,7 +200,7 @@ if (ohos_kernel_type == "liteos_m") {
       fs_size = fs_bin.fs_size
       fs_src = product_path + "/" + flash_partition_dir + "/" + fs_bin.fs_src
       block_size = fs_bin.block_size
-      bsp_path = rebase_path("liteos_m") + "/sdk/bsp"
+      bsp_path = rebase_path("liteos_m") + "/../../aos_bsp"
       print("bsp_path:", bsp_path)
       build_ext_component(gen_fs_name) {
         exec_path = rebase_path("pack_tools")
@@ -250,7 +250,7 @@ if (ohos_kernel_type == "liteos_m") {
       copy_burn_bin_name = "copy_${bsp_bin_name}_to_relase_bin"
       build_ext_component(copy_burn_bin_name) {
         exec_path = rebase_path(".")
-        bsp_out_bin_path = "liteos_m/sdk/bsp/out/${bsp_bin_name}"
+        bsp_out_bin_path = "liteos_m/sdk/prebuild/${bsp_bin_name}"
         copy_dest = "${out_product_path}/release_bin"
         bin_name_ota = burn_name
         command = "cp -rf ${bsp_out_bin_path}/${bsp_bin_name}.bin ${copy_dest}/${bin_name_ota}.bin"

@@ -18,7 +18,9 @@
 #include "hdf_device_desc.h"
 #include "hal_gpio.h"
 #include "hal_iomux.h"
-#include "hal_dsi.h"
+// #include "hal_dsi.h"
+#include "hal_lcdc.h"
+
 #ifdef LOSCFG_DRIVERS_HDF_CONFIG_MACRO
 #include "hcs_macro.h"
 #include "hdf_config_macro.h"
@@ -272,7 +274,8 @@ static int32_t PanelCheckStatus(struct PanelData *panel)
             break;
         }
         HDF_LOGE("%s: reset", __func__);
-        hal_dsi_init(WIDTH, priv.panelInfo.mipi.lane);
+        // hal_dsi_init(WIDTH);
+        hal_dsi_init(WIDTH, DSI_VIDEO_MODE,priv.panelInfo.mipi.lane,DSI_RGB888);
         osDelay(DSI_INIT_DELAY);
         for (int32_t i = 0; i < sizeof(g_OnCmd) / sizeof(g_OnCmd[0]); i++) {
             ret = MipiDsiTx(priv.mipiHandle, &(g_OnCmd[i]));
