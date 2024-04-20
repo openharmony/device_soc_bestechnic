@@ -553,7 +553,7 @@ int32_t hal_flash_read(enum NORFLASH_API_MODULE_ID_T in_partition, uint32_t *off
     //     TRACE(0, "SetFlashOptionInfo FAIL\r\n");
     // }
 
-    ret = norflash_sync_read(in_partition, TO_FLASH_NC_ADDR(start_addr), out_buf, in_buf_len);
+    ret = norflash_api_read(in_partition, TO_FLASH_NC_ADDR(start_addr), out_buf, in_buf_len);
     if (!ret) {
         goto RETURN;
     } else {
@@ -684,7 +684,7 @@ int ota_write_bootinfo_to_flash(MiscDataInfo *info, bootinfo_block block, bootin
 
     //erase current sector
     //lock = int_lock_global();
-    ret = norflash_api_erase(NORFLASH_API_MODULE_ID_AUDIO, cur_addr, FLASH_SECTOR_SIZE_IN_BYTES, false);
+    ret = norflash_api_erase(NORFLASH_API_MODULE_ID_AUDIO, TO_FLASH_NC_ADDR(cur_addr), FLASH_SECTOR_SIZE_IN_BYTES, false);
     //int_unlock_global(lock);
     if (ret != HAL_NORFLASH_OK) {
         SetFlashBadOptionInfo(NORFLASH_API_MODULE_ID_AUDIO, cur_addr, FLASH_ERASE);
@@ -693,7 +693,7 @@ int ota_write_bootinfo_to_flash(MiscDataInfo *info, bootinfo_block block, bootin
 
     // erase next sector
     //lock = int_lock_global();
-    ret = norflash_api_erase(NORFLASH_API_MODULE_ID_AUDIO, next_addr, FLASH_SECTOR_SIZE_IN_BYTES, false);
+    ret = norflash_api_erase(NORFLASH_API_MODULE_ID_AUDIO, TO_FLASH_NC_ADDR(next_addr), FLASH_SECTOR_SIZE_IN_BYTES, false);
     //int_unlock_global(lock);
     if (ret != HAL_NORFLASH_OK) {
         SetFlashBadOptionInfo(NORFLASH_API_MODULE_ID_AUDIO, next_addr, FLASH_ERASE);
@@ -702,7 +702,7 @@ int ota_write_bootinfo_to_flash(MiscDataInfo *info, bootinfo_block block, bootin
 
     // write next sector
     //lock = int_lock_global();
-    ret = norflash_api_write(NORFLASH_API_MODULE_ID_AUDIO, next_addr, buffer, FLASH_SECTOR_SIZE_IN_BYTES,false);
+    ret = norflash_api_write(NORFLASH_API_MODULE_ID_AUDIO, TO_FLASH_NC_ADDR(next_addr), buffer, FLASH_SECTOR_SIZE_IN_BYTES,false);
     //int_unlock_global(lock);
     if (ret != HAL_NORFLASH_OK) {
         SetFlashBadOptionInfo(NORFLASH_API_MODULE_ID_AUDIO, next_addr, FLASH_WRITE);
@@ -719,7 +719,7 @@ end:
 
 int ota_check_bootinfo_block(bootinfo_block block)
 {
-    MiscDataInfo *info = NULL;
+    MiscDataInfo info;
     uint32_t crc32_value = 0;
     uint8_t *flash_pointer = NULL;
 
@@ -728,19 +728,14 @@ int ota_check_bootinfo_block(bootinfo_block block)
     }
 
     for (bootinfo_zone num = BOOTINFO_ZONE_0; num < BOOTINFO_ZONE_MAX; num++) {
-        if (block == BOOTINFO_ORIGIN) {
-            info = (MiscDataInfo *)(FLASH_NC_BASE + BOOT_INFO_A_ADDR + num * FLASH_SECTOR_SIZE_IN_BYTES);
-        } else if (block == BOOTINFO_BACKUP) {
-            info = (MiscDataInfo *)(FLASH_NC_BASE + BOOT_INFO_B_ADDR + num * FLASH_SECTOR_SIZE_IN_BYTES);
-        }
-
-        if (info->headerMagic != MISC_HEADER_MAGIC) {
+        ota_get_bootinfo(&info, block, num);
+        if (info.headerMagic != MISC_HEADER_MAGIC) {
             continue;
         }
 
-        flash_pointer = (uint8_t *)(info);
-        crc32_value = crc32_c(crc32_value, (uint8_t *)(flash_pointer + OTA_BOOT_INFO_HEAD_LEN), info->len);
-        if (crc32_value == info->crcVal) {
+        flash_pointer = (uint8_t *)(&info);
+        crc32_value = crc32_c(crc32_value, (uint8_t *)(flash_pointer + OTA_BOOT_INFO_HEAD_LEN), info.len);
+        if (crc32_value == info.crcVal) {
             if (block == BOOTINFO_ORIGIN) {
                 if (ota_get_bootinfo_zone_num(BOOTINFO_ORIGIN) != num) {
                     ota_set_bootinfo_zone_num(BOOTINFO_ORIGIN, num);
@@ -750,7 +745,7 @@ int ota_check_bootinfo_block(bootinfo_block block)
                 }
             } else if (block == BOOTINFO_BACKUP) {
                 // copy bootinfo from BACKUP zone to ORIGIN zone
-                ota_write_bootinfo_to_flash(info, BOOTINFO_ORIGIN,
+                ota_write_bootinfo_to_flash(&info, BOOTINFO_ORIGIN,
                                             (num + BOOT_INFO_A_B_SIZE / FLASH_SECTOR_SIZE_IN_BYTES - 1) %
                                                 (BOOT_INFO_A_B_SIZE / FLASH_SECTOR_SIZE_IN_BYTES));
 
@@ -809,22 +804,153 @@ void ota_set_default_bootinfo_to_zoneAB(void)
     }
 }
 
+int ota_check_bootinfo(MiscDataInfo *info)
+{
+    uint32_t crc32_value = 0;
+    uint8_t *flash_pointer = NULL;
+
+    if (info->headerMagic != MISC_HEADER_MAGIC) {
+        return ERR_PARAMETER;
+    }
+
+    flash_pointer = (uint8_t *)(info);
+    crc32_value = crc32_c(crc32_value, (uint8_t *)(flash_pointer + OTA_BOOT_INFO_HEAD_LEN), info->len);
+    if (crc32_value != info->crcVal) {
+        TRACE(0, "%s %d, error info->crcVal:0x%x, crc32_value:0x%x", __func__, __LINE__, info->crcVal, crc32_value);
+        return ERR_PARAMETER;
+    }
+
+    return ERR_OK;
+}
+
+int  ota_copy_bootinfo_block_to_another(bootinfo_block from, bootinfo_block to)
+{
+    int ret = -1;
+    static MiscDataInfo ctrl;
+    bootinfo_zone zone;
+
+    ret = ota_get_bootinfo(&ctrl, from, ota_get_bootinfo_zone_num(from));
+    if (ret) {
+        TRACE(0, "error %s %d, ret:%d", __func__, __LINE__, ret);
+        return ERR_RETURN;
+    }
+
+    zone = ota_get_bootinfo_zone_num(to);
+    zone = (zone + BOOT_INFO_A_B_SIZE / FLASH_SECTOR_SIZE_IN_BYTES - 1) % (BOOT_INFO_A_B_SIZE / FLASH_SECTOR_SIZE_IN_BYTES);
+    ret = ota_write_bootinfo_to_flash(&ctrl, to, zone);
+    if (ret) {
+        TRACE(0, "error %s %d, ota_set_bootinfo return %d", __func__, __LINE__, ret);
+        return ERR_RETURN;
+    }
+
+    return ret;
+}
+
+static bool bootinfo_inited = false;
 bootinfo_block ota_get_valid_bootinfo_block(void)
 {
     int ret = -1;
+    MiscDataInfo ctrl_0, ctrl_1;
+
+    if (!bootinfo_inited) {
+        enum NORFLASH_API_MODULE_ID_T part_id = NORFLASH_API_MODULE_ID_AUDIO;
+        hal_logic_partition_t partitionInfo;
+        enum HAL_FLASH_ID_T flash_id;
+        uint32_t sector_size = 0;
+        uint32_t block_size = 0;
+        uint32_t page_size = 0;
+
+        bootinfo_inited = true;
+        ret = hal_flash_info_get(part_id, &partitionInfo);
+        if (ret) {
+            return ret;
+        }
+        flash_id = norflash_api_get_dev_id_by_addr(TO_FLASH_NC_ADDR(partitionInfo.partition_start_addr));
+        block_size = norflash_api_get_block_size(flash_id);
+        sector_size = norflash_api_get_sector_size(flash_id);
+        page_size = norflash_api_get_page_size(flash_id);
+
+        norflash_api_register(part_id, flash_id, TO_FLASH_NC_ADDR(partitionInfo.partition_start_addr), partitionInfo.partition_length, 
+            block_size, sector_size, page_size, 0x1000, NULL);
+    }
 
     ret = ota_check_bootinfo_block(BOOTINFO_ORIGIN);
     if (!ret) {
-        return BOOTINFO_ORIGIN;
+        ret = ota_get_bootinfo(&ctrl_0, BOOTINFO_ORIGIN, ota_get_bootinfo_zone_num(BOOTINFO_ORIGIN));
+        if (ret) {
+            TRACE(0, "error %s %d, ret:%d", __func__, __LINE__, ret);
+            return ERR_RETURN;
+        }
+        ret = ota_get_bootinfo(&ctrl_1, BOOTINFO_BACKUP, ota_get_bootinfo_zone_num(BOOTINFO_BACKUP));
+        if (ret) {
+            TRACE(0, "error %s %d, ret:%d", __func__, __LINE__, ret);
+            return ERR_RETURN;
+        }
+        if (ota_check_bootinfo(&ctrl_1)) {
+            ret = ota_copy_bootinfo_block_to_another(BOOTINFO_ORIGIN, BOOTINFO_BACKUP);
+            if (ret) {
+                return BOOTINFO_INVALID;
+            }
+        } else {
+            if (memcmp((unsigned char *)&ctrl_0, (unsigned char *)&ctrl_1, sizeof(MiscDataInfo))) {
+                if ((ctrl_1.rdMode.rdDataLen != 0) && (ctrl_0.rdMode.rdDataLen == 0)) {
+                    ret = ota_copy_bootinfo_block_to_another(BOOTINFO_BACKUP, BOOTINFO_ORIGIN);
+                    if (ret) {
+                        return BOOTINFO_INVALID;
+                    }
+                } else {
+                    ret = ota_copy_bootinfo_block_to_another(BOOTINFO_ORIGIN, BOOTINFO_BACKUP);
+                    if (ret) {
+                        return BOOTINFO_INVALID;
+                    }
+                }
+            }
+        }
     } else {
         ret = ota_check_bootinfo_block(BOOTINFO_BACKUP);
         if (!ret) {
-            return BOOTINFO_ORIGIN;
+            ret = ota_copy_bootinfo_block_to_another(BOOTINFO_BACKUP, BOOTINFO_ORIGIN);
+            if (ret) {
+                return BOOTINFO_INVALID;
+            }
         } else {
-            // first boot or both boot info bad, set both to default.
+            //first boot or both boot info bad, set both to default.
             ota_set_default_bootinfo_to_zoneAB();
-            return BOOTINFO_ORIGIN;
         }
+    }
+
+    return BOOTINFO_ORIGIN;
+}
+
+void ota_show_bootinfo(MiscDataInfo *ctrl, bootinfo_block block_num, bootinfo_zone zone_num)
+{
+    TRACE(0, "show block(%d)zone(%d)bootinfo:", block_num, zone_num);
+
+    if (ctrl == NULL) {
+        MiscDataInfo info;
+
+        ota_get_bootinfo(&info, block_num, zone_num);
+        TRACE(0, "headerMagic:0x%x",                info.headerMagic);
+        TRACE(0, "crcVal:0x%x",                     info.crcVal);
+        TRACE(0, "len:0x%x",                        info.len);
+        TRACE(0, "curbootArea:0x%x",                info.curbootArea);
+        TRACE(0, "upgMode:0x%x",                    info.upgMode);
+        TRACE(0, "quietUpgFlg:0x%x",                info.quietUpgFlg);
+        TRACE(0, "timerRebootFlg:0x%x",             info.timerRebootFlg);
+        TRACE(0, "bootTimes:0x%x",                  info.bootTimes);
+        TRACE(0, "rdDataLen:0x%x",                  info.rdMode.rdDataLen);
+        TRACE(0, "\n");
+    } else {
+        TRACE(0, "headerMagic:0x%x",                ctrl->headerMagic);
+        TRACE(0, "crcVal:0x%x",                     ctrl->crcVal);
+        TRACE(0, "len:0x%x",                        ctrl->len);
+        TRACE(0, "curbootArea:0x%x",                ctrl->curbootArea);
+        TRACE(0, "upgMode:0x%x",                    ctrl->upgMode);
+        TRACE(0, "quietUpgFlg:0x%x",                ctrl->quietUpgFlg);
+        TRACE(0, "timerRebootFlg:0x%x",             ctrl->timerRebootFlg);
+        TRACE(0, "bootTimes:0x%x",                  ctrl->bootTimes);
+        TRACE(0, "rdDataLen:0x%x",                  ctrl->rdMode.rdDataLen);
+        TRACE(0, "\n");
     }
 }
 
@@ -849,7 +975,7 @@ int ota_get_bootinfo(MiscDataInfo *info, bootinfo_block block, bootinfo_zone zon
 
     //pmu_flash_write_config();
     //lock = int_lock_global();
-    NORFLASH_API_WRAP(hal_norflash_read)(HAL_FLASH_ID_0, start_addr, (uint8_t *)info, sizeof(MiscDataInfo));
+    norflash_api_read(NORFLASH_API_MODULE_ID_AUDIO, TO_FLASH_NC_ADDR(start_addr), (uint8_t *)info, sizeof(MiscDataInfo));
     //int_unlock_global(lock);
     //pmu_flash_read_config();
 
@@ -913,6 +1039,7 @@ int GetMiscData(MiscDataType type, void *data, uint32_t dataLen)
 
     //FlashosMutexWait();
     block = ota_get_valid_bootinfo_block();
+
     ret = ota_get_bootinfo(&ctrl, block, ota_get_bootinfo_zone_num(block));
     if (ret) {
         //osMutexRelease(FlashMutex);
@@ -974,7 +1101,7 @@ int ota_flash_read(const enum NORFLASH_API_MODULE_ID_T partition, const uint32_t
     //FlashosMutexWait();
     //pmu_flash_write_config();
     //lock = int_lock_global();
-    ret = norflash_sync_read(partition, addr, dst, size);
+    ret = norflash_api_read(partition, TO_FLASH_NC_ADDR(addr), dst, size);
     //int_unlock_global(lock);
     //pmu_flash_read_config();
     //osMutexRelease(FlashMutex);
@@ -1053,7 +1180,7 @@ static int ota_partition_read_erase_write(const enum NORFLASH_API_MODULE_ID_T pa
     uint32_t lock;
 
     //lock = int_lock_global();
-    ret = norflash_sync_read(partition, TO_FLASH_NC_ADDR(start_addr), dst_buf, dst_buf_len);
+    ret = norflash_api_read(partition, TO_FLASH_NC_ADDR(start_addr), dst_buf, dst_buf_len);
     //int_unlock_global(lock);
     if (ret != HAL_NORFLASH_OK) {
         SetFlashBadOptionInfo(partition, start_addr, FLASH_READ);
