@@ -991,9 +991,6 @@ int SetMiscData(MiscDataType type, const void *data, uint32_t dataLen)
     //FlashosMutexWait();
     block = ota_get_valid_bootinfo_block();
 
-    ota_show_bootinfo(NULL, BOOTINFO_ORIGIN, ota_get_bootinfo_zone_num(BOOTINFO_ORIGIN));
-    ota_show_bootinfo(NULL, BOOTINFO_BACKUP, ota_get_bootinfo_zone_num(BOOTINFO_BACKUP));
-
     ret = ota_get_bootinfo(&ctrl, block, ota_get_bootinfo_zone_num(block));
     if (ret) {
         //osMutexRelease(FlashMutex);
@@ -1027,9 +1024,6 @@ int SetMiscData(MiscDataType type, const void *data, uint32_t dataLen)
     ret = ota_set_bootinfo_to_zoneAB(&ctrl);
     //osMutexRelease(FlashMutex);
 
-    ota_show_bootinfo(NULL, BOOTINFO_ORIGIN, ota_get_bootinfo_zone_num(BOOTINFO_ORIGIN));
-    ota_show_bootinfo(NULL, BOOTINFO_BACKUP, ota_get_bootinfo_zone_num(BOOTINFO_BACKUP));
-
     return ret;
 }
 
@@ -1045,9 +1039,6 @@ int GetMiscData(MiscDataType type, void *data, uint32_t dataLen)
 
     //FlashosMutexWait();
     block = ota_get_valid_bootinfo_block();
-
-    ota_show_bootinfo(NULL, BOOTINFO_ORIGIN, ota_get_bootinfo_zone_num(BOOTINFO_ORIGIN));
-    ota_show_bootinfo(NULL, BOOTINFO_BACKUP, ota_get_bootinfo_zone_num(BOOTINFO_BACKUP));
 
     ret = ota_get_bootinfo(&ctrl, block, ota_get_bootinfo_zone_num(block));
     if (ret) {
