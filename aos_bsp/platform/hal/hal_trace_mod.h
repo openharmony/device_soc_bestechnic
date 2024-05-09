@@ -71,6 +71,7 @@ extern "C" {
     _TR_MODULE_DEF(SPA),                    \
     _TR_MODULE_DEF(BIS_T),                  \
     _TR_MODULE_DEF(BT_ADAPTOR),             \
+    _TR_MODULE_DEF(AOSFS),                  \
 
 enum TR_MODULE_T {
     _TR_MODULE_LIST

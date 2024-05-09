@@ -40,9 +40,8 @@ struct coheap_global_t {
     uint16_t peak_size_s_pool;
 };
 
-struct coheap_buff_t;
-struct coheap_buff_t *btif_coheap_bt_malloc_with_ca(uint16 size, uint32 ca, uint32 line, bool allow_fail_alloc);
-void btif_coheap_free_with_ca(struct coheap_buff_t *p, uint32 ca, uint32 line);
+void *btif_coheap_bt_malloc_with_ca(uint16 size, uint32 ca, uint32 line, bool allow_fail_alloc);
+void btif_coheap_free_with_ca(void *p, uint32 ca, uint32 line);
 void btif_coheap_dump_statistics(void);
 void btif_coheap_enable_debug(bool enable);
 
@@ -51,13 +50,13 @@ void btif_coheap_enable_debug(bool enable);
 #define coheap_allow_fail_malloc(size) btif_coheap_bt_malloc_with_ca((size), (uint32_t)(uintptr_t)__builtin_return_address(0), __LINE__, true)
 #define coheap_free(buffer) btif_coheap_free_with_ca((buffer), (uint32_t)(uintptr_t)__builtin_return_address(0), __LINE__)
 
-struct coheap_buff_t *coheap_bt_malloc_with_ca(uint16 size, uint32 ca, uint32 line, bool allow_fail_alloc);
-void coheap_free_with_ca(struct coheap_buff_t *p, uint32 ca, uint32 line);
+void *coheap_bt_malloc_with_ca(uint16 size, uint32 ca, uint32 line, bool allow_fail_alloc);
+void coheap_free_with_ca(void *p, uint32 ca, uint32 line);
 
 #define cobuf_malloc(size) (unsigned char *)coheap_malloc(size)
 #define cobuf_malloc_with_ca(size, ca, line) (unsigned char *)coheap_malloc_with_ca((size), (ca), (line))
-#define cobuf_free(buf) coheap_free((struct coheap_buff_t *)(unsigned char *)buf)
-#define cobuf_free_with_ca(buf, ca, line) btif_coheap_free_with_ca((struct coheap_buff_t *)(unsigned char *)(buf), (ca), (line))
+#define cobuf_free(buf) coheap_free((void *)(unsigned char *)buf)
+#define cobuf_free_with_ca(buf, ca, line) btif_coheap_free_with_ca((void *)(unsigned char *)(buf), (ca), (line))
 
 void cobuf_init(void);
 int cobuf_check_buffer_available(int size);

@@ -87,9 +87,9 @@ extern "C" {
 #define REL_LOG_OUTPUT_LINEFEED()           hal_trace_output_linefeed()
 #define REL_LOG_FLUSH()                     hal_trace_flush_buffer()
 #define REL_LOG_SEND()                      hal_trace_send()
-#define REL_DUMP8(str, buf, cnt)            hal_trace_dump(str, sizeof(uint8_t), cnt, buf)
-#define REL_DUMP16(str, buf, cnt)           hal_trace_dump(str, sizeof(uint16_t), cnt, buf)
-#define REL_DUMP32(str, buf, cnt)           hal_trace_dump(str, sizeof(uint32_t), cnt, buf)
+#define REL_DUMP8_EX(attr, str, buf, cnt)   hal_trace_dump_ex(attr, str, sizeof(uint8_t), cnt, buf)
+#define REL_DUMP16_EX(attr, str, buf, cnt)  hal_trace_dump_ex(attr, str, sizeof(uint16_t), cnt, buf)
+#define REL_DUMP32_EX(attr, str, buf, cnt)  hal_trace_dump_ex(attr, str, sizeof(uint32_t), cnt, buf)
 #else
 #define REL_LOG_SEC(attr, sec, str, ...)    hal_trace_dummy(str, ##__VA_ARGS__)
 #define REL_LOG(attr, str, ...)             hal_trace_dummy(str, ##__VA_ARGS__)
@@ -97,10 +97,13 @@ extern "C" {
 #define REL_LOG_OUTPUT_LINEFEED()           hal_trace_dummy(NULL)
 #define REL_LOG_FLUSH()                     hal_trace_dummy(NULL)
 #define REL_LOG_SEND()                      hal_trace_dummy(NULL)
-#define REL_DUMP8(str, buf, cnt)            hal_dump_dummy(str, buf, cnt)
-#define REL_DUMP16(str, buf, cnt)           hal_dump_dummy(str, buf, cnt)
-#define REL_DUMP32(str, buf, cnt)           hal_dump_dummy(str, buf, cnt)
+#define REL_DUMP8_EX(attr, str, buf, cnt)   hal_dump_dummy(str, buf, cnt)
+#define REL_DUMP16_EX(attr, str, buf, cnt)  hal_dump_dummy(str, buf, cnt)
+#define REL_DUMP32_EX(attr, str, buf, cnt)  hal_dump_dummy(str, buf, cnt)
 #endif
+#define REL_DUMP8(str, buf, cnt)            REL_DUMP8_EX(0, str, buf, cnt);
+#define REL_DUMP16(str, buf, cnt)           REL_DUMP16_EX(0, str, buf, cnt);
+#define REL_DUMP32(str, buf, cnt)           REL_DUMP32_EX(0, str, buf, cnt);
 
 #if (!defined(DEBUG) && defined(REL_TRACE_ENABLE)) && !defined(NO_TRACE)
 // To avoid warnings on unused variables
@@ -110,9 +113,9 @@ extern "C" {
 #define NORM_LOG_OUTPUT_LINEFEED()          hal_trace_dummy(NULL)
 #define NORM_LOG_FLUSH()                    hal_trace_dummy(NULL)
 #define NORM_LOG_SEND()                     hal_trace_dummy(NULL)
-#define DUMP8(str, buf, cnt)                hal_dump_dummy(str, buf, cnt)
-#define DUMP16(str, buf, cnt)               hal_dump_dummy(str, buf, cnt)
-#define DUMP32(str, buf, cnt)               hal_dump_dummy(str, buf, cnt)
+#define DUMP8_EX(attr, str, buf, cnt)       hal_dump_dummy(str, buf, cnt)
+#define DUMP16_EX(attr, str, buf, cnt)      hal_dump_dummy(str, buf, cnt)
+#define DUMP32_EX(attr, str, buf, cnt)      hal_dump_dummy(str, buf, cnt)
 #else
 #define NORM_LOG_SEC                        REL_LOG_SEC
 #define NORM_LOG                            REL_LOG
@@ -120,10 +123,13 @@ extern "C" {
 #define NORM_LOG_OUTPUT_LINEFEED            REL_LOG_OUTPUT_LINEFEED
 #define NORM_LOG_FLUSH                      REL_TRACE_FLUSH
 #define NORM_LOG_SEND                       REL_LOG_SEND
-#define DUMP8                               REL_DUMP8
-#define DUMP16                              REL_DUMP16
-#define DUMP32                              REL_DUMP32
+#define DUMP8_EX                            REL_DUMP8_EX
+#define DUMP16_EX                           REL_DUMP16_EX
+#define DUMP32_EX                           REL_DUMP32_EX
 #endif
+#define DUMP8(str, buf, cnt)                DUMP8_EX(0, str, buf, cnt)
+#define DUMP16(str, buf, cnt)               DUMP16_EX(0, str, buf, cnt)
+#define DUMP32(str, buf, cnt)               DUMP32_EX(0, str, buf, cnt)
 
 #define R_TR_CRITICAL(attr, str, ...)       REL_LOG(((attr) & ~TR_ATTR_LEVEL_MASK) | TR_ATTR_LEVEL(TR_LEVEL_CRITICAL), \
                                                     str, ##__VA_ARGS__)
@@ -206,8 +212,8 @@ extern "C" {
 #define ASSERT_FMT_ARG_IDX          4
 #elif (defined(DEBUG) || defined(REL_TRACE_ENABLE)) && defined(ASSERT_SHOW_FILE)
 #define ASSERT(cond, str, ...)      { if (!(cond)) { hal_trace_assert_dump(__FILE__, __LINE__, str, ##__VA_ARGS__); } }
-#define ASSERT_DUMP_ARGS            const char *file, const char *func, unsigned int line, const char *fmt, ...
-#define ASSERT_FMT_ARG_IDX          4
+#define ASSERT_DUMP_ARGS            const char *scope, unsigned int line, const char *fmt, ...
+#define ASSERT_FMT_ARG_IDX          3
 #elif (defined(DEBUG) || defined(REL_TRACE_ENABLE)) && defined(ASSERT_SHOW_FUNC)
 #define ASSERT(cond, str, ...)      { if (!(cond)) { hal_trace_assert_dump(__FUNCTION__, __LINE__, str, ##__VA_ARGS__); } }
 #define ASSERT_DUMP_ARGS            const char *scope, unsigned int line, const char *fmt, ...
@@ -291,6 +297,7 @@ enum HAL_TRACE_APP_REG_ID_T {
     HAL_TRACE_APP_REG_ID_0,
     HAL_TRACE_APP_REG_ID_1,
     HAL_TRACE_APP_REG_ID_2,
+    HAL_TRACE_APP_REG_ID_3,
 
     HAL_TRACE_APP_REG_ID_QTY,
 };
@@ -339,6 +346,8 @@ TRACE_FUNC_DECLARE(int hal_trace_set_log_module(const uint32_t *map, uint32_t wo
 
 TRACE_FUNC_DECLARE(int hal_trace_set_log_level(enum TR_LEVEL_T level), return 0);
 
+TRACE_FUNC_DECLARE(enum TR_LEVEL_T hal_trace_get_log_level(void), return TR_LEVEL_QTY);
+
 TRACE_FUNC_DECLARE(void hal_trace_get_history_buffer(const uint8_t **buf1, uint32_t *len1, const uint8_t **buf2, uint32_t *len2), \
     { if (buf1) { *buf1 = NULL; } if (len1) { *len1 = 0; } if (buf2) { *buf2 = NULL; } if (len2) { *len2 = 0; } });
 
@@ -350,6 +359,8 @@ TRC_FMT_CHK(2, 3)
 TRACE_FUNC_DECLARE(int hal_trace_printf(uint32_t attr, const char *fmt, ...), return 0);
 
 TRACE_FUNC_DECLARE(int hal_trace_dump(const char *fmt, unsigned int size,  unsigned int count, const void *buffer), return 0);
+
+TRACE_FUNC_DECLARE(int hal_trace_dump_ex(uint32_t attr, const char *fmt, unsigned int size, unsigned int count, const void *buffer), return 0);
 
 TRACE_FUNC_DECLARE(int hal_trace_busy(void), return 0);
 

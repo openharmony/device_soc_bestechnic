@@ -33,6 +33,7 @@ import("//kernel/$ohos_kernel_type/liteos.gni")
 
 out_product_path = "${ohos_root_path}out/${board_name}/${product_name}"
 BSP_PATH = "${ohos_root_path}/device/soc/bestechnic/aos_bsp"
+
 # build sdk into lib
 build_ext_component("build_sdk_into_lib") {
   exec_path = rebase_path(".")
@@ -99,12 +100,15 @@ config("public") {
     "$BSP_PATH/utils/kfifo",
     "$BSP_PATH/net/wifi",
     "$BSP_PATH/platform/hal/best2003",
-    "$BSP_PATH/services/norflash_api/",
-    "$BSP_PATH/platform/cmsis/inc/",
+    "$BSP_PATH/services/norflash_api",
+    "$BSP_PATH/platform/cmsis/inc",
+    "$BSP_PATH/utils/eshell",
+    "$BSP_PATH/services/aiot/ota_secboot",
   ]
-  ldflags = [ "-Wl,-T" + rebase_path("$BSP_PATH/out/best2600w_liteos/_best2003.lds") ]
+  ldflags =
+      [ "-Wl,-T" + rebase_path("$BSP_PATH/out/best2003_aiot/_best2003.lds") ]
   libs = [
-    "best2600w_liteos",
+    "best2003_aiot",
     "c",
     "m",
     "stdc++",

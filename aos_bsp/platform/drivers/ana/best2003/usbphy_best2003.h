@@ -32,6 +32,8 @@ void usbphy_div_set(uint32_t div);
 
 void close_usb_test(void);
 
+void usb_interface_reset(void);
+
 #ifdef __cplusplus
 }
 #endif

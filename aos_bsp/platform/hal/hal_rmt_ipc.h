@@ -70,6 +70,8 @@ int hal_rmt_ipc_tx_active(HAL_RMT_IPC_EP_T ep, unsigned int seq);
 
 int hal_rmt_ipc_opened(HAL_RMT_IPC_EP_T ep);
 
+int hal_rmt_ipc_peer_opened(HAL_RMT_IPC_EP_T ep);
+
 int hal_rmt_ipc_rx_irq_pending(HAL_RMT_IPC_EP_T ep);
 
 int hal_rmt_ipc_get_ep(enum HAL_RMT_IPC_CORE_T core, enum HAL_RMT_IPC_CHAN_T chan, HAL_RMT_IPC_EP_T *ep_out);
@@ -77,6 +79,8 @@ int hal_rmt_ipc_get_ep(enum HAL_RMT_IPC_CORE_T core, enum HAL_RMT_IPC_CHAN_T cha
 int hal_rmt_ipc_update_cfg_loc(enum HAL_RMT_IPC_CORE_T core, void *peer_loc, void *local_loc);
 
 int hal_rmt_ipc_register_send_callback(HAL_RMT_IPC_EP_T ep, HAL_RMT_IPC_SEND_CALLBACK cb);
+
+int hal_rmt_ipc_get_rsc_table(HAL_RMT_IPC_EP_T ep, uint32_t *rsc_addr, uint32_t *rsc_sz);
 
 #ifdef __cplusplus
 }

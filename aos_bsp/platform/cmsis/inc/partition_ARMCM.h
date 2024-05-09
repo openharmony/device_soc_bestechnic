@@ -27,6 +27,8 @@
 
 #include CHIP_SPECIFIC_HDR(partition)
 
+#if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
+
 /*
     max 128 SAU regions.
     SAU regions are defined in partition.h
@@ -182,5 +184,7 @@ __STATIC_INLINE void TZ_SAU_Setup (void)
   /* repeat this for all possible ITNS elements */
 
 }
+
+#endif // __ARM_FEATURE_CMSE
 
 #endif

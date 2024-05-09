@@ -71,7 +71,7 @@ typedef void (*FRAME2BUFF_HANDLER)();
 
 int hal_intersys_mic_open(enum HAL_INTERSYS_ID_T id, FRAME2BUFF_HANDLER dch);
 
-void hal_intersys_mic_rx_irq();
+void hal_intersys_mic_rx_irq(void);
 #endif
 
 bool hal_intersys_get_wakeup_flag(void);

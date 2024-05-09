@@ -692,6 +692,7 @@ void bt_drv_reg_op_le_rf_reg_txpwr_set(uint8_t rf_reg, uint8_t val);
 void bt_drv_reg_op_ble_sync_agc_mode_set(uint8_t en);
 uint8_t btdrv_reg_op_isohci_in_nb_buffer(uint8_t link_id);
 void btdrv_2003_cap_delay_cal(void);
+void bt_drv_reg_op_ble_audio_config_init(void);
 
 #ifdef __cplusplus
 }

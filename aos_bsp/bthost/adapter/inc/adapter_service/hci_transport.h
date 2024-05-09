@@ -63,7 +63,7 @@ typedef enum {
  *      rx max total: 15806 15.44KB (W/O ISO 8126 7.94KB)
  */
 
-#define HCI_NUM_CMD_TX_HOST_BUFFERS    32 // previous host cmd tx buff 24
+#define HCI_NUM_CMD_TX_HOST_BUFFERS    64 // previous host cmd tx buff 24
 #define HCI_NUM_BT_ACL_TX_HOST_BUFFERS 64 // previous host bt acl tx buff 24
 #define HCI_NUM_BT_SCO_TX_HOST_BUFFERS 12
 #define HCI_NUM_LE_ACL_TX_HOST_BUFFERS 64 // btc le acl tx 251 * 18
@@ -97,6 +97,8 @@ typedef enum {
     HCI_ACL_RX_START_NONE_AUTOFLUSH = 0x0000, // only allowed for loopback mode
     HCI_ACL_RX_CONTINUE_FRAGMENT    = 0x1000,
     HCI_ACL_RX_START_FRAGMENT       = 0x2000,
+    HCI_ACL_RX_NEAR_START_FRAGMENT  = 0x0000,
+    HCI_ACL_RX_NEAR_CONT_FRAGMENT   = 0x2000,
 
     HCI_LEU_TX_START_NONE_FLUSHABLE = 0x0000, // le acl data are all non-automatic-flushable
     HCI_LEU_TX_CONTINUE_FRAGMENT    = 0x1000,

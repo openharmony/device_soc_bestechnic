@@ -34,6 +34,10 @@ uint32_t hal_wifitsf_get_tsf_high(void);
 uint32_t hal_wifitsf_get_tsf_low(void);
 uint32_t hal_wifitsf_set_tsf_init_value(uint32_t low, uint32_t hight);
 
+#if (CHIP_WIFITSF_VER > 1)
+void hal_wifitsf_dma_sel_cfg(uint8_t idx, uint8_t sel);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

@@ -87,9 +87,10 @@ struct hci_conn_flag_t {
     uint16_t out_disconnecting: 1;
     uint16_t cannot_continue_send: 1;
     uint16_t acl_rx_flow_is_stopped: 1;
+    uint16_t is_near_link_type: 1;
 } __attribute__ ((packed));
 
-struct hci_conn_item_t {
+typedef struct hci_conn_item_t {
     struct hci_conn_flag_t flag;
     bt_bdaddr_t peer_addr;
     uint16_t connhdl;
@@ -99,7 +100,7 @@ struct hci_conn_item_t {
     uint8_t group_id;
     uint8_t stream_id;
     void *priv_param;
-} __attribute__ ((packed));
+} __attribute__ ((packed)) hci_conn_item_t;
 
 #ifdef BLE_HOST_SUPPORT
 struct hci_le_callback_t {
@@ -115,7 +116,7 @@ struct hci_le_callback_t {
 };
 #endif
 
-#ifdef BLE_HOST_SUPPORT
+#if defined(BLE_HOST_SUPPORT) || defined(NEARLINK_HOST_SUPPORT)
 #define HCI_MAX_NUM_CONN_HANDLE (25)
 #else
 #define HCI_MAX_NUM_CONN_HANDLE (5)
@@ -191,6 +192,9 @@ typedef enum {
 } bt_hci_event_t;
 
 typedef int (*bt_hci_callback_t)(uintptr_t connhdl, bt_hci_event_t event, bt_hci_callback_param_t param);
+typedef void (*hci_acl_tx_done_callback_t)(uint16_t connhdl, struct pp_buff *ppb);
+typedef void (*hci_rx_acl_data_callback_t)(uint16_t connhdl, struct pp_buff *ppb);
+typedef void (*hci_rx_evt_data_callback_t)(struct hci_evt_packet_t *evt_packet);
 
 struct hci_bt_callback_t {
     bt_hci_callback_t hci_cb_event_handle;
@@ -206,6 +210,9 @@ struct hci_bt_callback_t {
     void (*rx_le_acl_data)(uint16_t connhdl, struct pp_buff *ppb);
     void (*rx_le_evt_data)(struct hci_evt_packet_t *evt_packet);
 #endif
+    hci_acl_tx_done_callback_t near_acl_tx_done;
+    hci_rx_acl_data_callback_t rx_near_acl_data;
+    hci_rx_evt_data_callback_t rx_near_evt_data;
 };
 
 struct hci_event_wait_item_t {
@@ -311,8 +318,10 @@ typedef struct hci_global_t {
     /**
      * le acl tx fc
      */
-#ifdef BLE_HOST_SUPPORT
+#if defined(BLE_HOST_SUPPORT)
     struct hci_le_callback_t le_callback;
+#endif
+#if defined(BLE_HOST_SUPPORT) || defined(NEARLINK_HOST_SUPPORT)
     struct single_link_head_t le_acl_tx_list;
     uint16_t le_tx_acl_host_alloced_max;
     uint16_t le_tx_acl_packet_length;
@@ -341,6 +350,16 @@ bt_status_t hci_send_bt_acl_packet(hci_conn_type_t type, uint16_t connhdl_flags,
 bt_status_t hci_send_cmd_packet(struct pp_buff *ppb);
 bt_status_t hci_send_command(uint16_t cmd_opcode, const uint8_t *cmd_data, uint8_t data_len);
 bt_status_t hci_set_cmd_wait_event(struct pp_buff *cmd_ppb, uint8_t wait_event);
+void hci_cmd_is_completed(uint8_t evt_code, uint16_t cmd_opcode, uint16_t num_cmd_packets, uint8_t status, const uint8_t *cmpl_parameters, uint8_t cmpl_param_len);
+void hci_handle_fc_on_disconnect(hci_conn_type_t conn_type, struct hci_conn_item_t *item, uint16_t connhdl);
+void hci_handle_controller_num_of_complete(struct hci_evt_packet_t *pkt);
+void hci_free_conn_by_handle(hci_conn_type_t type, uint16_t connhdl);
+void hci_foreach_near_conn_item(hci_conn_type_t conn_type, int (*cb)(void *priv_param, void *param), void *param);
+int hci_count_conn_type_items(hci_conn_type_t conn_type, bool is_near_link_type);
+void hci_defer_free_rx_buffer(struct pp_buff *ppb, uint32_t ca, uint32_t line);
+struct hci_conn_item_t *hci_find_conn_by_priv_param(hci_conn_type_t type, void *priv_param);
+struct hci_conn_item_t *hci_alloc_conn_item(hci_conn_type_t conn_type, uint8_t addr_type, const bt_bdaddr_t *peer_addr, uint16_t connhdl);
+struct hci_conn_item_t *hci_find_conn_of_all_type(uint16_t connhdl);
 
 typedef void (*hci_cmd_evt_func_t)(uint16_t cmd_opcode, struct hci_cmd_evt_param_t *param); // cmd cmpl status cb func
 struct pp_buff *hci_create_cmd_packet(uint16_t cmd_opcode, uint8_t cmd_data_len, hci_cmd_evt_func_t cmpl_status_cb);

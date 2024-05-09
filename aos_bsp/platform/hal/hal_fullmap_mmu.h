@@ -45,6 +45,7 @@ struct HAL_FULLMAP_MMU_CONFIG_T {
     bool virtual_write_en;
     bool virtual_read_en;
     bool low_power_mode;
+    bool check_en;
 };
 
 void hal_fullmap_mmu_open(enum HAL_FULLMAP_MMU_ID_T id, struct HAL_FULLMAP_MMU_CONFIG_T *cfg);

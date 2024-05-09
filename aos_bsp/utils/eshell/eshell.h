@@ -51,8 +51,12 @@ void eshell_open(uint8_t uart_id, bool need_open_uart);
 void eshell_close(void);
 int eshell_rpc_execute_command(char *str, unsigned int str_len);
 int eshell_run(char *cmdstr);
+int eshell_run_param(int argc, char *argv[]);
 void eshell_rpc_run_cmd_func_cb_register(eshell_rpc_run_cmd_func op_cb, eshell_rpc_run_cmd_func result_cb);
 eshell_rpc_run_cmd_func eshell_rpc_run_result_output_func_get(void);
+void eshell_user_cb_register(eshell_rpc_run_cmd_func result_cb);
+eshell_rpc_run_cmd_func eshell_user_cb_get(void);
+uint32_t eshell_rx_cb(uint8_t *buf, uint32_t len);
 
 // helper API
 void eshell_param_macstr_get_array(char *params, int param_index, unsigned char *array_out);
@@ -93,6 +97,14 @@ int  eshell_putstring(const char *fmt, ...);
 int  eshell_putstring_nl(const char *fmt, ...);
 int  eshell_output_rawdata(char *data, unsigned int data_len);
 void eshell_enqueue(uint8_t *buf, uint32_t size);
+int eshell_remote_init(int cpu_id);
+int eshell_remote_start(int cpu_id);
+int eshell_remote_close(int cpu_id);
+int eshell_remote_write(int cpu_id, const char *cmd, int len);
+int eshell_remote_register_input(int (*)(char *, int));
+int eshell_remote_register_output(int (*)(const char *, int));
+int eshell_remote_register_getchar(unsigned char (*)(void));
+int eshell_remote_register_putchar(void (*)(char));
 
 // helper macro
 #define ESHELL_DEF_COMMAND(grp_id, cmd_str,help_str,cmd_handler)    \

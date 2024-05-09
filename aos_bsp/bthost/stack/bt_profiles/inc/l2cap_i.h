@@ -424,6 +424,7 @@ uint32_t l2cap_connect(const bt_bdaddr_t *remote, uint16_t local_l2cap_psm, l2ca
 uint32_t l2cap_enre_connect(const bt_bdaddr_t *remote, uint16_t local_l2cap_psm, l2cap_psm_target_profile_t target, uint16_t remote_l2cap_psm);
 void l2cap_notify_rx_done_event(uint16_t connhdl, uint32_t l2cap_handle);
 void l2cap_defer_free_rx_buffer(struct pp_buff *ppb);
+int8 l2cap_send_disconnect_req(uint8 device_id, l2cap_channel_t *channel);
 
 typedef void (*l2cap_sdp_disconnect_callback)(const bt_bdaddr_t *bdaddr);
 typedef uint8 (*btm_get_ibrt_role_callback)(const bt_bdaddr_t *para);
@@ -500,6 +501,8 @@ void l2cap_clean_ibrt_slave_status(void *remote);
 int8 l2cap_close(uint32 l2cap_handle);
 int8 l2cap_close_v2(uint32 l2cap_handle,uint8 reason);
 int8 l2cap_close_after_conn_rsp(uint32 l2cap_handle);
+void l2cap_report_le_fixed_channel_opened(uint16_t connhdl);
+struct pp_buff *l2cap_alloc_fragment_ppb(uint16_t dcid, uint32 total_len, const void* curr_data, uint32 curr_len, void *context, bool is_start_packet);
 
 #ifdef BLE_HOST_SUPPORT
 typedef struct gap_conn_prefer_params_t gap_conn_prefer_params_t;
@@ -514,6 +517,33 @@ void l2cap_pts_send_l2cap_data(void);
 uint32 l2cap_save_ctx(uint32 l2cap_handle, uint8_t *buf, uint32_t buf_len);
 uint32 l2cap_restore_ctx(struct l2cap_ctx_input *input, struct l2cap_ctx_output *output, void (*close_old_channel_cb)(uint8_t));
 
+typedef struct {
+    uint16_t proto_size;
+    bt_proto_conn_open_close_t cb;
+} l2cap_proto_conn_t;
+
+struct l2cap_global_t {
+    bool l2cap_init_flag;
+    uint8_t l2cap_conn_count;
+    uint8_t ble_l2cap_conn_count;
+    uint32_t l2cap_handle_seed;
+    l2cap_proto_conn_t att_conn;
+    l2cap_proto_conn_t proto[BLUETOOTH_PROTO_MAX_NUM];
+    struct single_link_head_t psm_reg_list;
+    struct single_link_head_t open_req_list;
+};
+
+enum l2cap_search_scid_ctx_t
+{
+    L2CAP_SCID_CTX_DONT_CARE,
+    L2CAP_SCID_CTX_DISC_RSP = 1,
+    L2CAP_SCID_CTX_CONN_RSP,
+    L2CAP_SCID_CTX_CFG_RSP,
+    L2CAP_SCID_CTX_CFG_REQ,
+    L2CAP_SCID_CTX_DATA_IND,
+    L2CAP_SCID_CTX_DISC_REQ,
+    L2CAP_SCID_CTX_ENFC_REQ,
+};
 #if defined(__cplusplus)
 }
 #endif

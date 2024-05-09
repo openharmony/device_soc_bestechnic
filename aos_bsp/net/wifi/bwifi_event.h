@@ -22,12 +22,15 @@ extern "C"
 {
 #endif
 
+#include "plat_types.h"
+
 typedef struct {
     int ap_num;                     /**< number of scanning APs */
     //struct dl_list *ap_list;      /**< list of APs found */
 } BWIFI_EVENT_STAMODE_SCANDONE_T;
 
 typedef enum {
+    INTER_STATE_INVALID,            /* Invalid state*/
     INTER_STATE_AUTHENTICATING,     /* Authentication start */
     INTER_STATE_AUTH_REJECT,        /* Authentication rejected by AP */
     INTER_STATE_AUTH_TIMEOUT,       /* Authentication timeout */
@@ -128,8 +131,8 @@ typedef struct {
 typedef struct {
     void *wpa;
     uint8_t peer[6];
-    u8 go_intent;
-    u16 dev_passwd_id;
+    uint8_t go_intent;
+    uint16_t dev_passwd_id;
 } BWIFI_EVENT_P2P_GO_NEG_REQ_T;
 
 typedef struct {
@@ -182,8 +185,8 @@ typedef struct {
     uint8_t ssid_len;
     uint8_t persistent;
     uint8_t client;
-    u8 ip[12];
-    u8 ip_type; //ipv4 or ipv6
+    uint8_t ip[12];
+    uint8_t ip_type; //ipv4 or ipv6
 } BWIFI_EVENT_P2P_GROUP_STARTED_T;
 
 typedef struct {
@@ -267,6 +270,7 @@ typedef enum {
     EVENT_P2P_GC_AUTHED                   = 20,
     EVENT_P2P_GC_DEAUTHED                 = 21,
     EVENT_P2P_CONNECT_START               = 22,
+    EVENT_P2P_DHCP_TIMEOUT                = 23,
     EVENT_P2P_MAX
 } BWIFI_P2P_EVENT_ID;
 
@@ -389,7 +393,7 @@ typedef void (*eth_input_handler)(uint8_t devnum, void *buf, int size);
   * @length: the length of wifi frame.
   * @param: custom param
   */
-typedef void (*wifi_frame_recv_handler)(u8 *frame, int length, void *param);
+typedef void (*wifi_frame_recv_handler)(uint8_t *frame, int length, void *param);
 
 #ifdef __SNIFFER_MODE__
 /**
@@ -402,7 +406,7 @@ typedef void (*wifi_frame_recv_handler)(u8 *frame, int length, void *param);
   * @param int signal, the pkt rssi.
   * @return null
   */
-typedef void (*sniffer_recv_handler)(const u8 *data, u32 length, int signal);
+typedef void (*sniffer_recv_handler)(const uint8_t *data, uint32_t length, int signal);
 #endif
 
 #ifdef CSI_REPORT
@@ -413,9 +417,10 @@ typedef void (*sniffer_recv_handler)(const u8 *data, u32 length, int signal);
   *
   * @param const void *buf, rx csi data buf.
   * @param uint32_t size, the length of param buf.
+  * @param uint8_t isStbc, stbc.
   * @return null
   */
-typedef void (*csi_recv_handler)(const void *buf, uint32_t size);
+typedef void (*csi_recv_handler)(const void *buf, uint32_t size, uint8_t isStbc);
 #endif
 
 /**
@@ -430,6 +435,10 @@ typedef void (*csi_recv_handler)(const void *buf, uint32_t size);
   */
 typedef int (*evt_recv_handler)(BWIFI_SYSTEM_EVENT_T *event);
 
+/*
+ * Send wifi event, not open to customers
+ */
+int bwifi_send_event(BWIFI_SYSTEM_EVENT_T *event);
 
 #ifdef  __cplusplus
 }

@@ -24,9 +24,9 @@ typedef unsigned int (*HAL_TZ_TRIGGER_HANDLER)(void *param);
 
 int hal_tz_trigger_open(HAL_TZ_TRIGGER_HANDLER rxhandler);
 
-int hal_tz_trigger_close();
+int hal_tz_trigger_close(void);
 
-int hal_tz_trigger_set();
+int hal_tz_trigger_set(void);
 
 #ifdef __cplusplus
 }

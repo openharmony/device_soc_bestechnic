@@ -109,7 +109,7 @@ typedef struct {
     bt_bdaddr_t peer_addr;
     uint16_t connhdl;
     uint16_t remote_mtu;
-    int16_t free_credits;
+    int32_t free_credits;
     uint8_t l2cap_mode;
     uint32_t l2cap_handle;
     void *tx_priv_rx_ppb;

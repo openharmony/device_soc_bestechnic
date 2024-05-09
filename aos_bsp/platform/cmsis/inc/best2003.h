@@ -133,7 +133,7 @@ typedef enum IRQn
     CHKSUM_IRQn                 =  64,      /*!< Checksum Interrupt                 */
     CRC_IRQn                    =  65,      /*!< CRC Interrupt                      */
     CP_DSLP_IRQn                =  66,      /*!< CP Deep Sleep Interrupt            */
-    PAGESPY_IRQn                =  67,      /*!< PAGESPY Interrupt                  */
+    PAGE_SPY_IRQn               =  67,      /*!< PAGE SPY Interrupt                 */
     TRUSTZONE_IRQn              =  68,      /*!< TrustZone Interrupt                */
     BT_STAMP_IRQn               =  69,      /*!< BT Playtime Stamp Interrupt        */
     CSI0_IRQn                   =  70,      /*!< CSI0 Interrupt                     */
@@ -141,7 +141,7 @@ typedef enum IRQn
     CSIDMA_IRQn                 =  CSI0_IRQn, /*!< CSI DMA Interrupt                */
     DSI0_IRQn                   =  71,       /*!< DSI0 Interrupt                    */
     DSI1_IRQn                   =  DSI0_IRQn, /*!< DSI1 Interrupt                   */
-    DSI_IRQn                    =  DSI0_IRQn, /*!< DSI Interrupt                   */
+    DSI_IRQn                    =  DSI0_IRQn, /*!< DSI Interrupt                    */
     DISPLAY_IRQn                =  DSI0_IRQn, /*!< DISPLAY Interrupt                */
 
     USER_IRQn_QTY,

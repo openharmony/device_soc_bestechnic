@@ -22,7 +22,7 @@ extern "C" {
 
 #include "plat_types.h"
 
-void hal_sec_pre_init();
+void hal_sec_pre_init(void);
 
 void hal_sec_cfg_nonsec_bypass(uint32_t addr, bool bypass);
 

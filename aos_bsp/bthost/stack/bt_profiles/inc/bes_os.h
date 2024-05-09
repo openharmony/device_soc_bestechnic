@@ -26,10 +26,6 @@
 extern "C" {
 #endif
 
-#define Plt_Assert ASSERT
-#define Plt_TICKS_TO_MS(ticks) TICKS_TO_MS(ticks)
-#define Plt_DUMP8 DUMP8
-
 #define OS_CRITICAL_METHOD      0
 #define OS_ENTER_CRITICAL()     uint32_t os_lock = bt_int_lock()
 #define OS_EXIT_CRITICAL()      bt_int_unlock(os_lock)

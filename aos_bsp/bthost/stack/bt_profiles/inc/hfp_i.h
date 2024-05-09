@@ -438,8 +438,8 @@ void hf_register_peer_sco_codec_receive_handler(void (*cb)(uint8_t device_id,voi
 void hf_receive_peer_sco_codec_info(const void* remote, uint8_t codec);
 bool hfp_hf_send_command(struct hshf_control *hfp, hfp_response_func_t resp_cb, const char *data, unsigned int len);
 bool hfp_hf_send_command_do(struct hshf_control *hfp, hfp_response_func_t resp_cb, const char *data, uint16_t len, bool is_cust_cmd ,uint8 param);
-#define hfp_hf_send_command(h,rc,d,dl) hfp_hf_send_command_do(h,rc,d,(uint16_t)dl,false,0xFF)
-#define hfp_hf_send_command_private(h,rc,d,dl,param) hfp_hf_send_command_do(h,rc,d,(uint16_t)dl,false,param)
+#define hfp_hf_send_command(h,rc,d,dl) call_wrapper(btprf, hfp_hf_send_command_do,h,rc,d,(uint16_t)dl,false,0xFF)
+#define hfp_hf_send_command_private(h,rc,d,dl,param) call_wrapper(btprf, hfp_hf_send_command_do,h,rc,d,(uint16_t)dl,false,param)
 bool hfp_context_get_string(struct hfp_response *context, char *buf, uint8_t len);
 void hfp_context_skip_field(struct hfp_response *context);
 void skip_whitespace(struct hfp_response *context);

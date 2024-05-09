@@ -75,6 +75,20 @@ extern "C" {
 #define __sram_data_start__                 __rom_HeapLimit
 #define __sram_bss_start__                  __rom_HeapLimit
 #define __sram_bss_end__                    __rom_HeapLimit
+#define __ram_extra0_text_data_start_flash__ __rom_HeapLimit
+#define __ram_extra0_text_data_end_flash__  __rom_HeapLimit
+#define __ram_extra0_text_data_start__      __rom_HeapLimit
+#define __ram_extra0_text_data_end__        __rom_HeapLimit
+#define __ram_extra0_bss_start__            __rom_HeapLimit
+#define __ram_extra0_bss_end__              __rom_HeapLimit
+#define __aon_mbx_data_start_load__         __rom_HeapLimit
+#define __aon_mbx_data_end_load__           __rom_HeapLimit
+#define __aon_mbx_data_start__              __rom_HeapLimit
+#define __aon_mbx_data_end__                __rom_HeapLimit
+#define __aon_mbx_bss_start__               __rom_HeapLimit
+#define __aon_mbx_bss_end__                 __rom_HeapLimit
+#define __aon_mbx_heap_start__              __rom_HeapLimit
+#define __aon_mbx_heap_end__                __rom_HeapLimit
 
 #ifndef NOSTD
 #define __bss_start__                       __rom_bss_start__
@@ -141,6 +155,20 @@ extern "C" {
 #define __sram_bss_end__                    __HeapLimit
 #define __cp_stack_limit                    __HeapLimit
 #define __cp_stack_top                      __HeapLimit
+#define __ram_extra0_text_data_start_flash__ __HeapLimit
+#define __ram_extra0_text_data_end_flash__  __HeapLimit
+#define __ram_extra0_text_data_start__      __HeapLimit
+#define __ram_extra0_text_data_end__        __HeapLimit
+#define __ram_extra0_bss_start__            __HeapLimit
+#define __ram_extra0_bss_end__              __HeapLimit
+#define __aon_mbx_data_start_load__         __HeapLimit
+#define __aon_mbx_data_end_load__           __HeapLimit
+#define __aon_mbx_data_start__              __HeapLimit
+#define __aon_mbx_data_end__                __HeapLimit
+#define __aon_mbx_bss_start__               __HeapLimit
+#define __aon_mbx_bss_end__                 __HeapLimit
+#define __aon_mbx_heap_start__              __HeapLimit
+#define __aon_mbx_heap_end__                __HeapLimit
 
 #else
 
@@ -265,6 +293,30 @@ extern "C" {
 #define __StackTop                          Image$$ARM_LIB_STACK$$ZI$$Limit
 #define __stack                             __StackTop
 #define __StackLimit                        Image$$ARM_LIB_STACK$$Base
+
+#define __sram_nc_data_start_load__         Load$$sram_nc_data$$Base
+#define __sram_nc_data_end_load__           Load$$sram_nc_data$$Limit
+#define __sram_nc_data_start__              Image$$sram_nc_data$$Base
+#define __sram_nc_data_end__                Image$$sram_nc_data$$Limit
+#define __sram_nc_bss_start__               Image$$sram_nc_bss$$Base
+#define __sram_nc_bss_end__                 Image$$sram_nc_bss$$Limit
+
+#define __ram_extra0_text_data_start_flash__ Load$$ram_extra0_text_data$$Base
+#define __ram_extra0_text_data_end_flash__  Load$$ram_extra0_text_data$$Limit
+#define __ram_extra0_text_data_start__      Image$$ram_extra0_text_data$$Base
+#define __ram_extra0_text_data_end__        Image$$ram_extra0_text_data$$Limit
+#define __ram_extra0_bss_start__            Image$$ram_extra0_bss$$Base
+#define __ram_extra0_bss_end__              Image$$ram_extra0_bss$$Limit
+
+#define __aon_mbx_data_start_load__         Load$$aon_mbx_data$$Base
+#define __aon_mbx_data_end_load__           Load$$aon_mbx_data$$Limit
+#define __aon_mbx_data_start__              Image$$aon_mbx_data$$Base
+#define __aon_mbx_data_end__                Image$$aon_mbx_data$$Limit
+#define __aon_mbx_bss_start__               Image$$aon_mbx_bss$$Base
+#define __aon_mbx_bss_end__                 Image$$aon_mbx_bss$$Limit
+#define __aon_mbx_heap_start__              Image$$aon_mbx_heap$$Base
+#define __aon_mbx_heap_end__                Image$$aon_mbx_heap$$Limit
+
 #define __flash_end                         Image$$code_start_addr$$Limit
 #define __custom_parameter_start            Image$$custom_parameter$$Base
 #define __custom_parameter_end              Image$$custom_parameter$$ZI$$Limit

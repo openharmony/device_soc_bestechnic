@@ -470,6 +470,24 @@ bt_status_t ble_hogp_send_sensor_report(const struct bt_hid_sensor_report_t *rep
 #define HID_SENSOR_STATE_FEATURE_REPORT_ID  0x06 // read/write
 #define HID_SENSOR_VALUE_INPUT_REPORT_ID    0x07
 
+#define HID_SENSOR_DESCR_FEATURE_DATA_LEN   (23+16)
+#define HID_SENSOR_STATE_FEATURE_DATA_LEN   1
+#define HID_SENSOR_VALUE_INPUT_DATA_LEN sizeof(struct bt_hid_sensor_report_t)
+
+#define HID_HEAD_TRACKER_INPUT_REPORT_CONFIG \
+    {1, { \
+    {HID_SENSOR_VALUE_INPUT_REPORT_ID, HID_SENSOR_VALUE_INPUT_DATA_LEN}, \
+    }}
+
+#define HID_HEAD_TRACKER_OUTPUT_REPORT_CONFIG \
+    {0, {{0}}}
+
+#define HID_HEAD_TRACKER_FEATURE_REPORT_CONFIG \
+    {2, { \
+    {HID_SENSOR_DESCR_FEATURE_REPORT_ID, HID_SENSOR_DESCR_FEATURE_DATA_LEN}, \
+    {HID_SENSOR_STATE_FEATURE_REPORT_ID, HID_SENSOR_STATE_FEATURE_DATA_LEN}, \
+    }}
+
 #define HID_REPORT_MODE_SENSOR_DESCRIPTOR_LEN 172
 #define HID_REPORT_MODE_SENSOR_DESCRIPTOR_DATA \
     HID_GLOBAL_ITEM_USAGE_PAGE(HID_USAGE_PAGE_SENSOR), \
@@ -658,6 +676,17 @@ struct keyboard_control_key_t {
         HID_GLOBAL_ITEM_LOGICAL_MAX(0xff), \
             HID_MAIN_ITEM_INPUT(HID_DATA|HID_ARR|HID_ABS),          /* Keycode array 6-byte */ \
     HID_MAIN_ITEM_END_COLLECTION()
+
+#define HID_REPORT_MODE_KEYBOARD_INPUT_REPORT_CONFIG \
+    {1, { \
+    {HID_MEDIAKEY_INPUT_REPORT_ID, sizeof(struct keyboard_control_key_t)}, \
+    }}
+
+#define HID_REPORT_MODE_KEYBOARD_OUTPUT_REPORT_CONFIG \
+    {0, {{0}}}
+
+#define HID_REPORT_MODE_KEYBOARD_FEATURE_REPORT_CONFIG \
+    {0, {{0}}}
 
 #define HID_REPORT_MODE_MEDIAKEY_DESCRIPTOR_LEN 49
 #define HID_REPORT_MODE_MEDIAKEY_DESCRIPTOR_DATA \
@@ -1015,6 +1044,19 @@ typedef struct {
         HID_MAIN_ITEM_END_COLLECTION(), \
     HID_MAIN_ITEM_END_COLLECTION()
 
+#define HID_REPORT_MODE_MOUSE_INPUT_REPORT_CONFIG \
+    {2, { \
+    {HID_MOUSECLK_INPUT_REPORT_ID, sizeof(hid_mouse_boot_input_report_t)}, \
+    {HID_MOUSECTL_INPUT_REPORT_ID, sizeof(hid_mousectl_report_t)}, \
+    }}
+
+#define HID_REPORT_MODE_MOUSE_OUTPUT_REPORT_CONFIG \
+    {0, {{0}}}
+
+#define HID_REPORT_MODE_MOUSE_FEATURE_REPORT_CONFIG \
+    {0, {{0}}}
+
+
 #if 1
 #define HID_REPORT_MODE_MOUSE_DESCRIPTOR_LEN (52+26)
 #define HID_REPORT_MODE_MOUSE_DESCRIPTOR_DATA \
@@ -1210,6 +1252,17 @@ typedef struct {
     uint8_t device_id;
 } bt_hid_closed_t;
 
+typedef enum {
+    HID_INTERRUPT_CHANNEL = 0,
+    HID_CONTROL_CHANNEL,
+} bt_hid_txchannel_t;
+
+typedef struct {
+    void *channel;
+    uint8_t error_code;
+    uint8_t device_id;
+} bt_hid_txdone_t;
+
 typedef struct {
     void *channel;
     uint8_t error_code;
@@ -1221,6 +1274,7 @@ typedef union {
     void *param_ptr;
     bt_hid_opened_t *opened;
     bt_hid_closed_t *closed;
+    bt_hid_txdone_t *txdone;
     bt_hid_sensor_state_changed_t *changed;
 } bt_hid_callback_param_t;
 
@@ -1228,6 +1282,7 @@ typedef enum {
     BT_HID_EVENT_OPENED = BT_EVENT_HID_OPENED,
     BT_HID_EVENT_CLOSED,
     BT_HID_EVENT_SENSOR_STATE_CHANGED,
+    BT_HID_EVENT_TXDONE,
     BT_HID_EVENT_END,
 } bt_hid_event_t;
 

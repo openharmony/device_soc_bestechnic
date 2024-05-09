@@ -675,7 +675,7 @@ int BleStopAdv(int advId)
         return OHOS_BT_STATUS_SUCCESS;
     }
 
-    ret = gap_disable_advertising((uint8_t)advId);
+    ret = gap_disable_advertising((uint8_t)advId, GAP_ADV_DISABLE_BY_APP_BLE);
     if (BT_STS_SUCCESS != ret)
     {
         return OHOS_BT_STATUS_FAIL;

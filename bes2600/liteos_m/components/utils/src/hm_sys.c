@@ -205,3 +205,9 @@ int GetParamValue(const char *symValue, unsigned int symLen, char *paramValue, u
 {
     return (strncpy_s(paramValue, paramLen, symValue, symLen) == 0) ? 0 : -1;
 }
+
+extern int errno;
+int *__h_errno_location(void)
+{
+    return &errno;
+}

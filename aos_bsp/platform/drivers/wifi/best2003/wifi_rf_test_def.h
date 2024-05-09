@@ -200,6 +200,8 @@ extern "C" {
 
 #define WIFI_DAC_CEIL_DEBUG          0 //dac calibration debug
 
+#define SRRC_CCA_ENHANCE             1
+
 #ifdef __cplusplus
 }
 #endif

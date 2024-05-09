@@ -76,8 +76,13 @@ static const enum HAL_DMA_PERIPH_T bes2003_gpdma_fifo_periph[AUDMA_PERIPH_NUM] =
 static const uint32_t bes2003_audma_fifo_addr[GPDMA_PERIPH_NUM] = {
     CODEC_BASE + 0x01C,     // CODEC RX
     CODEC_BASE + 0x01C,     // CODEC TX
+#ifdef AF_DEVICE_I2S
+    I2S0_BASE + 0x200,      // I2S1 RX
+    I2S0_BASE + 0x240,      // I2S1 TX
+#else
     IRDA_BASE + 0x000,      // IR RX
     IRDA_BASE + 0x004,      // IR TX
+#endif
     UART0_BASE + 0x000,     // UART0 RX
     UART0_BASE + 0x000,     // UART0 TX
     UART2_BASE + 0x000,     // UART2 RX
@@ -99,8 +104,13 @@ static const uint32_t bes2003_audma_fifo_addr[GPDMA_PERIPH_NUM] = {
 static const enum HAL_DMA_PERIPH_T bes2003_audma_fifo_periph[GPDMA_PERIPH_NUM] = {
     HAL_AUDMA_CODEC_RX,
     HAL_AUDMA_CODEC_TX,
+#ifdef AF_DEVICE_I2S
+    HAL_AUDMA_I2S0_RX,
+    HAL_AUDMA_I2S0_TX,
+#else
     HAL_GPDMA_IR_RX,
     HAL_GPDMA_IR_TX,
+#endif
     HAL_GPDMA_UART0_RX,
     HAL_GPDMA_UART0_TX,
     HAL_GPDMA_UART2_RX,

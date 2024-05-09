@@ -102,6 +102,7 @@ extern "C" {
 #define BT_DYNAMIC_ALLOC_HCI_RX_BUFF
 #endif
 
+#define BLE_USE_ENC_DATA_KEY_MATERIAL_CHAR   0
 #define BLE_LOCAL_USE_RPA_ONLY_AFTER_BONDING 0
 
 #ifdef BLE_ONLY_ENABLED
@@ -187,6 +188,13 @@ extern "C" {
 #define BT_MAP_TEST_SUPPORT
 #endif
 #endif
+
+#undef LOCAL_AUDIO_TEST_ENABLE
+#ifdef LOCAL_AUDIO_SUPPORT
+#if 0
+#define LOCAL_AUDIO_TEST_ENABLE
+#endif
+#endif // LOCAL_AUDIO_SUPPORT
 
 #define ESCO_ENABLE 1
 
@@ -477,7 +485,7 @@ extern "C" {
 
 #define CFG_LP_SNIFF_MODE                    0x0000
 
-#define EDR_ENABLED 0
+#define IS_EDR_ENABLED 0
 
 #define CFG_BT_DEFAULT_PAGE_SCAN_WINDOW      0x12
 #define CFG_BT_DEFAULT_PAGE_SCAN_INTERVAL    0x800

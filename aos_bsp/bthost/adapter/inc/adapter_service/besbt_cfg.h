@@ -91,6 +91,7 @@ struct besbt_cfg_t{
     bool a2dp_source_pts_test;
     bool pts_test_dont_bt_role_switch;
     bool le_audio_enabled;
+    bool hsp_enable;
 };
 extern struct besbt_cfg_t besbt_cfg;
 

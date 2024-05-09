@@ -188,7 +188,7 @@ typedef struct {
 /** Enable the MPU.
 * \param MPU_Control Default access permissions for unconfigured regions.
 */
-__STATIC_INLINE void ARM_MPU_Enable(uint32_t MPU_Control)
+__STATIC_FORCEINLINE void ARM_MPU_Enable(uint32_t MPU_Control)
 {
   __DMB();
   MPU->CTRL = MPU_Control | MPU_CTRL_ENABLE_Msk;
@@ -201,7 +201,7 @@ __STATIC_INLINE void ARM_MPU_Enable(uint32_t MPU_Control)
 
 /** Disable the MPU.
 */
-__STATIC_INLINE void ARM_MPU_Disable(void)
+__STATIC_FORCEINLINE void ARM_MPU_Disable(void)
 {
   __DMB();
 #ifdef SCB_SHCSR_MEMFAULTENA_Msk
@@ -215,7 +215,7 @@ __STATIC_INLINE void ARM_MPU_Disable(void)
 /** Clear and disable the given MPU region.
 * \param rnr Region number to be cleared.
 */
-__STATIC_INLINE void ARM_MPU_ClrRegion(uint32_t rnr)
+__STATIC_FORCEINLINE void ARM_MPU_ClrRegion(uint32_t rnr)
 {
   MPU->RNR = rnr;
   MPU->RASR = 0U;
@@ -225,7 +225,7 @@ __STATIC_INLINE void ARM_MPU_ClrRegion(uint32_t rnr)
 * \param rbar Value for RBAR register.
 * \param rsar Value for RSAR register.
 */
-__STATIC_INLINE void ARM_MPU_SetRegion(uint32_t rbar, uint32_t rasr)
+__STATIC_FORCEINLINE void ARM_MPU_SetRegion(uint32_t rbar, uint32_t rasr)
 {
   MPU->RBAR = rbar;
   MPU->RASR = rasr;
@@ -236,7 +236,7 @@ __STATIC_INLINE void ARM_MPU_SetRegion(uint32_t rbar, uint32_t rasr)
 * \param rbar Value for RBAR register.
 * \param rsar Value for RSAR register.
 */
-__STATIC_INLINE void ARM_MPU_SetRegionEx(uint32_t rnr, uint32_t rbar, uint32_t rasr)
+__STATIC_FORCEINLINE void ARM_MPU_SetRegionEx(uint32_t rnr, uint32_t rbar, uint32_t rasr)
 {
   MPU->RNR = rnr;
   MPU->RBAR = rbar;
@@ -248,7 +248,7 @@ __STATIC_INLINE void ARM_MPU_SetRegionEx(uint32_t rnr, uint32_t rbar, uint32_t r
 * \param rbar Value for RBAR register.
 * \param rsar Value for RSAR register.
 */
-__STATIC_INLINE void ARM_MPU_SetSubRegion(uint32_t rnr, uint32_t subRegion)
+__STATIC_FORCEINLINE void ARM_MPU_SetSubRegion(uint32_t rnr, uint32_t subRegion)
 {
   uint32_t rasr;
 
@@ -265,7 +265,7 @@ __STATIC_INLINE void ARM_MPU_SetSubRegion(uint32_t rnr, uint32_t subRegion)
 * \param src Source data is copied from.
 * \param len Amount of data words to be copied.
 */
-__STATIC_INLINE void ARM_MPU_OrderedMemcpy(volatile uint32_t* dst, const uint32_t* __RESTRICT src, uint32_t len)
+__STATIC_FORCEINLINE void ARM_MPU_OrderedMemcpy(volatile uint32_t* dst, const uint32_t* __RESTRICT src, uint32_t len)
 {
   uint32_t i;
   for (i = 0U; i < len; ++i) 
@@ -278,7 +278,7 @@ __STATIC_INLINE void ARM_MPU_OrderedMemcpy(volatile uint32_t* dst, const uint32_
 * \param table Pointer to the MPU configuration table.
 * \param cnt Amount of regions to be configured.
 */
-__STATIC_INLINE void ARM_MPU_Load(ARM_MPU_Region_t const* table, uint32_t cnt) 
+__STATIC_FORCEINLINE void ARM_MPU_Load(ARM_MPU_Region_t const* table, uint32_t cnt) 
 {
   const uint32_t rowWordSize = sizeof(ARM_MPU_Region_t)/4U;
   while (cnt > MPU_TYPE_RALIASES) {

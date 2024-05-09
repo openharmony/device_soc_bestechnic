@@ -59,6 +59,13 @@ enum HAL_QSPI_INST_L_T {
     HAL_QSPI_INST_LEN_QTY,
 };
 
+enum HAL_QSPI_MOD_CLK_SEL_T {
+    HAL_QSPI_MOD_CLK_SEL_NONE,
+    HAL_QSPI_MOD_CLK_SEL_OSC,
+    HAL_QSPI_MOD_CLK_SEL_OSC_X2,
+    HAL_QSPI_MOD_CLK_SEL_PLL,
+};
+
 struct HAL_QSPI_CTRL_T {
     uint32_t ctrlr0;
     uint32_t ctrlr1;
@@ -70,6 +77,7 @@ struct HAL_QSPI_CTRL_T {
     uint32_t dmacr;
     uint32_t dmatdlr;
     uint32_t spi_ctrlr0;
+    uint32_t clk_sel;
 };
 
 struct HAL_QSPI_CFG_T {

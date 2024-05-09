@@ -24,11 +24,6 @@ extern "C" {
 #include "plat_addr_map.h"
 #include "hal_cmu.h"
 
-// 64M Bytes
-#ifndef HAL_NORFLASH_ADDR_MASK
-#define HAL_NORFLASH_ADDR_MASK              0x03FFFFFF
-#endif
-
 #define HAL_NORFLASH_DEVICE_ID_LEN          3
 
 #define HAL_NORFLASH_CP_ID_LEN              2
@@ -251,6 +246,8 @@ enum HAL_NORFLASH_RET_T hal_norflash_dec_disable(enum HAL_FLASH_ID_T id);
 #else /* ARM_CMNS */
 
 #define hal_norflash_get_init_config hal_norflash_get_init_config_se
+#define hal_norflash_init hal_norflash_init_se
+#define hal_norflash_open hal_norflash_open_se
 #define hal_norflash_reopen hal_norflash_reopen_se
 #define hal_norflash_apply_config hal_norflash_apply_config_se
 #define hal_norflash_get_timing_config hal_norflash_get_timing_config_se
@@ -298,6 +295,8 @@ enum HAL_NORFLASH_RET_T hal_norflash_dec_disable(enum HAL_FLASH_ID_T id);
 #if defined(ARM_CMSE) || defined(ARM_CMNS)
 
 const struct HAL_NORFLASH_CONFIG_T *hal_norflash_get_init_config_se(void);
+enum HAL_NORFLASH_RET_T hal_norflash_init_se(enum HAL_FLASH_ID_T id);
+enum HAL_NORFLASH_RET_T hal_norflash_open_se(enum HAL_FLASH_ID_T id, const struct HAL_NORFLASH_CONFIG_T *cfg);
 enum HAL_NORFLASH_RET_T hal_norflash_reopen_se(enum HAL_FLASH_ID_T id, const struct HAL_NORFLASH_CONFIG_T *cfg);
 enum HAL_NORFLASH_RET_T hal_norflash_apply_config_se(enum HAL_FLASH_ID_T id, const struct HAL_NORFLASH_CONFIG_T *cfg, const struct HAL_NORFLASH_TIMING_CONFIG_T *timing);
 enum HAL_NORFLASH_RET_T hal_norflash_get_timing_config_se(enum HAL_FLASH_ID_T id, struct HAL_NORFLASH_TIMING_CONFIG_T *timing);

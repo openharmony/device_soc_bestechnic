@@ -24,6 +24,8 @@ void mpu_boot_cfg(void);
 
 void mpu_cfg(void);
 
+void mpu_cfg_cp(void);
+
 #ifdef __cplusplus
 }
 #endif

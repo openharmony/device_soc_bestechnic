@@ -26,11 +26,11 @@ extern "C" {
 void hal_psramuhs_sleep(enum HAL_CMU_LPU_SLEEP_MODE_T mode);
 void hal_psramuhs_wakeup(enum HAL_CMU_LPU_SLEEP_MODE_T mode);
 void hal_psramuhs_init(void);
-void hal_psramuhs_hold();
-void hal_psramuhs_release();
-void hal_psramuhs_refresh_enable();
-void hal_psramuhs_refresh_disable();
-uint32_t hal_psramuhs_ca_calib_result();
+void hal_psramuhs_hold(void);
+void hal_psramuhs_release(void);
+void hal_psramuhs_refresh_enable(void);
+void hal_psramuhs_refresh_disable(void);
+uint32_t hal_psramuhs_ca_calib_result(void);
 
 #ifdef __cplusplus
 }

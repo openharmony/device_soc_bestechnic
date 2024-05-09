@@ -128,7 +128,7 @@ typedef enum IRQn
     CHKSUM_IRQn                 =  64,      /*!< Checksum Interrupt                 */
     CRC_IRQn                    =  65,      /*!< CRC Interrupt                      */
     CP_DSLP_IRQn                =  66,      /*!< CP Deep Sleep Interrupt            */
-    PAGESPY_IRQn                =  67,      /*!< PAGESPY Interrupt                  */
+    PAGE_SPY_IRQn               =  67,      /*!< PAGE SPY Interrupt                 */
     TRUSTZONE_IRQn              =  68,      /*!< TrustZone Interrupt                */
     BT_STAMP_IRQn               =  69,      /*!< BT Playtime Stamp Interrupt        */
     WIFI_HOST_IRQn              =  70,      /*!< WIFI IPC Interrupt                 */

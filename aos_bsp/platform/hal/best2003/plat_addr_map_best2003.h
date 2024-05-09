@@ -20,10 +20,6 @@
 extern "C" {
 #endif
 
-#ifdef PROGRAMMER
-#define MCU_RAM_ONLY
-#endif
-
 #define ROM_BASE                                0x00020000
 #define ROMD_BASE                               0x24020000
 
@@ -78,7 +74,7 @@ extern "C" {
 #define BT_RAMRUNX_BASE                          RAMX3_BASE
 #endif
 
-#if defined(CP_IN_SAME_EE) && !defined(MCU_RAM_ONLY)
+#ifdef CP_IN_SAME_EE
 #ifndef RAMCPX_SIZE
 #define RAMCPX_SIZE                             (RAMX1_BASE - RAMX0_BASE)
 #endif
@@ -92,27 +88,25 @@ extern "C" {
 
 #define RAMCP_TOP                               (RAMCP_BASE + RAMCP_SIZE)
 #elif defined(CP_AS_SUBSYS) || defined(CHIP_ROLE_CP)
-#ifndef RAMCP_SUBSYS_BASE
 #define RAMCP_SUBSYS_BASE                       RAM0_BASE
-#endif
-#ifndef RAMCP_SUBSYS_SIZE
+#if defined(NO_SUBSYS_RAM)
+#define RAMCP_SUBSYS_SIZE                       (0)
+#else
 #define RAMCP_SUBSYS_SIZE                       (RAM2_BASE - RAM0_BASE)
 #endif
-
 #define CP_SUBSYS_MAILBOX_SIZE                  0x20
+
+#if RAMCP_SUBSYS_SIZE != 0
 #define CP_SUBSYS_MAILBOX_BASE                  (RAMCP_SUBSYS_BASE + RAMCP_SUBSYS_SIZE - CP_SUBSYS_MAILBOX_SIZE)
-
-#define RAMCP_SIZE                              0
-
-#ifdef CP_SUBSYS_ON_PSRAM
-#define RAMCP_TOP                               RAM0_BASE
 #else
-#define RAMCP_TOP                               (RAMCP_SUBSYS_BASE + RAMCP_SUBSYS_SIZE)
+#define CP_SUBSYS_MAILBOX_BASE                  (RAM_NC_BASE + RAM_NC_SIZE - CP_SUBSYS_MAILBOX_SIZE)
 #endif
 
-#if defined(CHIP_ROLE_CP) && defined(CP_SUBSYS_ON_PSRAM) && (AP_MAILBOX_SIZE>0)
-#define RAM_NC_SIZE                             (0x2000-CP_SUBSYS_MAILBOX_SIZE)
-#define RAM_NC_BASE                             (CP_SUBSYS_MAILBOX_BASE - RAM_NC_SIZE)
+#define RAMCP_TOP                               (RAMCP_SUBSYS_BASE + RAMCP_SUBSYS_SIZE)
+
+#if defined(CHIP_ROLE_CP) && defined(NO_SUBSYS_RAM) && (PSRAM_REGION_SIZE > 0)
+#define RAM_NC_SIZE                             (0x2000)
+#define RAM_NC_BASE                             (PSRAM_NC_REGION_BASE + PSRAM_REGION_SIZE - RAM_NC_SIZE)
 #endif
 
 #else
@@ -125,7 +119,9 @@ extern "C" {
 
 #if defined(ARM_CMSE) || defined(ARM_CMNS)
 /*MPC: SRAM block size: 0x8000, FLASH block size 0x40000*/
+#ifndef RAM_S_SIZE
 #define RAM_S_SIZE                              0x00020000
+#endif
 #define RAM_NSC_SIZE                            0
 #ifndef FLASH_S_SIZE
 #define FLASH_S_SIZE                            0x00040000
@@ -136,7 +132,6 @@ extern "C" {
 
 #if defined(ARM_CMNS)
 #define RAM_BASE                                RAM_NS_BASE
-#define RAMX_BASE                               RAMX_NS_BASE
 #else
 #if ((RAM_S_SIZE) & (0x8000-1))
 #error "RAM_S_SIZE should be 0x8000 aligned"
@@ -145,7 +140,6 @@ extern "C" {
 #error "FLASH_S_SIZE should be 0x40000 aligned"
 #endif
 #define RAM_BASE                                RAMCP_TOP
-#define RAMX_BASE                               RAMCP_TOP - RAM0_BASE + RAMX0_BASE
 #define RAM_SIZE                                RAM_S_SIZE
 #ifndef NS_APP_START_OFFSET
 #define NS_APP_START_OFFSET                     (FLASH_S_SIZE)
@@ -179,16 +173,6 @@ extern "C" {
 #ifndef PSRAMCP_BASE
 #define PSRAMCP_BASE                            (PSRAM_BASE + PSRAM_SIZE)
 #endif
-#ifdef CP_SUBSYS_ON_PSRAM
-#undef RAM_BASE
-#undef RAMX_BASE
-#undef RAM_SIZE
-#undef RAMX_SIZE
-#define RAM_BASE                                PSRAMCP_BASE
-#define RAMX_BASE                               PSRAM_TO_PSRAMX(RAM_BASE)
-#define RAM_SIZE                                PSRAMCP_SIZE
-#define RAMX_SIZE                               PSRAMCP_SIZE
-#endif
 #endif
 
 #define REAL_FLASH_BASE                         0x2C000000
@@ -196,36 +180,28 @@ extern "C" {
 #define REAL_FLASHX_BASE                        0x0C000000
 #define REAL_FLASHX_NC_BASE                     0x08000000
 
-#define REAL_FLASH1_BASE                        0x2C000000
-#define REAL_FLASH1_NC_BASE                     0x28000000
-#define REAL_FLASH1X_BASE                       0x0C000000
-#define REAL_FLASH1X_NC_BASE                    0x08000000
+#define REAL_FLASH1_BASE                        0x2E000000
+#define REAL_FLASH1_NC_BASE                     0x2A000000
+#define REAL_FLASH1X_BASE                       0x0E000000
+#define REAL_FLASH1X_NC_BASE                    0x0A000000
 
-#ifdef ALT_BOOT_FLASH
-#define FLASH_BASE                              REAL_FLASH1_BASE
-#define FLASH_NC_BASE                           REAL_FLASH1_NC_BASE
-#define FLASHX_BASE                             REAL_FLASH1X_BASE
-#define FLASHX_NC_BASE                          REAL_FLASH1X_NC_BASE
-
-#ifndef FLASH1_BASE
-#define FLASH1_BASE                             REAL_FLASH_BASE
-#define FLASH1_NC_BASE                          REAL_FLASH_NC_BASE
-#define FLASH1X_BASE                            REAL_FLASHX_BASE
-#define FLASH1X_NC_BASE                         REAL_FLASHX_NC_BASE
-#endif
-#else
 #define FLASH_BASE                              REAL_FLASH_BASE
 #define FLASH_NC_BASE                           REAL_FLASH_NC_BASE
 #define FLASHX_BASE                             REAL_FLASHX_BASE
 #define FLASHX_NC_BASE                          REAL_FLASHX_NC_BASE
-
-#ifndef FLASH1_BASE
+#ifndef ALT_BOOT_FLASH
+#if defined(PROGRAMMER) && !defined(PROGRAMMER_INFLASH)
+#define FLASH1_BASE                             FLASH_BASE
+#define FLASH1_NC_BASE                          FLASH_NC_BASE
+#define FLASH1X_BASE                            FLASHX_BASE
+#define FLASH1X_NC_BASE                         FLASHX_NC_BASE
+#elif !defined(FLASH1_BASE)
 #define FLASH1_BASE                             REAL_FLASH1_BASE
 #define FLASH1_NC_BASE                          REAL_FLASH1_NC_BASE
 #define FLASH1X_BASE                            REAL_FLASH1X_BASE
 #define FLASH1X_NC_BASE                         REAL_FLASH1X_NC_BASE
 #endif
-#endif
+#endif /* !ALT_BOOT_FLASH */
 
 #ifndef PSRAM_BASE
 #define PSRAM_BASE                              0x34000000
@@ -337,9 +313,6 @@ extern "C" {
 
 #ifdef ALT_BOOT_FLASH
 #define FLASH_CTRL_BASE                         REAL_FLASH1_CTRL_BASE
-#ifndef FLASH_DUAL_CHIP
-#define FLASH1_CTRL_BASE                        REAL_FLASH_CTRL_BASE
-#endif
 #else
 #define FLASH_CTRL_BASE                         REAL_FLASH_CTRL_BASE
 #ifndef FLASH_DUAL_CHIP
@@ -501,7 +474,7 @@ extern "C" {
 #define MCU_PSRAMUHS_SIZE                       (0)
 #endif
 
-#ifdef __NuttX__
+#if defined(__NuttX__) && defined(CHIP_BEST2003_DSP)
 #define DSP_PSRAMUHS_BASE                       (PSRAMUHS_NC_BASE)
 #define DSP_PSRAMUHS_NC_BASE                    (PSRAMUHS_NC_BASE)
 #define DSP_PSRAMUHSX_BASE                      (PSRAMUHSX_NC_BASE)
@@ -541,8 +514,13 @@ extern "C" {
 #define RMT_IPC_API_ENABLE
 #define CHIP_WIFITSF_VER                        1
 
+#if defined(PROGRAMMER) && !defined(PROGRAMMER_INFLASH)
+/* 64M-byte */
+#define HAL_NORFLASH_ADDR_MASK                  0x03FFFFFF
+#else
 /* Total 64M-byte space and let each flash ctrl owns 32M-byte space */
 #define HAL_NORFLASH_ADDR_MASK                  0x01FFFFFF
+#endif
 
 #define RSA_RAW_KEY_ENABLE
 #define RSA_RAW_KEY_IN_ROM

@@ -287,9 +287,13 @@ int hal_spi_send(const void *data, uint32_t len);
 
 int hal_spi_recv(const void *cmd, void *data, uint32_t len);
 
+int hal_spi_recv_only(void *data, uint32_t len);
+
 int hal_spi_dma_send(const void *data, uint32_t len, HAL_SPI_DMA_HANDLER_T handler);
 
 int hal_spi_dma_recv(const void *cmd, void *data, uint32_t len, HAL_SPI_DMA_HANDLER_T handler);
+
+int hal_spi_dma_recv_only(void *data, uint32_t len, HAL_SPI_DMA_HANDLER_T handler);
 
 void hal_spi_stop_dma_send(void);
 
@@ -298,6 +302,8 @@ void hal_spi_stop_dma_recv(void);
 int hal_spi_enable_and_send(const struct HAL_SPI_CTRL_T *ctrl, const void *data, uint32_t len);
 
 int hal_spi_enable_and_recv(const struct HAL_SPI_CTRL_T *ctrl, const void *cmd, void *data, uint32_t len);
+
+int hal_spi_enable_and_recv_only(const struct HAL_SPI_CTRL_T *ctrl, void *data, uint32_t len);
 
 //------------------------------------------------------------
 // SPI LCD functions
@@ -315,9 +321,13 @@ int hal_spilcd_send(const void *data, uint32_t len);
 
 int hal_spilcd_recv(const void *cmd, void *data, uint32_t len);
 
+int hal_spilcd_recv_only(void *data, uint32_t len);
+
 int hal_spilcd_dma_send(const void *data, uint32_t len, HAL_SPI_DMA_HANDLER_T handler);
 
 int hal_spilcd_dma_recv(const void *cmd, void *data, uint32_t len, HAL_SPI_DMA_HANDLER_T handler);
+
+int hal_spilcd_dma_recv_only(void *data, uint32_t len, HAL_SPI_DMA_HANDLER_T handler);
 
 void hal_spilcd_stop_dma_send(void);
 
@@ -330,6 +340,8 @@ int hal_spilcd_set_cmd_mode(void);
 int hal_spilcd_enable_and_send(const struct HAL_SPI_CTRL_T *ctrl, const void *data, uint32_t len);
 
 int hal_spilcd_enable_and_recv(const struct HAL_SPI_CTRL_T *ctrl, const void *cmd, void *data, uint32_t len);
+
+int hal_spilcd_enable_and_recv_only(const struct HAL_SPI_CTRL_T *ctrl, void *data, uint32_t len);
 
 //------------------------------------------------------------
 // SPI DPD functions

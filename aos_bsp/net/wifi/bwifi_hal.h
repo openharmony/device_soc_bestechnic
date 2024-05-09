@@ -21,6 +21,11 @@ extern "C" {
 #endif
 
 #include "bwifi_event.h"
+#include "wifi_def.h"
+
+#ifndef ETH_ALEN
+#define ETH_ALEN 6
+#endif
 
 #define BWIFI_MAX_COUNTRY_CODE_SIZE     2
 #define BWIFI_CONFIG_VAL_LEN            100
@@ -28,6 +33,11 @@ extern "C" {
 #define WIFI_COEX_MODE_FDD_BIT          (1<<0)
 #define WIFI_COEX_MODE_FDD_HYBRID_BIT   (1<<1)
 #define COEX_METRICS_PREFIX             "EPTA:"
+#define COEX_NOTIFY_STAT_OFFSET         (0)
+#define COEX_NOTIFY_TYPE_OFFSET         (1)
+#define COEX_NOTIFY_MAX_LEN             (2)
+
+#define WIFI_FIX_RATE_MIN_VALUE         (1<<16)
 
 #ifdef __P2P_MODE_SUPPORT__
 #define BWIFI_P2P_INIT "P2P_INIT"
@@ -47,43 +57,45 @@ typedef enum bwifi_security_type {
 } BWIFI_SEC_TYPE_T;
 
 struct wifi_init_param {
-    char     band;
-    char     country[3];
+    char      band;
+    char      country[3];
     uint16_t *tx_power;
     uint16_t *tx_power_5G;
     uint8_t  *wifi_address;
     void     *fac_wifi;
-    uint32_t coex_mode;  // bit0: 0 -TDD, 1 - FDD; bit1: HYBRID
-    uint32_t sleep_mode; // 0 - normal mode, 1 - no sleep mode
-    uint8_t  *sw_matrix_desc; // sw_matrix_desc
-    int      sw_matrix_desc_len; // the sw_matrix_desc len
-    uint32_t *new_run_flag; //match the same as HOOK_CFG_S.new_run_flag in wifi_drv.c
-    uint32_t mac_sleep_lock_bit; //match LMAC_SLEPP in wiif_drv.h
+    uint32_t  coex_mode;              /* bit0: 0 - TDD, 1 - FDD; bit1: HYBRID */
+    uint32_t  sleep_mode;             /* 0 - normal mode, 1 - no sleep mode */
+    uint8_t  *sw_matrix_desc;
+    int       sw_matrix_desc_len;
+    uint32_t *new_run_flag;           /* match with HOOK_CFG_S.new_run_flag in wifi_drv.c */
+    uint32_t  mac_sleep_lock_bit;     /* match LMAC_SLEPP in wiif_drv.h */
 #ifdef BES_SOFT_AGC_ANTI_NOISE
-    uint32_t *agc_mode;	// 0 hw_agc, 1 soft agc , 2 invalid agc
+    uint32_t *agc_mode;               /* 0 - hw_agc, 1 - soft agc, 2 - invalid */
 #endif
 };
 
 struct bwifi_mac_addr {
-    uint8_t mac[6];
+    uint8_t mac[ETH_ALEN];
 };
 
 struct bwifi_bss_info {
-    uint8_t bssid[6];
+    uint8_t bssid[ETH_ALEN];
     char ssid[32 + 1];
     uint8_t channel;
     int8_t rssi;
     BWIFI_SEC_TYPE_T security_type;
-    uint8_t *ie; //user program couldn't free(ie);
+    /* user program couldn't free(ie),
+     * and not available for Wi-Fi stack running on another CPU */
+    uint8_t *ie;
     uint32_t ie_length;
 };
 
 struct bwifi_ap_info {
     char ssid[32 + 1];
     uint8_t channel;
+    uint8_t bandwidth;
     uint8_t hidden;
     BWIFI_SEC_TYPE_T security;
-    int sec_channel_offset;
     int wpa_mode;
     char passwd[64];
 };
@@ -94,18 +106,67 @@ struct bwifi_ssid {
 };
 
 struct bwifi_scan_config {
-    struct bwifi_ssid *ssids;   /**< List of specified SSIDs */
-    int *channels;              /**< Array of channels (zero-terminated) to scan or NULL for all channels */
+    /* List of specified SSIDs */
+    struct bwifi_ssid *ssids;
+    /* Array of channels (zero-terminated) to scan or NULL for all channels */
+    uint8_t *channels;
+    /* Bandmask for scan if no specified channels
+     * 0 - AUTO, 1 - 2G4, 2 - 5G */
+    uint8_t band;
+    /* 0 - auto, active scan on radiation allowed channel
+     * 1 - force to passive scan (no probe request is sent during scan) */
+    uint8_t passive;
+    /* Max number of probe requests to send out on each channel, @ref MAX_PROBE_REQ_NUM
+     * 0 - not defined, use default value in lmac */
+    uint8_t max_probes;
+    /* Time between TX of successive probes
+     * 0 - not defined, if max_probes > 1，must set a valid value */
+    uint32_t probe_interval_ms;
+    /* Time to wait on each channel for Beacon and probe response
+     * 0 - not defined, use default value in lmac
+     * Notice this value only takes effect on channels with active scan */
+    uint32_t duration_ms;
 };
 
-struct bwifi_station_config {
-    uint8_t ssid[33];
-    uint8_t passwd[65];//passwd for encrypted ssid, set "all zero" for unencryped ssid
-    int8_t wep_keyid;//for wep,[0-3] default val:0
-    uint8_t hidden;//1:hidden
-    uint8_t bssid[ETH_ALEN];//bssid or "all zero"
-    uint8_t mfp;
+struct bwifi_network_config {
+    uint8_t ssid[32 + 1];
+    uint8_t passwd[65];      /* Password for encrypted ssid, "all zero" for unencryped ssid */
+    int8_t  wep_keyid;       /* WEP key index, [0-3] default val:0 */
+    uint8_t hidden;          /* 0 - normal, 1- treat as hidden ssid */
+    uint8_t bssid[ETH_ALEN]; /* bssid or "all zero" */
+    uint8_t mfp;             /* @ref WIFI_MFP_XXX enum */
 };
+
+struct bwifi_network_info {
+    uint8_t ssid[32 + 1];
+    uint8_t bssid[ETH_ALEN]; /* bssid or "all zero" */
+    int nid;
+    /**
+     * disabled - Whether this network is currently disabled
+     *
+     * 0 = this network can be used (default).
+     * 1 = this network block is disabled (can be enabled through
+     * ctrl_iface, e.g., with wpa_cli or wpa_gui).
+     * 2 = this network block includes parameters for a persistent P2P
+     * group (can be used with P2P ctrl_iface commands)
+     */
+    int disabled;
+};
+
+typedef enum {
+    ALLINFO = 0,
+    TXSUCC,
+    TXFAIL,
+    TXRETRY,
+    RXSUCC,
+    RXLEAK,
+    TXBPS,
+    RXBPS,
+    RSSI,
+    CHANNEL,
+    TXRATE,
+    RXRATE,
+} LINKINFO_ID;
 
 typedef struct bwifi_trans_stat_t {
     uint32_t tx_succ_cnt;
@@ -113,13 +174,14 @@ typedef struct bwifi_trans_stat_t {
     uint32_t tx_retry_cnt;
     uint32_t rx_cnt;
     uint32_t rx_leak;
-    uint32_t txbps; //tx throughput bit/s
-    uint32_t rxbps; //rx throughput bit/s
+    uint32_t txbps;          /* Tx throughput bit/s */
+    uint32_t rxbps;          /* Rx throughput bit/s */
     uint64_t tx_bytes;
     uint64_t rx_bytes;
 } bwifi_trans_stat;
 
 typedef struct bwifi_station_linkinfo_t {
+    uint8_t *mac;
     bwifi_trans_stat stat;
     int8_t rssi;
     uint8_t channel;
@@ -151,7 +213,7 @@ enum wifi_config_item {
 };
 
 struct bwifi_config_item {
-    int net_index;                      /**< network index */
+    int nid;                            /**< network index */
     int item_index;                     /**< config item index */
     int val_len;                        /**< config item value length */
     uint8_t val[BWIFI_CONFIG_VAL_LEN];  /**< config item value */
@@ -167,7 +229,7 @@ struct bwifi_twt_config {
 };
 
 enum bwifi_epta_state {
-    EPTA_STATE_WIFI_DISCONNECTED,
+    EPTA_STATE_WIFI_DISCONNECTED = 0,
     EPTA_STATE_WIFI_SCANNING,
     EPTA_STATE_WIFI_CONNECTING,
     EPTA_STATE_WIFI_CONNECTED,
@@ -192,6 +254,10 @@ enum bwifi_low_power_state {
     WIFI_LOW_POWER_ENABLE,
 };
 
+enum bwifi_dat_cmd_type {
+    DATA_CMD_RF_POWER_CFG,
+};
+
 #ifdef ENABLE_FW_KEEP_ALIVE
 /*
  * ip keep alive feature's parameters.
@@ -206,7 +272,7 @@ enum bwifi_low_power_state {
  * @payload payload of the keep alive packet.
  * @payload_len length of the payload.
  */
-struct ip_alive_paras
+struct ip_alive_param
 {
     uint8_t klv_vendor;
     uint8_t idx;
@@ -223,6 +289,14 @@ struct ip_alive_paras
 };
 #endif
 
+#ifdef __SET_MULTICAST_FILTER__
+struct multicast_filter_param
+{
+    uint8_t mode;
+    uint8_t addr[ETH_ALEN];
+};
+#endif
+
 #ifdef __P2P_MODE_SUPPORT__
 struct wifi_p2p_cmd {
     uint8_t  *cmd;
@@ -233,17 +307,24 @@ struct wifi_p2p_cmd {
 #endif
 
 enum EXT_VENDOR_CMD {
-    SET_MAGIC_WOWLAN                    = 1,
+    GET_NET_IF,
+    SET_MAGIC_WOWLAN,
     SET_WIFI_EXT_CUSTOM_IE,
     DEL_WIFI_EXT_CUSTOM_IE,
     REG_WIFI_MAC_MGMT_FRAME_RX_CB,
-    GET_NET_IF,
     SET_TDD_STAION_P2P_DUR,
     SET_LMAC_LOG_LEVEL,
     SET_LMAC_LOG_MODE,
-    SET_MC_SCAN_PARAM,
-    WIFI_SOFTAP_ADD_ENTRY,
-    WIFI_SOFTAP_DEL_ENTRY,
+    SET_SCAN_PARAM_EXT,
+    SET_VIF_INFO,
+    SOFTAP_ADD_ENTRY,
+    SOFTAP_DEL_ENTRY,
+    GET_WIFI_MAC_CAPA,
+    CHANGE_WIFI_MAC_CONFIG,
+    SWITCH_CHANNEL_BYPASS_CSA,
+    SOFTAP_PERFORM_PS,
+    SET_CSA_MODE,
+    SET_NARROW_BW,
 };
 
 struct ext_vendor_cmd_info_hdr {
@@ -256,11 +337,114 @@ struct set_magic_wowlan {
     uint8_t enable;
 };
 
+struct set_wifi_ext_custom_ie {
+    struct ext_vendor_cmd_info_hdr hdr;
+    uint8_t *ie_info;
+    uint8_t ie_info_len;
+    uint16_t trans_type;
+};
+
+struct del_wifi_ext_custom_ie {
+    struct ext_vendor_cmd_info_hdr hdr;
+    int index;
+};
+
+struct reg_wifi_mgmt_frame_rx_cb {
+    struct ext_vendor_cmd_info_hdr hdr;
+    void *rx_cb;
+};
+
+#if LWIP_ETHERNETIF
+struct get_net_if {
+    struct ext_vendor_cmd_info_hdr hdr;
+    int type;
+    struct netif *net_if;
+};
+#endif
+
 struct set_station_p2p_dur {
     struct ext_vendor_cmd_info_hdr hdr;
     int sta_dur;
     int p2p_dur;
 };
+
+#if (WIFI_STACK_VER == 2)
+#define LMAC_MAC_MODULE_LEN     7
+struct lmac_log_level {
+    struct ext_vendor_cmd_info_hdr hdr;
+    char module[LMAC_MAC_MODULE_LEN + 1];
+    int level;
+};
+#endif
+
+struct lmac_log_mode {
+    struct ext_vendor_cmd_info_hdr hdr;
+    uint8_t log_mode;
+};
+
+struct set_scan_param_ext {
+    struct ext_vendor_cmd_info_hdr hdr;
+    uint8_t max_probes;
+    uint32_t probe_interval_ms;
+    uint32_t duration_ms;
+};
+
+struct set_lmac_vif_info {
+    struct ext_vendor_cmd_info_hdr hdr;
+    int vif_idx;
+    int offset;
+    size_t len;
+    void *value;
+};
+
+struct bwifi_peer_info {
+    uint8_t mac_addr[ETH_ALEN];
+    uint8_t channel;
+    uint8_t protocol_type;
+    uint8_t band_width;
+    uint8_t tx_mcs;
+    uint8_t rx_mcs;
+};
+
+struct bwifi_mac_config {
+    uint8_t protocol_type;
+    uint8_t band_width;
+    uint8_t tx_mcs;
+    uint8_t rx_mcs;
+};
+
+struct ext_vendor_config {
+    struct ext_vendor_cmd_info_hdr hdr;
+    union {
+        struct bwifi_peer_info peer_info;
+        struct bwifi_mac_config mac_config;
+        struct {
+            uint8_t channel;
+            uint8_t band_width;
+        } switch_channel;
+        uint8_t ps;
+    };
+};
+
+enum bwifi_csa_mode {
+    BEACON_CSA                      = 0,
+    ACTION_CSA_FOR_PROTECTION,
+    ACTION_CSA_FOR_SWITCH,
+    ACTION_CSA_FOR_SWITCH_IN_SCHEDULE,
+    CSA_MODE_MAX,
+} ;
+
+struct set_csa_mode {
+    struct ext_vendor_cmd_info_hdr hdr;
+    uint8_t csa_mode;
+    uint32_t sched_time;             // us
+};
+
+struct narrow_bw_cfg {
+    struct ext_vendor_cmd_info_hdr hdr;
+    uint8_t bw;
+};
+/* End of ext vendor command struct defines */
 
 #define WIFI_CUSTOM_IE_TRANS_BEACON         1
 #define WIFI_CUSTOM_IE_TRANS_PROBE_REQ      2
@@ -274,81 +458,44 @@ struct bwifi_frame_info {
     uint16_t    rx_channel;
 };
 
-typedef enum bwifi_protocol_type {
-    BWIFI_PROTOCOL_HT,              /* HT */
-    BWIFI_PROTOCOL_VHT,             /* VHT */
-    BWIFI_PROTOCOL_HE,              /* HE */
-} BWIFI_PROTOCOL_TYPE_T;
-
-typedef enum bwifi_bandwidth_type {
-    BWIFI_BANDWIDTH_20M,            /* 20M */
-    BWIFI_BANDWIDTH_40M,            /* 40M */
-    BWIFI_BANDWIDTH_80M,            /* 80M */
-} BWIFI_BANDWIDTH_TYPE_T;
-
-struct bwifi_peer_info {
-    uint8_t mac_addr[ETH_ALEN];
-    BWIFI_PROTOCOL_TYPE_T protocol_type;
-    BWIFI_BANDWIDTH_TYPE_T band_width;
-};
-
-struct bwifi_softap_config_ext {
-    struct ext_vendor_cmd_info_hdr      hdr;
-    struct bwifi_peer_info              info;
-};
-
-struct set_wifi_ext_custom_ie {
-    struct ext_vendor_cmd_info_hdr      hdr;
-    uint8_t                             *ie_info;
-    uint8_t                             ie_info_len;
-    uint16_t                            trans_type;
-};
-
-struct del_wifi_ext_custom_ie {
-    struct ext_vendor_cmd_info_hdr      hdr;
-    int                                 index;
-};
-
-struct reg_wifi_mgmt_frame_rx_cb {
-    struct ext_vendor_cmd_info_hdr      hdr;
-    void*                               rx_cb;
-};
-
-#if LWIP_ETHERNETIF
-struct get_net_if {
-    struct ext_vendor_cmd_info_hdr hdr;
-    int type;
-    struct netif *net_if;
-};
-#endif
-
-#if (WIFI_STACK_VER == 2)
-#define LMAC_MAC_MODULE_LEN     7
-struct lmac_mode_level {
-    struct ext_vendor_cmd_info_hdr hdr;
-    char module[LMAC_MAC_MODULE_LEN+1];
-    int level;
-};
-#endif
-
-struct lmac_log_mode {
-    struct ext_vendor_cmd_info_hdr hdr;
-    uint8_t log_mode;
-};
-
 typedef enum {
     WIFI_IF_STATION = 0,
     WIFI_IF_SOFTAP,
-    WIFI_IF_P2P
+    WIFI_IF_P2P,
+    WIFI_IF_MAX,
 } BWIFI_INTF_TYPE_T;
 
-struct set_mc_scan_param {
-    struct ext_vendor_cmd_info_hdr hdr;
-    uint8_t channel;
-    uint8_t scan_num;
-    uint16_t duration;
-    uint8_t mode_en;
-    uint8_t chan_base;
+/**
+ * wifi_csi_cap_req
+ * @bw: bit0 is 20M, bit1 is 40M, bit2 is 80M
+ * @type:bit0 is ht, bit1 is vht, bit2 is he_su,bit3 is he_mu,bit4 is he_er,bit5 is he_tb,
+ * @stbc: Space-Time Block Coding, 1 is need to capture
+ * @mac_match: mac address match, 1 is need to match our mac
+ * @lsig_len_min;
+ * @lsig_len_max;
+ * @mode: status done indication way: 0 is intrrupt, 1 is loop;
+ */
+struct wifi_csi_cap_req {
+    uint8_t bw;
+    uint8_t type;
+    uint8_t stbc;
+    uint8_t mac_match;
+    uint16_t lsig_len_min;
+    uint16_t lsig_len_max;
+    uint8_t csi_sniff;
+    uint8_t mode;
+};
+
+enum WIFI_BT_COEX_CMD {
+    COEX_EPTA_STAT_NOTIFY = 0,
+    COEX_EPTA_CONFIG,
+    COEX_TEST,
+};
+
+struct coex_cmd_param {
+    uint8_t id;
+    uint32_t *value;
+    uint8_t len;
 };
 
 struct bwifi_hal_ops {
@@ -356,44 +503,44 @@ struct bwifi_hal_ops {
     int power_status;
 
     /**
-     * add_config - add network config to wifi stack
-     * @config: bwifi_station_config
+     * add_network - add network config to wifi stack
+     * @config: bwifi_network_config
      *
      * Returns: the allocated network id, or negative on failure
      */
-    int (*add_config)(struct bwifi_station_config *config);
+    int (*add_network)(struct bwifi_network_config *config);
 
     /**
-     * modify_config - modify network config
+     * modify_network - modify network config
      * @item: bwifi_config_item contains the network id and modify item
      *
      * Returns: 0 - success, other - failure
      */
-    int (*modify_config)(struct bwifi_config_item *item);
+    int (*modify_network)(struct bwifi_config_item *item);
 
     /**
-     * count_configs - get the number of network configs saved in wifi stack
+     * count_networks - get the number of network configs saved in wifi stack
      *
      * Returns: the number of network configs
      */
-    int (*count_configs)(void);
+    int (*count_networks)(void);
 
     /**
-     * get_config - get network configs from wifi stack
-     * @config: bwifi_station_config array to store the fetched configs
+     * get_networks - get network configs from wifi stack
+     * @network: bwifi_network_info array to store the fetched configs
      * @count: max items to fetch
      *
-     * Returns: the number of fetched configs
+     * Returns: the number of fetched networks on success, negative on failure
      */
-    int (*get_configs)(struct bwifi_station_config *config, int count);
+    int (*get_networks)(struct bwifi_network_info *network, int count);
 
     /**
-     * del_config - delete a specific network config, or NULL to delete all
-     * @config: bwifi_station_config
+     * del_network - delete a specific network config
+     * @config: bwifi_network_config
      *
      * Returns: 0 - success, other - failure
      */
-    int (*del_config)(struct bwifi_station_config *config);
+    int (*del_network)(struct bwifi_network_config *config);
 
     /**
      * enable_network - enable a specific network, or -1 for all networks
@@ -425,6 +572,12 @@ struct bwifi_hal_ops {
      * Returns: 0 - success, other - failure
      */
     int (*config_scan)(struct bwifi_scan_config *scan_config);
+
+    /**
+     * abort_scan - cancel the ongoing scan
+     * Returns: 0 - success, other - failure
+     */
+    int (*abort_scan)(void);
 
     /**
      * get_scan_result - get scan results
@@ -489,12 +642,13 @@ struct bwifi_hal_ops {
     int (*get_current_bssid)(uint8_t *bssid);
 
     /**
-     * get_own_mac - get sta mac address
+     * get_dev_mac - get device address of specific interface
+     * @iftype: Type of interface @ref BWIFI_INTF_TYPE_T
      * @addr: mac address buffer
      *
      * Returns: 0 - success, other - failure
      */
-    int (*get_own_mac)(uint8_t *addr);
+    int (*get_dev_mac)(uint8_t iftype, uint8_t *addr);
 
     /**
      * get_current_rate - get current tx rate
@@ -524,12 +678,12 @@ struct bwifi_hal_ops {
 
     /**
      * set_ifa_ip - set ip address of specific interface
-     * @dev_no: device interface index
-     * @ip: hex format ip address
+     * @iftype: Type of interface @ref BWIFI_INTF_TYPE_T
+     * @ip: Pointer to hex format ip address, netmask and gateway
      *
      * Returns: 0 - success, other - failure
      */
-    int (*set_ifa_ip)(uint8_t dev_no, uint32_t *ip);
+    int (*set_ifa_ip)(uint8_t iftype, uint32_t *ip);
 
     /**
      * work_channel_notify - notify current work channel
@@ -568,6 +722,13 @@ struct bwifi_hal_ops {
     int (*init)(uint8_t flag);
 
     /**
+     * deinit - wifi subsystem deinitialize
+     *
+     * Returns: 0 - success, other - failure
+     */
+    int (*deinit)(void);
+
+    /**
      * power_on - set power status of wifi subsystem
      * @onoff: 1 - power on, 0 - power off
      *
@@ -577,19 +738,11 @@ struct bwifi_hal_ops {
 
     /**
      * ps_mode_set - set wifi power saving mode
-     * @enable: 0 - disable ps mode, 1 - enable ps mode
+     * @ps: 0 - disable, 1 - enable, 0xFF - default setting
      *
      * Returns: 0 - success, other - failure
      */
-    int (*ps_mode_set)(int enable);
-
-    /**
-     * low_power_set - set wifi low power mode
-     * @enable: 0 - disable umac ps mode, 1 - enable umac ps mode
-     *
-     * Returns: 0 - success, other - failure
-     */
-    int (*low_power_set)(int enable);
+    int (*ps_mode_set)(uint8_t ps);
 
 #ifdef __AP_MODE__
     /**
@@ -599,12 +752,6 @@ struct bwifi_hal_ops {
      */
     int (*softap_start)(void);
 
-    /**
-     * softap mode disconnect a station
-     *
-     * Returns: 0 - success, other - failure
-     */
-    int (*softap_disconnect_sta)(uint8_t *ucMac);
     /** softap_stop - stop ap interface
      *
      * Returns: 0 - success, other - failure
@@ -620,24 +767,16 @@ struct bwifi_hal_ops {
     int (*softap_config_set)(struct bwifi_ap_info *info);
 
     /**
-     * softap_peer_num_set - set the number of peer STAs that softap allow to connect
-     * @num: max sta number
+     * softap_peer_num_set - set the maximum station number allowed to connect
+     * @num: maximum station number
      *
      * Returns: 0 - success, other - failure
      */
     int (*softap_peer_num_set)(int num);
 
     /**
-     * softap_country_code_set - set the country code of working region
-     * @country_code: courntry code of regulation domain
-     *
-     * Returns: 0 - success, other - failure
-     */
-    int (*softap_country_code_set)(char *country_code);
-
-    /**
      * softap_vendor_elements_set - set vendor ie of softap
-     * @ie: information element buffer
+     * @ie: pointer to information element
      * @len: the length of information element
      *
      * Returns: 0 - success, other - failure
@@ -645,24 +784,33 @@ struct bwifi_hal_ops {
     int (*softap_vendor_elements_set)(const uint8_t *ie, size_t ie_len);
 
     /**
-     * softap_peer_query - query connected peer address list
-     * @mac_list: peer address buffer
-     * @count: max peer count in mac_list
+     * softap_peer_query - query the mac address list of connected stations
+     * @mac_list: buffer to store the fetched mac address(es)
+     * @count: maximum peer count to fetch
      *
-     * Returns: the number of connected peer sta(s)
+     * Returns: the number of connected station(s)
      */
     int (*softap_peer_query)(struct bwifi_mac_addr *mac_list, int count);
-#endif
 
     /**
-     * channel_switch - switch channel in no signal mode
-     * @mode: interface mode, 0 - softap interface, 1 - sta interface
-     * @channel: channel nunber
-     * @snd_offset: secondary channel offset to center freq, 0 - no snd ch, 1 - upper 10M, -1 - lower 10M
+     * softap_disconnect_sta - disconnect a specified peer station
+     * @mac_addr: mac address of the station to disconnect
      *
      * Returns: 0 - success, other - failure
      */
-    int (*channel_switch)(uint8_t mode, uint8_t channel, int8_t snd_offset);
+    int (*softap_disconnect_sta)(uint8_t *mac_addr);
+#endif
+
+    /**
+     * channel_switch - switch channel for specific interface
+     * @iftype: Type of interface @ref BWIFI_INTF_TYPE_T
+     * @channel:  primary channel.
+     * @bandwidth: bandwidth
+     * @csa_count: Number of Beacons including CSA element until channel switch
+     *
+     * Returns: 0 - success, other - failure
+     */
+    int (*channel_switch)(uint8_t iftype, uint8_t channel, uint8_t bandwidth, uint8_t csa_count);
 
     /**
      * set_country_code - set country code of regulation domain
@@ -698,18 +846,20 @@ struct bwifi_hal_ops {
 
     /**
      * send_mgmt_frame - send mgmt frame on specific channel
+     * @iftype: Type of interface @ref BWIFI_INTF_TYPE_T
      * @data: frame buffer
      * @len: frame length
-     * @noack: indicate if ack needed
-     * @chan: channel number to send
+     * @noack: indicate whether need to wait for ack
+     * @chan: channel number to send, or 0 for not specified (interface working channel)
      *
      * Returns: 0 - success, other - failure
      */
-    int (*send_mgmt_frame)(uint8_t dev_no, const uint8_t *data, size_t len,
+    int (*send_mgmt_frame)(uint8_t iftype, const uint8_t *data, size_t len,
                            int noack, uint8_t chan);
 
     /**
      * data_rate_set - set the rate to send data frame
+     * @iftype: Type of interface @ref BWIFI_INTF_TYPE_T
      * @rate_idx: rate index
      *   0 ~ 3:   DSSS/CCK rates: 1, 2, 5.5, 11;
      *   4 ~ 5:   reserved;
@@ -719,7 +869,7 @@ struct bwifi_hal_ops {
      *
      * Returns: 0 - success, other - failure
      */
-    int (*data_rate_set)(uint32_t rate_idx);
+    int (*data_rate_set)(uint8_t iftype, uint32_t rate_idx);
 
     /**
      * twt_setup - send TWT setup request
@@ -744,31 +894,62 @@ struct bwifi_hal_ops {
 #ifdef ENABLE_FW_KEEP_ALIVE
     /**
      * Set ip keep alive feature's parameters.
-     * @paras ip alive parameters;
-     * Returns: the idx of the tcp stream when adding one or the delete result when deleting one;
+     * @paras: ip alive parameters
+     * Returns: The idx of tcp stream when adding one or the delete result when deleting one
      */
-    int (*set_ip_alive)(struct ip_alive_paras *paras);
+    int (*set_ip_alive)(struct ip_alive_param *paras);
+#endif
+
+#ifdef __SET_MULTICAST_FILTER__
+    /**
+     * set_multicast_filter - set a multicast address filter
+     * @paras: Include filter mode and address
+     *   mode: 0 - disable filter
+     *         1 - enable filter
+     *         2 - clean multicast address table
+     *         3 - filter all multicast frames
+     *         4 - add filter
+     *         5 - del filter
+     *   addr: MAC address to filter
+     * Returns: 0 - success, other - failure
+     */
+    int (*set_multicast_filter)(struct multicast_filter_param *paras);
+#endif
+
+#ifdef __SET_BROADCAST_FILTER__
+    /**
+     * set_broadcast_filter - enable/disable broadcast filter
+     * @enable: 1 - enable broadcast filter, 0 - disable broadcast filter
+     * Returns: 0 - success, other - failure
+     */
+    int (*set_broadcast_filter)(uint8_t enable);
+#endif
+
+#ifdef __SET_ARP_OFFLOAD__
+    /**
+     * set_arp_offload - enable/disable arp offload
+     * @ipv4_addr: ipv4 address for arp offload, or 0 to disable
+     * Returns: 0 - success, other - failure
+     */
+    int (*set_arp_offload)(uint32_t ipv4_addr);
+#endif
+
+#ifdef __SET_ARP_KEEP_ALIVE__
+    /**
+     * set_arp_keepalive - enable/disable arp keepalive in lmac
+     * @iftype: Type of interface @ref BWIFI_INTF_TYPE_T
+     * @enable: 1 - start, 0 - stop
+     * Returns: 0 - success, other - failure
+     */
+    int (*set_arp_keepalive)(uint8_t iftype, uint8_t enable);
 #endif
 
     /**
-     * epta_param_config - set epta parameter for wifi/bt TDD coexistance
-     * @wifi_dur: wifi duration (ms)
-     * @bt_dur: bt duration (ms)
-     * @mode: epta work mode
-     *   0: periodic arbitrate by software, using wifi_dur and bt_dur to alloc active time for wifi and bt,
-     *       wifi_dur + bt_dur should equal the 100ms period time
-     *   1: arbitrate by hw itself
-     *
+     * coex_cmd - execute the coex command
+     * @param: param for coex command
      * Returns: 0 - success, other - failure
      */
-    int (*epta_param_config)(int wifi_dur, int bt_dur, int mode);
-
-    /**
-     * set_epta_param - notify wifi state to epta
-     * @state: wifi connection state, 0 - disconnected, 1 - connected
-     * Returns: 0 - success, other - failure
-     */
-    int (*epta_state_notify)(enum bwifi_epta_state state);
+    int (*coex_cmd)(struct coex_cmd_param param);
 
     /**
      * reset - wifi subsystem reset
@@ -807,6 +988,7 @@ struct bwifi_hal_ops {
      * Returns: 0 - success, other - failure
      */
     int (*csi_recv_cb_set)(csi_recv_handler hdl);
+    int (*csi_cap_req)(void* param);
 #endif
 
     /**
@@ -838,16 +1020,16 @@ struct bwifi_hal_ops {
      * @rsp_size: size of buffer to hold the rsp_buf's content
      * Returns: 0 - success, other - failure
      */
-    int (*str_cmd)(uint8_t type, uint8_t *cmd_buf, uint8_t *rsp_buf, uint32_t rsp_size);
-
+    int (*str_cmd)(uint8_t type, char *cmd_buf, char *rsp_buf, size_t rsp_size);
 
     /**
      * dat_cmd - send data command to wifi subsystem
+     * @type: command type @ref enum bwifi_dat_cmd_type
      * @tx_buf: pointer of the data buffer to be sent.
      * @tx_len: length of the data to be sent.
      * Returns: 0 - success, other - failure
      */
-    int (*dat_cmd)(uint8_t *tx_buf, uint16_t tx_len);
+    int (*dat_cmd)(uint8_t type, uint8_t *tx_buf, size_t tx_len);
 
 #ifdef __P2P_MODE_SUPPORT__
     /**
@@ -879,6 +1061,7 @@ struct bwifi_hal_ops {
      * Returns: 0 - success, other - failure
      */
     int (*ext_vendor_cmd)(struct ext_vendor_cmd_info_hdr *hdr);
+
 };
 
 extern struct bwifi_hal_ops whops;

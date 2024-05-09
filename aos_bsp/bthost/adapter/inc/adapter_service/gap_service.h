@@ -43,16 +43,6 @@ extern "C" {
 #define GAP_DEFAULT_RPA_TIMEOUT (900) // 15min
 #define GAP_MAX_DEVICE_NAME_LEN 248
 
-#define GAP_LE_CONN_ID_PREFIX 0x8000
-#define GAP_LE_CONN_ID_1 (GAP_LE_CONN_ID_PREFIX|BLE_DEVICE_ID_1)
-#define GAP_LE_CONN_ID_2 (GAP_LE_CONN_ID_PREFIX|BLE_DEVICE_ID_2)
-#define GAP_LE_CONN_ID_3 (GAP_LE_CONN_ID_PREFIX|BLE_DEVICE_ID_3)
-
-#define GAP_BT_CONN_ID_PREFIX 0x4000
-#define GAP_BT_CONN_ID_1 (GAP_BT_CONN_ID_PREFIX|BT_DEVICE_ID_1)
-#define GAP_BT_CONN_ID_2 (GAP_BT_CONN_ID_PREFIX|BT_DEVICE_ID_2)
-#define GAP_BT_CONN_ID_3 (GAP_BT_CONN_ID_PREFIX|BT_DEVICE_ID_3)
-
 #define gap_continue_loop (true)
 #define gap_end_loop (false)
 
@@ -75,7 +65,12 @@ typedef enum {
     GAP_PHY_BIT_LE_1M = 0x01,      // bit 0
     GAP_PHY_BIT_LE_2M = 0x02,      // bit 1
     GAP_PHY_BIT_LE_CODED = 0x04,   // bit 2
+#if mHDT_LE_SUPPORT
+    GAP_PHY_BIT_LE_MHDT = 0x80,   // bit 7
+    GAP_PHY_BIT_ALL_MASK = 0x87,
+#else
     GAP_PHY_BIT_ALL_MASK = 0x07,
+#endif
 } gap_phy_bit_t;
 
 typedef enum {
@@ -301,7 +296,6 @@ typedef struct {
 }  __attribute__ ((packed)) gatt_server_cache_t;
 
 typedef struct {
-    ble_bdaddr_t peer_addr;
     uint8_t client_cache_seqn;
     uint8_t peer_database_hash[16];
     gatt_service_cache_t peer_service[GATT_MAX_CACHE_SERVICES];
@@ -309,6 +303,15 @@ typedef struct {
     gatt_char_cache_t peer_character[GATT_MAX_CACHE_CHARS];
     gatt_128_char_cache_t peer_128_character[GATT_MAX_CACHE_128_CHARS];
 }  __attribute__ ((packed)) gatt_client_cache_t;
+
+typedef struct {
+    bt_bdaddr_t peer_addr;
+    bool trusted;
+    bool for_bt_source;
+    uint8_t link_key[16];
+    uint8_t key_type;
+    uint8_t cod[3];
+} gap_bredr_sec_t;
 
 typedef struct {
     bt_bdaddr_t peer_addr;
@@ -330,9 +333,6 @@ typedef struct {
     uint8_t ediv[2];
     uint8_t local_ediv[2];
     uint8_t enc_key_size;
-    uint8_t has_client_cache: 1;
-    gatt_server_cache_t server_cache;
-    gatt_client_cache_t *client_cache;
 } gap_bond_sec_t;
 
 typedef struct {
@@ -363,8 +363,8 @@ typedef struct {
     uint32_t peer_ia_received: 1;
     uint32_t peer_bt_supp_eatt_fc_mode: 1;
     uint32_t peer_bt_supp_fixed_smp_cid: 1;
-    uint32_t bredr_ctkd_ltk_generated: 1;
-    uint32_t bredr_ctkd_pair_done: 1;
+    uint32_t ble_gen_link_key_wait_report: 1;
+    uint32_t bredr_gen_ltk_wait_report: 1;
     uint32_t bredr_smp_wait_read_key_size: 1;
     uint32_t peer_rpa_is_resolving: 1;
     uint32_t encrypt_wait_report: 1;
@@ -380,13 +380,13 @@ typedef struct {
     uint16_t gatt_server_supp_eatt_bearer: 1;
     uint16_t gatt_server_has_service_changed_char: 1;
     uint16_t gatt_server_has_database_hash_char: 1;
+    uint16_t gatt_service_change_unaware: 1;
     uint16_t device_appearance;
     uint8_t name_length; // max 248 utf-8 string
     gap_security_levels_t sec_levels;
     uint32_t le_features;
     uint32_t high_le_features;
     uint8_t *device_name;
-    uint8_t *enc_data_key_material_char;
     uint8_t service_database_hash[16];
     gap_conn_prefer_params_t peripheral_prefer_conn_params;
     struct list_node srvc_list;
@@ -411,6 +411,10 @@ typedef struct {
     const bt_bdaddr_t *hci_bt_addr;
     const bt_bdaddr_t *hci_le_addr;
     const bt_bdaddr_t *hci_random_addr;
+    // Used for speed up smp pairing
+    // when using DHkey generation
+    const uint8_t *secret_key_256;
+    const uint8_t *public_key_256;
     uint8_t ble_dev_name[32];
     uint32_t sign_counter;
     uint8_t irk[16];
@@ -421,6 +425,7 @@ typedef struct {
     uint8_t max_pa_list_size;
     uint8_t max_num_adv_sets;
     uint8_t max_size_att_prep_q;
+    uint8_t gatt_self_prf_id;
     uint16_t max_adv_data_len;
     uint16_t device_appearance;
     uint32_t le_features;
@@ -429,7 +434,6 @@ typedef struct {
     uint8_t short_name_max_len;
     uint16_t data_sign_support: 1;
     uint16_t only_use_rpa_after_bonding: 1;
-    uint16_t ctkd_gen_link_key_from_ltk: 1;
     uint16_t server_database_hash_support: 1;
     uint16_t gatt_server_supp_eatt_bearer: 1;
     uint16_t gatt_client_supp_eatt_bearer: 1;
@@ -601,6 +605,8 @@ typedef struct {
     const uint8_t *recv_key;
     bt_addr_type_t recv_ia_type;
     bt_bdaddr_t recv_ia_addr;
+    uint8_t enc_key_size;
+    bool link_key_generated_but_still_wait_peer_ia;
     struct gap_conn_item_t *conn;
 } gap_recv_key_dist_t;
 
@@ -658,11 +664,12 @@ typedef struct gap_conn_item_t {
     bt_addr_type_t own_addr_type;
     bt_addr_type_t peer_type;
     bt_bdaddr_t peer_addr;
-    uint16_t sync_handle; // PAwR central role: sync_handle, PAwR peripheral role: adv_handle
+    uint16_t sync_handle; // PAwR central role: sync_handle
     bt_bdaddr_t peer_rpa;
     uint8_t ctkd_enc_key_size;
     uint8_t error_code;
     bt_bdaddr_t own_rpa;
+    uint8_t adv_handle; // peripheral role: conn from adv_handle
     gap_conn_flag_t conn_flag;
     gap_sec_level_t sec_level;
     gap_conn_timing_t timing;
@@ -671,6 +678,7 @@ typedef struct gap_conn_item_t {
     gap_bond_sec_t sec;
     void *smp_conn;
     void *bap_callback;
+    uint8_t *link_key;
 } gap_conn_item_t;
 
 typedef struct {
@@ -678,6 +686,8 @@ typedef struct {
     uint8_t enc_key_size;
     bt_addr_type_t peer_type;
     bt_bdaddr_t peer_addr;
+    bool ltk_generated_but_still_wait_peer_kdist;
+    struct gap_conn_item_t *bredr_conn;
 } gap_recv_derived_ltk_t;
 
 typedef union {
@@ -693,16 +703,26 @@ typedef enum {
     GAP_EVENT_RECV_DERIVED_BLE_LTK,
 } gap_global_event_t;
 
+typedef struct gap_external_function_callbacks {
+    void (*nv_get_local_csrk)(uint8_t *csrk);
+    bool (*nv_get_ble_device_by_index)(uint32_t i, gap_bond_sec_t *out);
+    bool (*nv_get_ble_device_by_addr)(const gap_conn_item_t *conn, bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr, gap_bond_sec_t *out);
+    void (*nv_add_ble_device)(const gap_conn_item_t *conn, const gap_bond_sec_t *bond, const gatt_server_cache_t *srv_cache);
+    void (*nv_gatt_cli_cache)(const gap_conn_item_t *conn, const gatt_client_cache_t *cache);
+    void (*smp_get_upper_requirements)(const gap_conn_item_t *conn, smp_requirements_t *p_requirements);
+    void (*gap_get_upper_specific_irk_ia)(const gap_conn_item_t *conn, uint8_t *irk, ble_bdaddr_t *ia);
+    bool (*nv_get_bt_device_by_addr)(const bt_bdaddr_t *bd_addr, gap_bredr_sec_t *out);
+    bool (*gatt_need_start_mtu_exchange)(const gap_conn_item_t *conn);
+    bool (*btgatt_allowed_send)(uint8_t conidx);
+} gap_ext_func_cbs_t;
+
 typedef int (*gap_global_callback_t)(uintptr_t priv, gap_global_event_t event, gap_global_event_param_t param);
 
 typedef bool (*gap_conn_foreach_func_t)(gap_conn_item_t *conn, void *priv);
 
 typedef struct
 {
-    uint8_t ctkd_over_br_edr: 1;
-    uint8_t gatt_over_br_edr: 1;
-    uint8_t eatt_over_br_edr: 1;
-    uint8_t stack_new_design: 1;
+    bt_l2cap_config_t cfg;
     uint8_t address_reso_support: 1;
     uint8_t use_random_identity_address: 1;
     uint8_t peripheral_has_prefer_conn_params: 1;
@@ -718,7 +738,7 @@ uint32_t gap_conn_bf(uint8_t con_idx);
 uint16_t gap_conn_hdl(uint8_t con_idx);
 uint16_t gap_conn_idx_as_hdl(uint8_t con_idx);
 
-void gap_init(const gap_config_t *cfg, gap_global_callback_t global_callback);
+void gap_init(const gap_config_t *cfg, gap_global_callback_t global_callback, const gap_ext_func_cbs_t *p_ext_func_cbs);
 gap_config_t gap_get_config(void);
 gap_local_info_t *gap_local_info(void);
 bool gap_stack_is_ready(void);
@@ -729,7 +749,6 @@ uint8_t gap_count_ble_connections(void);
 void gap_dump_ble_status(void);
 
 int gap_conn_foreach(gap_conn_foreach_func_t func, void *param);
-const char *gap_local_bt_name(uint8_t *len);
 const char *gap_local_le_name(uint8_t *len);
 void gap_set_local_le_name(const char *name, uint8_t len_hint);
 const bt_bdaddr_t *gap_hci_bt_address(void);
@@ -740,23 +759,20 @@ const bt_bdaddr_t *gap_public_identity_address(void);
 const bt_bdaddr_t *gap_random_identity_address(void);
 const bt_bdaddr_t *gap_local_host_rpa(void);
 ble_bdaddr_t gap_local_identity_address(bt_addr_type_t own_addr_type);
-ble_bdaddr_t gap_conn_own_identity_address(gap_conn_item_t *conn);
+ble_bdaddr_t gap_conn_own_identity_address(const gap_conn_item_t *conn);
 bt_status_t gap_set_public_address(const bt_bdaddr_t *public_addr, bool is_ble);
 bt_status_t gap_set_bt_public_address(const bt_bdaddr_t *public_addr);
 bt_status_t gap_set_le_public_address(const bt_bdaddr_t *public_addr);
-uint32_t gap_count_ble_device_record(void);
 bool gap_get_ble_device_record_by_index(uint32_t i, gap_bond_sec_t *out);
-bool gap_has_ble_device_record(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr);
-bool gap_find_ble_device_record(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr, gap_bond_sec_t *out);
-bool gap_find_ble_bonded_record(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr, gap_bond_sec_t *out);
-void gap_add_ble_device_record(const gap_bond_sec_t *bond);
-void gap_del_ble_device_record(const bt_bdaddr_t *peer_addr);
-void gap_del_ble_device_record_by_index(uint32_t i);
-void gap_del_all_ble_device_record(void);
-void gap_update_local_database_hash(void);
+bool gap_find_ble_device_record(const gap_conn_item_t *conn, bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr, gap_bond_sec_t *out);
 gap_conn_timing_config_t gap_default_conn_timing(void);
 ble_bdaddr_t gap_get_peer_resolved_address(uint16_t connhdl);
+void gap_set_send_sec_error_rsp_directly(uint8_t send_sec_error_rsp);
+void gap_peer_security_levels_received(gap_conn_item_t *conn, gap_security_levels_t sec_levels);
+void gap_peer_enc_data_key_material_received(gap_conn_item_t *conn, const gap_key_material_t *key, uint8_t error_code);
+ble_bdaddr_t gap_ctkd_get_le_identity_address(const gap_conn_item_t *conn);
 
+bt_status_t gap_set_local_secret_public_key_pair(const uint8_t *p_sec_key_256, const uint8_t *p_pub_key_256);
 bt_status_t gap_gen_local_rpa(void (*cmpl)(void *priv, const bt_bdaddr_t *local_rpa), void *priv);
 bt_status_t gap_resolve_rpa(const bt_bdaddr_t *rpa, void (*cmpl)(void *priv, const gap_bond_sec_t *out), void *priv);
 bt_status_t gap_terminate_connection(uint16_t connhdl, uint8_t reason);
@@ -903,6 +919,20 @@ typedef struct {
     uint8_t confirm[GAP_KEY_LEN];
 } gap_smp_oob_auth_data_t;
 
+typedef enum {
+    GAP_AUTH_STARTED_BY_NONE                = 0x00,
+    GAP_AUTH_STARTED_BY_BLE_TEST            = 0x01,
+    GAP_AUTH_STARTED_BY_GATT_READY          = 0x02,
+    GAP_AUTH_STARTED_BY_UPPER_APP           = 0x03,
+    GAP_AUTH_STARTED_BY_ADDRESS             = 0x04,
+    GAP_AUTH_STARTED_BY_RECV_SEC_LEVELS     = 0x05,
+    GAP_AUTH_STARTED_BY_INIT_COMPLETE       = 0x06,
+    GAP_AUTH_STARTED_BY_NOTIFY_SEC_CHECK    = 0x07,
+    GAP_ATUH_STARTED_BY_RX_RSP_SEC_ERROR    = 0x08,
+    GAP_ATUH_STARTED_BY_RX_REQ_SEC_ERROR    = 0x09,
+    GAP_AUTH_STARTED_BY_EATT_SEC_FAIL       = 0x0A,
+} gap_who_started_auth_t;
+
 const uint8_t *gap_get_local_irk(void);
 const uint8_t *gap_get_local_csrk(void);
 bt_status_t gap_start_smp_pairing(uint16_t connhdl);
@@ -912,7 +942,7 @@ bt_status_t gap_set_security_level(uint16_t connhdl, gap_link_sec_level_t sec_le
 bt_status_t gap_set_data_sign_security(uint16_t connhdl, gap_data_sign_level_t data_sign_level);
 bt_status_t gap_set_key_strength(uint16_t connhdl, uint8_t key_size);
 bt_status_t gap_set_accepted_pairing_method(uint16_t connhdl, uint8_t accept_method);
-bt_status_t gap_start_authentication(uint16_t connhdl);
+bt_status_t gap_start_authentication(uint16_t connhdl, gap_who_started_auth_t who);
 bt_status_t gap_start_authentication_by_address(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr);
 bt_status_t gap_set_use_passkey_entry_method(uint16_t connhdl, bool passkey_entry);
 bt_status_t gap_set_use_passkey_entry_method_by_address(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr, bool passkey_entry);
@@ -1050,7 +1080,7 @@ bool gap_dt_start_decrypt_data(const gap_key_material_t *key, const gap_enc_data
 bool gap_dt_add_data_type(gap_dt_buf_t *buf, uint8_t type, const uint8_t *data, uint16_t len);
 bool gap_dt_add_raw_data(gap_dt_buf_t *buf, const uint8_t *data, uint16_t len);
 bool gap_dt_add_flags(gap_dt_buf_t *buf, uint8_t discoverable, bool simu_bredr_support);
-bool gap_dt_add_local_le_name(gap_dt_buf_t *buf, bool use_legacy_pdu);
+bool gap_dt_add_local_le_name(gap_dt_buf_t *buf, bool use_legacy_pdu, const char *cust_le_name);
 bool gap_dt_add_tx_power(gap_dt_buf_t *buf, uint8_t tx_power_level);
 bool gap_dt_add_manufacturer_data(gap_dt_buf_t *buf, uint16_t company_identifier_code, const uint8_t *data, uint8_t len);
 bool gap_dt_add_peripheral_conn_interval(gap_dt_buf_t *buf, uint16_t min_interval_1_25ms, uint16_t max_interval_1_25ms);
@@ -1215,6 +1245,7 @@ const gap_filter_item_t *gap_filter_list_get_item(int index);
 bool gap_filter_list_user_item_exist(uint8_t user);
 uint8_t gap_filter_list_curr_size(void);
 uint8_t gap_filter_list_max_size(void);
+bool gap_get_irk_distributed_bond_device(gap_bond_sec_t *out_record);
 
 /**
  * Resovling List
@@ -1229,14 +1260,15 @@ typedef struct {
     uint8_t peer_irk[16];
 } gap_resolv_item_t;
 
-bt_status_t gap_resolving_list_add(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr, const uint8_t *peer_irk, bool device_privacy_mode);
-bt_status_t gap_resolving_list_remove(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr);
-bt_status_t gap_resolving_list_remove_by_index(int index);
+bt_status_t gap_resolving_list_add(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr, const uint8_t *peer_irk, bool device_privacy_mode, bool auto_restore_reso_enable, bool set_reso_enable);
+bt_status_t gap_resolving_list_add_item(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr, const uint8_t *peer_irk,
+                                        const uint8_t *local_irk, bool device_privacy_mode, bool auto_restore_reso_enable, bool set_reso_enable);
+bt_status_t gap_resolving_list_remove(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr, bool auto_restore_reso_enable, bool set_reso_enable);
+bt_status_t gap_resolving_list_remove_by_index(int index, bool auto_restore_reso_enable, bool set_reso_enable);
 bt_status_t gap_enable_address_resolution(bool enable);
 bt_status_t gap_resolving_list_clear(void);
-bt_status_t gap_resolving_list_set_bonded_devices(void);
 bt_status_t gap_set_network_privacy_mode(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr);
-bt_status_t gap_set_device_privacy_mode(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr);
+bt_status_t gap_set_device_privacy_mode(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr, bool auto_disable_reso_first, bool set_addr_reso_enable);
 bt_status_t gap_set_all_network_privacy_mode(void);
 bt_status_t gap_set_all_device_privacy_mode(void);
 bt_status_t gap_read_peer_rpa(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr, hci_cmd_evt_func_t cmd_cb, void *priv);
@@ -1245,6 +1277,7 @@ bt_status_t gap_set_rpa_timeout(uint16_t timeout_sec);
 const gap_resolv_item_t *gap_resolving_list_find_item(bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr);
 const gap_resolv_item_t *gap_resolving_list_get_item(int index);
 bool gap_address_reso_is_enabled(void);
+bool gap_is_refresh_adv_after_addr_reso_enable(void);
 uint8_t gap_resolving_list_curr_size(void);
 uint8_t gap_resolving_list_max_size(void);
 
@@ -1253,7 +1286,7 @@ uint8_t gap_resolving_list_max_size(void);
  *
  */
 
-#define GAP_DYN_ADV_HANDLE_START (40)
+#define GAP_DYN_ADV_HANDLE_START (0x10)
 #define GAP_MAX_ADV_HANDLE_VALUE (0xEF)
 #define GAP_MAX_ADV_ACTIVITY (5)
 
@@ -1290,6 +1323,27 @@ typedef enum {
     GAP_ADV_DATA_COMPLETE = 0x03,
     GAP_ADV_DATA_UNCHANGED = 0x04, // just update Advertising DID of the adv
 } gap_adv_data_op_t;
+
+typedef enum {
+    GAP_ADV_DISABLE_BY_NONE                     = 0x00,
+    GAP_ADV_DISABLE_BY_APP_BLE                  = 0x01,
+    GAP_ADV_DISABLE_BY_SEND_CMD_FAIL            = 0x02,
+    GAP_ADV_DISABLE_BY_SET_PARAM_FAIL           = 0x03,
+    GAP_ADV_DISABLE_BY_SEND_ENABLE_FAIL         = 0x04,
+    GAP_ADV_DISABLE_BY_ADV_TIMEOUT              = 0x05,
+    GAP_ADV_DISABLE_BY_BIG_CLEANUP              = 0x06,
+    GAP_ADV_DISABLE_BY_BIG_DISABLE              = 0x07,
+    GAP_ADV_DISABLE_ALL_BY_BLE_TEST             = 0x08,
+    GAP_ADV_DISABLE_ALL_BY_UPPER_APP            = 0x09,
+    GAP_ADV_DISABLE_ALL_BY_RESOLVE              = 0x0A,
+    GAP_ADV_DISABLE_ALL_BY_FILTER               = 0x0B,
+    GAP_ADV_DISABLE_LOW_PRIORITY_BUT_NOT_FREE   = 0x0C,
+    GAP_ADV_DISABLE_OLD_PARAM_BUT_NOT_FREE      = 0x0D,
+    GAP_ADV_TIMEOUT_AND_RESTART_NOT_FREE        = 0x0E,
+    GAP_ADV_DISABLE_BY_LEGACY_CONN_COMPLETE     = 0x0F,
+    GAP_ADV_DISABLE_BY_ADV_SET_TERMINATE        = 0x10,
+    GAP_ADV_DISABLE_BY_DISABLE_COMPLETE         = 0x11,
+} gap_who_disable_adv_t;
 
 typedef struct {
     uint8_t adv_handle;
@@ -1435,7 +1489,9 @@ typedef struct {
     bt_bdaddr_t peer_addr;
     gap_adv_policy_t policy;
     bool use_custom_local_addr;
+    bool use_fake_btc_rpa_when_no_irk_exist;
     bt_bdaddr_t custom_local_addr;
+    bool limited_discoverable_mode;
     bool fast_advertising;
     bool continue_advertising;
     bool start_bg_advertising;
@@ -1498,8 +1554,8 @@ typedef struct {
 } gap_advertising_t;
 
 uint8_t gap_set_adv_parameters(const gap_adv_param_t *param, gap_adv_callback_t cb);
-uint8_t gap_set_advertising(uint8_t adv_handle, const gap_adv_param_t *param, gap_adv_callback_t cb);
-uint8_t gap_refresh_advertising(uint8_t adv_handle, const gap_adv_param_t *param, gap_adv_callback_t cb);
+void gap_set_advertising(uint8_t adv_handle, const gap_adv_param_t *param, gap_adv_callback_t cb);
+void gap_refresh_advertising(uint8_t adv_handle, const gap_adv_param_t *param, gap_adv_callback_t cb);
 uint8_t gap_legacy_non_discoverable_advertising(bt_addr_type_t own_addr_type, bool continue_advertising, gap_adv_callback_t cb);
 uint8_t gap_legacy_directed_advertising(bt_addr_type_t own_addr_type, bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr, gap_adv_callback_t cb);
 uint8_t gap_legacy_connectable_advertising(bt_addr_type_t own_addr_type, bool continue_advertising, gap_adv_callback_t cb);
@@ -1520,8 +1576,8 @@ bt_status_t gap_set_ext_adv_data(uint8_t adv_handle, gap_adv_data_op_t op, const
 bt_status_t gap_set_ext_scan_rsp_data(uint8_t adv_handle, gap_adv_data_op_t op, const uint8_t *data, uint16_t len);
 bt_status_t gap_set_ext_adv_enable(uint8_t adv_handle, uint32_t duration_ms, uint8_t max_ext_adv_events);
 bt_status_t gap_enable_advertising(uint8_t adv_handle, uint32_t duration_ms);
-bt_status_t gap_disable_advertising(uint8_t adv_handle);
-bt_status_t gap_disable_all_advertising(void);
+bt_status_t gap_disable_advertising(uint8_t adv_handle, gap_who_disable_adv_t who);
+bt_status_t gap_disable_all_advertising(gap_who_disable_adv_t who);
 bt_status_t gap_update_advertising_rpa_when(uint8_t adv_handle, bool adv_data_change, bool scan_rsp_change);
 gap_advertising_t *gap_get_advertising_set(uint8_t adv_handle);
 bool gap_is_advertising_enabled(uint8_t adv_handle);
@@ -1722,6 +1778,7 @@ bt_status_t gap_connect_ble_audio_device(bt_addr_type_t own_addr_type, bt_addr_t
 bt_status_t gap_start_auto_initiating(const gap_init_param_t *param, gap_init_callback_t cb);
 bt_status_t gap_start_initiating(const gap_init_param_t *param, gap_init_callback_t cb);
 bt_status_t gap_cancel_initiating(void);
+bt_status_t gap_cancel_all_pend_initiating(bool also_cancel_curr_initiating);
 gap_init_timing_t gap_default_init_timing(void);
 
 /**
@@ -1822,6 +1879,175 @@ bt_status_t gap_pa_set_info_transfer(uint8_t con_idx, uint16_t service_data, uin
 bt_status_t gap_register_past_received_callback(const gap_pa_sync_callback_t p_cb);
 bt_status_t gap_set_past_parameters(uint8_t con_idx, uint8_t mode, uint16_t skip, uint16_t sync_to_10ms, uint8_t cte_type);
 bt_status_t gap_set_default_past_parameters(uint8_t mode, uint16_t skip, uint16_t sync_to_10ms, uint8_t cte_type);
+
+typedef struct {
+    gap_dt_encrypt_callback_t func;
+    void *priv;
+} gap_enc_data_env_t;
+
+typedef struct {
+    bt_bdaddr_t local_rpa;
+    void (*cmpl)(void *priv, const bt_bdaddr_t *local_rpa);
+    void *priv;
+} gap_gen_rpa_t;
+
+typedef struct {
+    gap_bond_sec_t record;
+    bt_bdaddr_t peer_rpa;
+    uint8_t record_idx;
+    void (*cmpl)(void *priv, const gap_bond_sec_t *out);
+    void *priv;
+} gap_resolve_rpa_t;
+
+typedef struct {
+    bool scan_enabled;
+    bool legacy_scanning;
+    bool background_scan;
+    bool initiating_scan;
+    bt_addr_type_t own_addr_type;
+    uint8_t scan_handle;
+    uint8_t scan_stop_timer;
+    uint16_t period_1_28s;
+    uint32_t duration_ms;
+    uint16_t scan_interval_slots;
+    uint16_t scan_interval_coded;
+    uint16_t scan_window_slots;
+    uint16_t scan_window_coded;
+    gap_scan_param_t param;
+    gap_scan_callback_t scan_callback;
+} gap_scanning_t;
+
+typedef struct {
+    bool legacy_initiating;
+    bool is_conn_creating;
+    bool is_direct_initiating;
+    uint8_t peer_type;
+    bt_addr_type_t own_addr_type;
+    bt_bdaddr_t peer_addr;
+    uint32_t init_proc_timeout_ms;
+    bool timeout_and_restart_initiating;
+    bool start_bg_initiating;
+    bool peer_is_ble_audio;
+    uint8_t init_handle;
+    uint8_t init_stop_timer;
+    uint8_t pa_adv_handle;
+    uint8_t sd_subevent;
+    uint16_t scan_interval_slots;
+    uint16_t scan_interval_coded;
+    uint16_t scan_window_slots;
+    uint16_t scan_window_coded;
+    uint16_t min_conn_interval_1_25ms;  // 0x06 to 0x0C80 * 1.25ms, 7.5ms to 4s
+    uint16_t max_conn_interval_1_25ms;  // 0x06 to 0x0C80 * 1.25ms, 7.5ms to 4s
+    uint16_t min_conn_interval_coded;   // 0x06 to 0x0C80 * 1.25ms, 7.5ms to 4s
+    uint16_t max_conn_interval_coded;   // 0x06 to 0x0C80 * 1.25ms, 7.5ms to 4s
+    uint16_t superv_timeout_ms;         // 100ms to 32s
+    uint16_t min_ce_length_slots;       // min len of connection event, 0x00 to 0xFFFF * 0.625ms
+    uint16_t max_ce_length_slots;       // max len of connection event, 0x00 to 0xFFFF * 0.625ms
+    gap_init_callback_t init_callback;
+    gap_init_param_t init_param;
+} gap_initiating_t;
+
+typedef struct {
+    gap_advertising_t *adv;
+} gap_advertising_item_t;
+
+typedef struct {
+    bool phy_update; // false indicate host read
+    gap_le_phy_t tx_phy;
+    gap_le_phy_t rx_phy;
+} gap_conn_phy_param_t;
+
+typedef struct {
+    /// PA sync handle
+    uint16_t pa_sync_hdl;
+    /// Periodic Adv Timing
+    uint8_t adv_phy; // 0x01 le 1m, 0x02 le 2m, 0x03 le coded
+    uint16_t pa_interval_1_25ms; // 0x06 to 0xFFFF * 1.25ms (7.5ms to 81.9s)
+    uint8_t adv_clock_accuracy; // 0x00 to 0x07 500ppm to 20ppm
+    uint8_t num_subevents; // 0x00 no subevents, 0x01 to 0x80 num of subevents
+    uint8_t subevent_interval_1_25ms; // 0x00 no subevents, 0x06 to 0xFF * 1.25ms (7.5ms to 318.75ms)
+    uint8_t response_slot_delay_1_25ms; // 0x00 no response slots, 0x01 to 0xFE * 1.25ms (1.25ms to 317.6ms)
+    uint8_t response_slot_spacing_0_125ms; // 0x00 no response slots, 0x02 to 0xFF * 0.125ms (0.25ms to 31.875ms)
+    /// Sync param from upper
+    gap_pa_sync_param_t pa_sync_param;
+    gap_pa_sync_callback_t pa_sync_callback;
+} gap_pa_sync_t;
+
+typedef struct {
+    gap_pa_sync_t *pa_sync;
+} gap_pa_sync_item_t;
+
+#define GAP_DEFAULT_SHORT_NAME_LEN (20) // max value is GAP_MAX_DEVICE_NAME_LEN 248
+#define GAP_MAX_ATT_PREP_Q_SIZE (16)
+#define GAP_MAX_FILTER_LIST_SIZE (10)
+#define GAP_MAX_RESOLV_LIST_SIZE (10)
+#define GAP_MAX_NUM_PA_SYNC_LIST (8)
+#define GAP_MAX_PEND_BLE_INIT (5)
+#define GAP_MAX_ADV_PARAM_FOR_CONN (GAP_MAX_ADV_ACTIVITY+2)
+
+typedef struct {
+    uint32_t adv_seqn;
+    uint8_t adv_handle;
+    uint8_t own_addr_type: 2;
+    uint8_t directed_advertising: 1;
+    bt_bdaddr_t local_addr;
+    gap_adv_callback_t adv_callback;
+} __attribute__ ((packed)) gap_adv_param_for_conn_t;
+
+typedef struct {
+    uint8_t is_initialized;
+    uint8_t adv_handle_seed;
+    uint8_t scan_handle_seed;
+    uint8_t init_handle_seed;
+    uint8_t resolv_list_size;
+    uint8_t filter_list_size;
+    uint8_t le_acl_count;
+    uint8_t bt_acl_count;
+    uint8_t rpa_timer_id;
+    uint8_t min_conn_interval_1_25ms;
+    uint8_t pts_default_enc_key_size;
+    uint8_t pts_default_auth_req;
+    uint32_t adv_seqn_seed;
+    uint16_t rpa_timeout_sec;
+    uint16_t ble_stack_is_ready: 1;
+    uint16_t addr_reso_switch_on: 1;
+    uint16_t refresh_adv_after_addr_reso_enable: 1;
+    uint16_t send_sec_error_rsp_directly: 1;
+    uint16_t pts_dont_start_smp: 1;
+    uint16_t pts_set_use_passkey: 1;
+    uint16_t pts_set_use_oob_method: 1;
+    uint16_t pts_set_no_mitm_auth: 1;
+    uint16_t pts_set_display_only: 1;
+    uint16_t pts_set_keyboard_only: 1;
+    uint16_t pts_set_no_bonding: 1;
+    uint16_t pts_gen_link_key_from_ltk: 1;
+    uint16_t pts_set_dist_irk_only: 1;
+    uint16_t pts_set_dist_csrk: 1;
+    uint16_t pts_ble_l2cap_test: 1;
+    gap_global_callback_t global_callback;
+    const gap_ext_func_cbs_t *p_external_func_cbs;
+    gap_local_info_t local;
+    gap_scanning_t le_scan;
+    gap_initiating_t le_init;
+    gap_initiating_t le_pend_init[GAP_MAX_PEND_BLE_INIT];
+    gap_advertising_item_t legacy_adv;
+    gap_advertising_item_t ext_adv[GAP_MAX_ADV_ACTIVITY];
+    gap_adv_param_for_conn_t adv_param_for_conn[GAP_MAX_ADV_PARAM_FOR_CONN];
+    gap_resolv_item_t resolv_item[GAP_MAX_RESOLV_LIST_SIZE];
+    gap_filter_item_t filter_item[GAP_MAX_FILTER_LIST_SIZE];
+    gap_pa_sync_item_t pa_sync[GAP_MAX_NUM_PA_SYNC_LIST];
+    gap_pa_sync_callback_t past_received_cb;
+} gap_global_t;
+
+/**
+ * bes tws fast pair host support apis
+ * usage: set enable before le adv/scan
+*/
+void gap_vendor_enable_besfp(uint8_t *tws_bt_addr, uint8_t *peer_le_addr);
+void gap_vendor_disable_besfp();
+bool gap_vendor_is_besfp_enabled();
+uint8_t *gap_vender_besfp_get_tws_bt_addr();
+uint8_t *gap_vender_besfp_get_peer_le_addr();
 
 #ifdef __cplusplus
 }

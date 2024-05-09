@@ -398,14 +398,6 @@ enum HAL_CMU_BT_TRIGGER_SRC_T {
 
 #define HAL_CMU_SYS_REBOOT
 
-enum HAL_FLASH0_SIZE_CFG {
-    HAL_FLASH0_SIZE_0M  = 0x1,
-    HAL_FLASH0_SIZE_8M  = 0x2,
-    HAL_FLASH0_SIZE_16M = 0x0,
-    HAL_FLASH0_SIZE_32M = 0x4,
-    HAL_FLASH0_SIZE_64M = 0x8,
-};
-
 typedef void (*HAL_CMU_BT_TRIGGER_HANDLER_T)(enum HAL_CMU_BT_TRIGGER_SRC_T src);
 
 int hal_cmu_bt_trigger_set_handler(enum HAL_CMU_BT_TRIGGER_SRC_T src, HAL_CMU_BT_TRIGGER_HANDLER_T hdlr);
@@ -416,13 +408,13 @@ int hal_cmu_bt_trigger_disable(enum HAL_CMU_BT_TRIGGER_SRC_T src);
 
 int hal_cmu_fast_timer_offline(void);
 
-int hal_cmu_ddr_clock_enable();
+int hal_cmu_ddr_clock_enable(void);
 
-void hal_cmu_ddr_clock_disable();
+void hal_cmu_ddr_clock_disable(void);
 
-void hal_cmu_ddr_reset_set();
+void hal_cmu_ddr_reset_set(void);
 
-void hal_cmu_ddr_reset_clear();
+void hal_cmu_ddr_reset_clear(void);
 
 uint32_t hal_cmu_get_aon_chip_id(void);
 
@@ -478,7 +470,7 @@ void hal_cmu_flash0_dual_die(void);
 
 void hal_cmu_set_flash0_x8_mode(uint32_t en);
 
-void hal_cmu_set_flash0_size(enum HAL_FLASH0_SIZE_CFG cfg);
+void hal_cmu_set_flash0_size(uint32_t size);
 
 void hal_cmu_flash1_io_enable(void);
 
@@ -491,8 +483,6 @@ uint32_t hal_cmu_get_osc_switch_overhead(void);
 void hal_cmu_dsi_phy_reset_set(void);
 
 void hal_cmu_dsi_phy_reset_clear(void);
-
-void hal_cmu_dsi_get_pixel_clock(uint32_t *pixclk_mhz, uint16_t *pixclk_div);
 
 void hal_cmu_dsi_clock_enable(void);
 
@@ -516,11 +506,9 @@ void hal_cmu_csi_reset_set(void);
 
 void hal_cmu_csi_reset_clear(void);
 
+uint32_t hal_cmu_lcdc_get_pixmhz(void);
+
 void hal_cmu_lcdc_clock_disable(void);
-
-void hal_cmu_lcdc_reset_set(void);
-
-void hal_cmu_lcdc_reset_clear(void);
 
 void hal_cmu_lcdc_sleep(void);
 
@@ -532,10 +520,13 @@ uint32_t hal_cmu_get_dsp_pll_source_clock(void);
 
 void hal_cmu_shutdown_hook(void);
 
+#define CMU_GPIO_IRQ_OVERRIDE
+uint32_t hal_cmu_gpio_irq_override(uint32_t irq);
+
 #ifdef CNTRL_VPA_DYNAMIC
 void hal_cmu_mcu2cp_done3_irq_enable(void(*handler)(void));
 
-void hal_cmu_mcu2cp_done3_irq_disable();
+void hal_cmu_mcu2cp_done3_irq_disable(void);
 #endif
 
 #ifdef BSP_NICKNAME_SUPPORT

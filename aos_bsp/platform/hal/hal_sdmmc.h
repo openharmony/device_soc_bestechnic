@@ -65,6 +65,8 @@ enum HAL_SDMMC_ERR {
     HAL_SDMMC_CMD_START_ERR         = 29,
     HAL_SDMMC_FIFO_DATA_CNT_ERR     = 30,
     HAL_SDMMC_FIFO_XFER_TIMEOUT     = 31,
+    HAL_SDMMC_BAD_ID                = 32,
+    HAL_SDMMC_TIMER_ALLOC_ERR       = 33,
 
     //mmc_bread/mmc_berase/mmc_bwrite special code
     HAL_SDMMC_BLK_CNT_ERR           = 0xFFFFFFE0,
@@ -118,6 +120,20 @@ enum HAL_SDMMC_BUS_WIDTH {
 enum HAL_SDMMC_DEVICE_TYPE {
     HAL_SDMMC_DEVICE_TYPE_EMMC = 0,
     HAL_SDMMC_DEVICE_TYPE_SD,
+};
+
+enum HAL_SDMMC_DEVICE_STATUS {
+    HAL_SDMMC_DEVICE_STATUS_IDLE = 0,
+    HAL_SDMMC_DEVICE_STATUS_READY,
+    HAL_SDMMC_DEVICE_STATUS_IDENT,
+    HAL_SDMMC_DEVICE_STATUS_STBY,
+    HAL_SDMMC_DEVICE_STATUS_TRAN,
+    HAL_SDMMC_DEVICE_STATUS_DATA,
+    HAL_SDMMC_DEVICE_STATUS_RCV,
+    HAL_SDMMC_DEVICE_STATUS_PRG,
+    HAL_SDMMC_DEVICE_STATUS_DIS,
+    HAL_SDMMC_DEVICE_STATUS_BTST,
+    HAL_SDMMC_DEVICE_STATUS_SLP,
 };
 
 struct HAL_SDMMC_CONFIG_T {
@@ -234,6 +250,7 @@ void hal_sdmmc_info(enum HAL_SDMMC_ID_T id, uint32_t *sector_count, uint32_t *se
 enum HAL_SDMMC_ERR hal_sdmmc_get_card_info(enum HAL_SDMMC_ID_T id, struct HAL_SDMMC_CARD_INFO_T *card_info);
 void hal_sdmmc_dump_card_info(struct HAL_SDMMC_CARD_INFO_T *card_info);
 void hal_sdmmc_dump_reg(enum HAL_SDMMC_ID_T id);
+void hal_sdmmc_dump_run_record(enum HAL_SDMMC_ID_T id);
 
 enum HAL_SDMMC_ERR hal_sdmmc_select_card(enum HAL_SDMMC_ID_T id);
 enum HAL_SDMMC_ERR hal_sdmmc_deselect_card(enum HAL_SDMMC_ID_T id);

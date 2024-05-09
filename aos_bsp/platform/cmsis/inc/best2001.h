@@ -101,7 +101,7 @@ typedef enum IRQn
     SPDIF0_IRQn                 =  32,      /*!< SPDIF0 Interrupt                   */
     TRNG_IRQn                   =  33,      /*!< TRNG Interrupt                     */
     AON_GPIO_IRQn               =  34,      /*!< AON GPIO Interrupt                 */
-    AON_GPIOAUX_IRQn            =  35,      /*!< AON GPIOAUX Interrupt              */
+    AON_GPIO1_IRQn              =  35,      /*!< AON GPIOAUX Interrupt              */
     AON_WDT_IRQn                =  36,      /*!< AON Watchdog Timer Interrupt       */
     AON_TIMER00_IRQn            =  37,      /*!< AON Timer00 Interrupt              */
     AON_TIMER01_IRQn            =  38,      /*!< AON Timer01 Interrupt              */
@@ -148,7 +148,7 @@ typedef enum IRQn
 #endif
 
 #define GPIO_IRQn               AON_GPIO_IRQn
-#define GPIOAUX_IRQn            AON_GPIOAUX_IRQn
+#define GPIO1_IRQn              AON_GPIO1_IRQn
 #define TIMER00_IRQn            MCU_TIMER00_IRQn
 #define TIMER01_IRQn            MCU_TIMER01_IRQn
 #define TIMER10_IRQn            MCU_TIMER10_IRQn

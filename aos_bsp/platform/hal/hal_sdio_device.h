@@ -21,6 +21,7 @@ extern "C" {
 #endif
 
 #include "plat_types.h"
+#include "hal_cmu.h"
 
 #define SDIO_DEVICE_ADMA_MAX_TX_KB      64
 #define SDIO_DEVICE_ADMA_DESC_NUM       (SDIO_DEVICE_ADMA_MAX_TX_KB + 2)  //Each link has a maximum of 1k and a maximum of 65 links,add an nop link
@@ -38,9 +39,9 @@ enum HAL_SDIO_DEVICE_STATUS {
     HAL_SDIO_DEVICE_RX,
 };
 
-enum HAL_SDIO_DEVICE_IRQ_STATUS {
-    HAL_SDIO_DEVICE_IRQ_IDLE = 0xAA,
-    HAL_SDIO_DEVICE_IRQ_BUSY = 0x55,
+enum HAL_SDIO_DEVICE_TRANSFER_STATUS {
+    HAL_SDIO_DEVICE_TRANSFER_IDLE = 0xAA,
+    HAL_SDIO_DEVICE_TRANSFER_BUSY = 0x55,
 };
 
 struct HAL_SDIO_DEVICE_CB_T {
@@ -59,23 +60,22 @@ struct HAL_SDIO_DEVICE_AGGR_DESC_T {
 };
 
 //Public use
-void hal_sdio_device_open(struct HAL_SDIO_DEVICE_CB_T *callback);
-void hal_sdio_device_reopen(struct HAL_SDIO_DEVICE_CB_T *callback);
-void hal_sdio_device_close(void);
-enum HAL_SDIO_DEVICE_STATUS hal_sdio_device_send(const uint8_t *buf, uint16_t len, uint32_t buf_attr);
-enum HAL_SDIO_DEVICE_STATUS hal_sdio_device_resend(const uint8_t *buf, uint16_t len, uint32_t buf_attr);
-enum HAL_SDIO_DEVICE_IRQ_STATUS hal_sdio_device_get_irq_status(void);
-
-void hal_sdio_device_recv(uint8_t *buf, uint32_t buf_len, uint8_t buf_cnt);
-
-enum HAL_SDIO_DEVICE_STATUS hal_sdio_device_multi_send(const struct HAL_SDIO_DEVICE_AGGR_DESC_T *desc, uint32_t buf_attr);
-enum HAL_SDIO_DEVICE_STATUS hal_sdio_device_multi_recv(const struct HAL_SDIO_DEVICE_AGGR_DESC_T *desc);
-
-void hal_sdio_device_txbuf_cfg(uint32_t buf_attr);
-
+void hal_sdio_device_open(enum HAL_SDIO_ID_T id, struct HAL_SDIO_DEVICE_CB_T *callback);
+void hal_sdio_device_reopen(enum HAL_SDIO_ID_T id, struct HAL_SDIO_DEVICE_CB_T *callback);
+void hal_sdio_device_close(enum HAL_SDIO_ID_T id);
+enum HAL_SDIO_DEVICE_STATUS hal_sdio_device_send(enum HAL_SDIO_ID_T id, const uint8_t *buf, uint16_t len, uint32_t buf_attr);
+enum HAL_SDIO_DEVICE_STATUS hal_sdio_device_resend(enum HAL_SDIO_ID_T id, const uint8_t *buf, uint16_t len, uint32_t buf_attr);
+enum HAL_SDIO_DEVICE_TRANSFER_STATUS hal_sdio_device_get_transfer_status(enum HAL_SDIO_ID_T id);
+uint32_t hal_sdio_device_get_irq_status(enum HAL_SDIO_ID_T id);
+void hal_sdio_device_recv(enum HAL_SDIO_ID_T id, uint8_t *buf, uint32_t buf_len, uint8_t buf_cnt);
+enum HAL_SDIO_DEVICE_STATUS hal_sdio_device_multi_send(enum HAL_SDIO_ID_T id, const struct HAL_SDIO_DEVICE_AGGR_DESC_T *desc, uint32_t buf_attr);
+enum HAL_SDIO_DEVICE_STATUS hal_sdio_device_multi_recv(enum HAL_SDIO_ID_T id, const struct HAL_SDIO_DEVICE_AGGR_DESC_T *desc);
+void hal_sdio_device_txbuf_cfg(enum HAL_SDIO_ID_T id, uint32_t buf_attr);
+bool hal_sdio_device_get_card_ready(enum HAL_SDIO_ID_T id);
+uint32_t hal_sdio_device_get_txbuf_cfg(enum HAL_SDIO_ID_T id);
 //Under normal circumstances, do not call the following two functions
-void hal_sdio_device_change_tplmanid_manf(uint16_t new_manf_id);
-void hal_sdio_device_change_tplmanid_card(uint16_t new_card_id);
+void hal_sdio_device_change_tplmanid_manf(enum HAL_SDIO_ID_T id, uint16_t new_manf_id);
+void hal_sdio_device_change_tplmanid_card(enum HAL_SDIO_ID_T id, uint16_t new_card_id);
 
 #ifdef __cplusplus
 }

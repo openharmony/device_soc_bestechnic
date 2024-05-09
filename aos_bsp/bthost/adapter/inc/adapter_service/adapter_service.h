@@ -70,22 +70,6 @@ typedef int bt_status_t;
 #define BT_STS_INVALID_PARAMS               0x2D
 #define BT_STS_INVALID_BIG_ID               0x2E
 #define BT_STS_INVALID_BIG_ITEM             0x2F
-#define BT_STS_INVALID_BIG_COUNT            0x20
-#define BT_STS_INVALID_BIS_INDEX            0x21
-#define BT_STS_INVALID_ISO_CONIDX           0x22
-#define BT_STS_INVALID_ISO_HANDLE           0x23
-#define BT_STS_INVALID_CIG_OP_ID            0x24
-#define BT_STS_INVALID_CONN_TYPE            0x25
-#define BT_STS_INVALID_SMP_CONN             0x26
-#define BT_STS_INVALID_UUID_LEN             0x27
-#define BT_STS_INVALID_LENGTH               0x28
-#define BT_STS_INVALID_GATT_SERVICE         0x29
-#define BT_STS_INVALID_GATT_INCLUDE         0x2A
-#define BT_STS_INVALID_GATT_CHARACTER       0x2B
-#define BT_STS_INVALID_GATT_DESCRIPTOR      0x2C
-#define BT_STS_INVALID_BDADDR               0x2D
-#define BT_STS_INVALID_LOCAL_ADDRESS        0x2E
-#define BT_STS_INVALID_ADV_DATA             0x2F
 #define BT_STS_INVALID_SMP_PHASE            0x30
 #define BT_STS_INVALID_METHOD               0x31
 #define BT_STS_INVALID_PHASE                0x32
@@ -344,6 +328,266 @@ typedef int bt_status_t;
 #define BT_STS_DATABASE_HASH                0x132
 #define BT_STS_GEN_DATABASE_HASH_FAILED     0x133
 #define BT_STS_SERVICE_CHANGED              0x134
+#define BT_STS_SMP_AUTHENCIATION            0x135
+#define BT_STS_INVALID_BIG_COUNT            0x136
+#define BT_STS_INVALID_BIS_INDEX            0x137
+#define BT_STS_INVALID_ISO_CONIDX           0x138
+#define BT_STS_INVALID_ISO_HANDLE           0x139
+#define BT_STS_INVALID_CIG_OP_ID            0x13a
+#define BT_STS_INVALID_CONN_TYPE            0x13b
+#define BT_STS_INVALID_SMP_CONN             0x13c
+#define BT_STS_INVALID_UUID_LEN             0x13d
+#define BT_STS_INVALID_LENGTH               0x13e
+#define BT_STS_INVALID_GATT_SERVICE         0x13f
+#define BT_STS_INVALID_GATT_INCLUDE         0x140
+#define BT_STS_INVALID_GATT_CHARACTER       0x141
+#define BT_STS_INVALID_GATT_DESCRIPTOR      0x142
+#define BT_STS_INVALID_BDADDR               0x143
+#define BT_STS_INVALID_LOCAL_ADDRESS        0x144
+#define BT_STS_INVALID_ADV_DATA             0x145
+#define BT_STS_ALREADY_DONE_OR_ERROR        0x146
+#define BT_STS_DISABLE_ADVERTISING          0x147
+#define BT_STS_CONN_ADV_PARAM_NOT_FOUND     0x148
+#define BT_STS_BTGATT_PROFILE_DATA_SAVE     0x149
+#define BT_STS_BTGATT_PROFILE_DATA_RESTORE  0x14A
+#define BT_STS_CANCEL_INITIATING            0x14B
+#define BT_STS_RESO_LIST_ADD_ALL            0x14C
+#define BT_STS_INVALID_CHANNEL_ID           0x14D
+#define BT_STS_INVALID_PEER_ID              0x14E
+#define BT_STS_INVALID_CHANNEL              0x14F
+#define BT_STS_INVALID_CONNECTION           0x150
+#define BT_STS_INVALID_IDENTIFIER           0x151
+#define BT_STS_INVALID_FLAG                 0x152
+#define BT_STS_INVALID_ATTR_HANDLE          0x153
+#define BT_STS_ADD_FAILED                   0x154
+#define BT_STS_CURR_PROC_WAIT_MORE_PDU      0x155
+#define BT_STS_NOT_IN_THE_SAME_SERVICE      0x156
+#define BT_STS_NOT_SAME_TYPE                0x157
+#define BT_STS_ACTIVE_STATUS                0x158
+#define BT_STS_NO_CLIENT_NOTIFIED           0x159
+#define BT_STS_AUTHOR_REQ_FAILED            0x15A
+#define BT_STS_READ_REQ_FAILED              0x15B
+#define BT_STS_WRITE_REQ_FAILED             0x15C
+#define BT_STS_CALL_METHOD_FAILED           0x15D
+#define BT_STS_OUTSTANDING_CMD_MISMATCH     0x15E
+#define BT_STS_OUTSTANDING_CMD_IS_NULL      0x15F
+#define BT_STS_SLE_ADDRESS                  0x160
+#define BT_STS_CREATE_FAILED                0x161
+#define BT_STS_CANCEL_FAILED                0x162
+#define BT_STS_WRITE_WORKING_STATE          0x163
+#define BT_STS_WRITE_REPORT_INFO            0x164
+#define BT_STS_NEAR_SERVICE                 0x165
+#define BT_STS_NEAR_PROPERTY                0x166
+#define BT_STS_PROPERTY_NOT_FOUND           0x167
+#define BT_STS_START_DISCOVER               0x168
+#define BT_STS_REPORT_NOT_FOUND             0x169
+#define BT_STS_NEAR_HID_REPORT              0x16A
+#define BT_STS_INVALID_DESCRIPTOR           0x16B
+#define BT_STS_RECV_REPORT                  0x16C
+#define BT_STS_RECV_SERVICE                 0x16D
+#define BT_STS_HID_DESCRIPTOR               0x16E
+#define BT_STS_WORKING_STATE                0x16F
+#define BT_STS_REPORT_INFO                  0x170
+#define BT_STS_READ_REQ                     0x171
+#define BT_STS_WRITE_REQ                    0x172
+#define BT_STS_WRITE_RSP                    0x173
+#define BT_STS_GATT_DEFER_RSP               0x174
+#define BT_STS_INVALID_DEFER_CODE           0x175
+
+typedef enum {
+    NEAR_STS_SUCCESS                      = 0x00,
+    NEAR_STS_FAILED                       ,
+    NEAR_STS_PENDING                      ,
+    NEAR_STS_ONGOING                      ,
+    NEAR_STS_IN_PROGRESS                  ,
+    NEAR_STS_IN_USE                       ,
+    NEAR_STS_IS_EMPTY                     ,
+    NEAR_STS_IS_FULL                      ,
+    NEAR_STS_IS_BUSY                      ,
+    NEAR_STS_POWER_OFF                    ,
+    NEAR_STS_LIST_FULL                    ,
+    NEAR_STS_QUEUE_FULL                   ,
+    NEAR_STS_ERROR_RESULT                 ,
+    NEAR_STS_ERROR_STATUS                 ,
+    NEAR_STS_RECV_ERROR                   ,
+    NEAR_STS_START_FAILED                 ,
+    NEAR_STS_STOP_FAILED                  ,
+    NEAR_STS_ENABLE_FAILED                ,
+    NEAR_STS_DISABLE_FAILED               ,
+    NEAR_STS_READ_FAILED                  ,
+    NEAR_STS_WRITE_FAILED                 ,
+    NEAR_STS_CONFIG_FAILED                ,
+    NEAR_STS_SET_FAILED                   ,
+    NEAR_STS_ADD_FAILED                   ,
+    NEAR_STS_CONN_FAILED                  ,
+    NEAR_STS_SEND_FAILED                  ,
+    NEAR_STS_SEND_DATA_FAILED             ,
+    NEAR_STS_SEND_CMD_FAILED              ,
+    NEAR_STS_CREATE_FAILED                ,
+    NEAR_STS_CANCEL_FAILED                ,
+    NEAR_STS_REGISTER_FAILED              ,
+    NEAR_STS_AUTHOR_REQ_FAILED            ,
+    NEAR_STS_READ_REQ_FAILED              ,
+    NEAR_STS_WRITE_REQ_FAILED             ,
+    NEAR_STS_CALL_METHOD_FAILED           ,
+    NEAR_STS_APP_INIT                     ,
+    NEAR_STS_INITIALIZE                   ,
+    NEAR_STS_APP_READY                    ,
+    NEAR_STS_STACK_READY                  ,
+    NEAR_STS_CANCELLED                    ,
+    NEAR_STS_RESTRICTED                   ,
+    NEAR_STS_CONNECT                      ,
+    NEAR_STS_DISCONNECT                   ,
+    NEAR_STS_TERMINATE                    ,
+    NEAR_STS_REGISTER                     ,
+    NEAR_STS_UNREGISTER                   ,
+    NEAR_STS_CANCEL                       ,
+    NEAR_STS_DISCOVER                     ,
+    NEAR_STS_START_DISCOVER               ,
+    NEAR_STS_CONN_OPENED                  ,
+    NEAR_STS_CONN_CLOSED                  ,
+    NEAR_STS_CHANNEL_OPENED               ,
+    NEAR_STS_CHANNEL_CLOSED               ,
+    NEAR_STS_INITIATING                   ,
+    NEAR_STS_SCANNING                     ,
+    NEAR_STS_START_SCAN                   ,
+    NEAR_STS_STOP_SCAN                    ,
+    NEAR_STS_BROADCAST                    ,
+    NEAR_STS_START_BROADCAST              ,
+    NEAR_STS_STOP_BROADCAST               ,
+    NEAR_STS_TIMEOUT                      ,
+    NEAR_STS_PROC_TIMEOUT                 ,
+    NEAR_STS_MULTIPLE_INSTANCE            ,
+    NEAR_STS_PEER_MULTIPLE_INSTANCE       ,
+    NEAR_STS_NO_LINK                      ,
+    NEAR_STS_NO_CONNECTION                ,
+    NEAR_STS_NO_RESOURCES                 ,
+    NEAR_STS_NO_BOND_DEVICE               ,
+    NEAR_STS_NO_CLIENT_NOTIFIED           ,
+    NEAR_STS_NOT_AUTHENTICATED            ,
+    NEAR_STS_NOT_AUTHORIZED               ,
+    NEAR_STS_NOT_ENCRYPTED                ,
+    NEAR_STS_NOT_READY                    ,
+    NEAR_STS_NOT_OPEN                     ,
+    NEAR_STS_NOT_ALLOW                    ,
+    NEAR_STS_NOT_AVAILABLE                ,
+    NEAR_STS_NOT_IN_LIST                  ,
+    NEAR_STS_NOT_IN_ORDER                 ,
+    NEAR_STS_NOT_MATCH                    ,
+    NEAR_STS_NOT_SAME_TYPE                ,
+    NEAR_STS_NOT_IN_SAME_SERVICE          ,
+    NEAR_STS_NOT_SUPPORT                  ,
+    NEAR_STS_NOT_FOUND                    ,
+    NEAR_STS_CONN_NOT_FOUND               ,
+    NEAR_STS_LINK_NOT_FOUND               ,
+    NEAR_STS_CHANNEL_NOT_FOUND            ,
+    NEAR_STS_RECROD_NOT_FOUND             ,
+    NEAR_STS_DEVICE_NOT_FOUND             ,
+    NEAR_STS_SERVICE_NOT_FOUND            ,
+    NEAR_STS_PROPERTY_NOT_FOUND           ,
+    NEAR_STS_REPORT_NOT_FOUND             ,
+    NEAR_STS_USE_EXIST_CONN               ,
+    NEAR_STS_CONN_ALREADY_EXIST           ,
+    NEAR_STS_ALREADY_EXIST                ,
+    NEAR_STS_ALREADY_OPEN                 ,
+    NEAR_STS_ALREADY_IN_LIST              ,
+    NEAR_STS_ALREADY_REGISTERED           ,
+    NEAR_STS_INVALID_PARM                 ,
+    NEAR_STS_INVALID_TYPE                 ,
+    NEAR_STS_INVALID_ID                   ,
+    NEAR_STS_INVALID_INSTANCE             ,
+    NEAR_STS_INVALID_INSTANCE_ID          ,
+    NEAR_STS_INVALID_IDENTIFIER           ,
+    NEAR_STS_INVALID_PEER_ID              ,
+    NEAR_STS_INVALID_CHANNEL_ID           ,
+    NEAR_STS_INVALID_TCID                 ,
+    NEAR_STS_INVALID_OPID                 ,
+    NEAR_STS_INVALID_UUID                 ,
+    NEAR_STS_INVALID_UUID_LEN             ,
+    NEAR_STS_INVALID_VALUE                ,
+    NEAR_STS_INVALID_LENGTH               ,
+    NEAR_STS_INVALID_SIZE                 ,
+    NEAR_STS_INVALID_DATA                 ,
+    NEAR_STS_INVALID_PROC                 ,
+    NEAR_STS_INVALID_OPCODE               ,
+    NEAR_STS_INVALID_MTU                  ,
+    NEAR_STS_INVALID_PDU                  ,
+    NEAR_STS_INVALID_FRAME                ,
+    NEAR_STS_INVALID_HEADER               ,
+    NEAR_STS_INVALID_CONN                 ,
+    NEAR_STS_INVALID_CHANNEL              ,
+    NEAR_STS_INVALID_CONIDX               ,
+    NEAR_STS_INVALID_INDEX                ,
+    NEAR_STS_INVALID_HANDLE               ,
+    NEAR_STS_INVALID_CONN_HANDLE          ,
+    NEAR_STS_INVALID_ATTR_HANDLE          ,
+    NEAR_STS_INVALID_SERVICE_HANDLE       ,
+    NEAR_STS_INVALID_PROPERTY_HANDLE      ,
+    NEAR_STS_INVALID_INTERVAL             ,
+    NEAR_STS_INVALID_WINDOW               ,
+    NEAR_STS_INVALID_DURATION             ,
+    NEAR_STS_INVALID_PERIOD               ,
+    NEAR_STS_INVALID_TIMEOUT              ,
+    NEAR_STS_INVALID_PEER_TYPE            ,
+    NEAR_STS_INVALID_ADDR_TYPE            ,
+    NEAR_STS_INVALID_ADDRESS              ,
+    NEAR_STS_INVALID_PEER_ADDRESS         ,
+    NEAR_STS_INVALID_COUNT                ,
+    NEAR_STS_INVALID_ITEM                 ,
+    NEAR_STS_INVALID_FLAG                 ,
+    NEAR_STS_INVALID_STATE                ,
+    NEAR_STS_INVALID_STATUS               ,
+    NEAR_STS_INVALID_METHOD               ,
+    NEAR_STS_INVALID_PHASE                ,
+    NEAR_STS_INVALID_EVENT                ,
+    NEAR_STS_INVALID_ROLE                 ,
+    NEAR_STS_INVALID_CALLBACK             ,
+    NEAR_STS_INVALID_SERVICE              ,
+    NEAR_STS_INVALID_PROPERTY             ,
+    NEAR_STS_INVALID_SERVICE_ATTR         ,
+    NEAR_STS_INVALID_PROPERTY_ATTR        ,
+    NEAR_STS_INVALID_REPORT               ,
+    NEAR_STS_INVALID_DESCRIPOTR           ,
+    NEAR_STS_INVALID_BITFILED             ,
+    NEAR_STS_ALLOC_FAILED                 ,
+    NEAR_STS_ALLOC_PPB_FAILED             ,
+    NEAR_STS_ALLOC_HCI_FAILED             ,
+    NEAR_STS_REACH_MAX_SIZE               ,
+    NEAR_STS_REACH_MAX_COUNT              ,
+    NEAR_STS_REACH_MAX_NUMBER             ,
+    NEAR_STS_LENGTH_TOO_LONG              ,
+    NEAR_STS_SIZE_TOO_LARGE               ,
+    NEAR_STS_DATA_TOO_LONG                ,
+    NEAR_STS_VALUE_TOO_LARGE              ,
+    NEAR_STS_REACH_UPPER_LIMIT            ,
+    NEAR_STS_REACH_LOWER_LIMIT            ,
+    NEAR_STS_OVERFLOW                     ,
+    NEAR_STS_UNDERFLOW                    ,
+    NEAR_STS_WAIT_MORE_PDU                ,
+    NEAR_STS_RECV_REQ                     ,
+    NEAR_STS_RECV_RSP                     ,
+    NEAR_STS_RECV_SERVICE                 ,
+    NEAR_STS_RECV_PROPERTY                ,
+    NEAR_STS_RECV_REPORT                  ,
+    NEAR_STS_SEND_REQ                     ,
+    NEAR_STS_SEND_RSP                     ,
+    NEAR_STS_OUTSTANDING_CMD_MISMATCH     ,
+    NEAR_STS_OUTSTANDING_CMD_IS_NULL      ,
+    NEAR_STS_SLE_ADDRESS                  ,
+    NEAR_STS_WRITE_WORKING_STATE          ,
+    NEAR_STS_WRITE_REPORT_INFO            ,
+    NEAR_STS_SERVICE                      ,
+    NEAR_STS_PROPERTY                     ,
+    NEAR_STS_PEER_SERVICE                 ,
+    NEAR_STS_PEER_PROPERTY                ,
+    NEAR_STS_HID_REPORT                   ,
+    NEAR_STS_HID_DESCRIPTOR               ,
+    NEAR_STS_WORKING_STATE                ,
+    NEAR_STS_REPORT_INFO                  ,
+    NEAR_STS_DEVICE_ADDRESS               ,
+    NEAR_STS_LOCAL_ADDRESS                ,
+    NEAR_STS_PEER_ADDRESS                 ,
+} near_status_t;
 
 typedef enum {
     BT_GROUP_INDEX_LINK = 0,    // 0x1000
@@ -464,6 +708,7 @@ typedef enum {
     BT_EVENT_A2DP_STREAM_RECONFIG,
     BT_EVENT_A2DP_STREAM_SUSPEND,
     BT_EVENT_A2DP_STREAM_CLOSE,
+    BT_EVENT_A2DP_STREAM_DATA_IND,
     BT_EVENT_A2DP_END,
 
     BT_EVENT_A2DP_SOURCE_OPENED = BT_EVENT_ID_GROUP_START(BT_GROUP_INDEX_A2DP_SRC), // 0x1400
@@ -489,6 +734,7 @@ typedef enum {
     BT_EVENT_HID_OPENED = BT_EVENT_ID_GROUP_START(BT_GROUP_INDEX_HID), // 0x1600
     BT_EVENT_HID_CLOSED,
     BT_EVENT_HID_SENSOR_STATE_CHANGED,
+    BT_EVENT_HID_TXDONE,
     BT_EVENT_HID_END,
 
     BT_EVENT_MAP_OPENED = BT_EVENT_ID_GROUP_START(BT_GROUP_INDEX_MAP), // 0x1700
@@ -644,6 +890,8 @@ bt_status_t bt_socket_disconnect(uint32_t channel_handle, uint8_t reason);
 bt_status_t bt_socket_write(uint32_t channel_handle, const uint8_t *data, uint16_t size);
 uint16_t bt_socket_count_free_tx_packets(uint32_t channel_handle);
 bool bt_socket_is_connected(uint32_t channel_handle);
+uint32_t bt_get_class_of_device(void);
+
 #include "hci_service.h"
 #include "l2cap_service.h"
 #include "sdp_service.h"
@@ -906,8 +1154,8 @@ typedef struct bes_aud_bt_t {
 #if defined(A2DP_LHDC_ON) || defined(A2DP_LHDCV5_ON)
     bool (*a2dp_lhdc_get_ext_flags)(uint32_t flags); // a2dp_lhdc_get_ext_flags
     uint8_t (*a2dp_lhdc_config_llc_get)(void); // a2dp_lhdc_config_llc_get
-    uint8_t (*a2dp_lhdc_get_non_type_by_device_id)(uint8_t device_id);
 #endif
+    uint8_t (*a2dp_get_non_type_by_device_id)(uint8_t device_id);
 } bes_aud_bt_t;
 
 extern const bes_aud_bt_t * const bes_aud_bt;

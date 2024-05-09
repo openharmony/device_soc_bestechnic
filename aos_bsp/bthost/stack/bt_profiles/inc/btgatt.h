@@ -16,6 +16,11 @@
 #ifndef __BTGATT_H__
 #define __BTGATT_H__
 
+#define BTGATT_EVENT_CONTROL_CONNECTED      0x21
+#define BTGATT_EVENT_CONTROL_DISCONNECTED   0x22
+#define BTGATT_EVENT_CONTROL_DATA_IND       0x23
+#define BTGATT_EVENT_CONTROL_DATA_SENT      0x24
+
 #if defined(__GATT_OVER_BR_EDR__)
 #include "cmsis_os.h"
 #include "stdbool.h"
@@ -135,12 +140,6 @@ struct _BtgattChannel{
 #define BTGATT_TX_STATE_IDLE 0
 #define BTGATT_TX_STATE_IN_TX 1
 
-
-#define BTGATT_EVENT_CONTROL_CONNECTED      0x21
-#define BTGATT_EVENT_CONTROL_DISCONNECTED   0x22
-#define BTGATT_EVENT_CONTROL_DATA_IND       0x23
-#define BTGATT_EVENT_CONTROL_DATA_SENT      0x24
-
 #define BTGATT_GET(s) (btgattContext.s)
 
 #if defined(__cplusplus)
@@ -155,7 +154,6 @@ int8 Btgatt_Send_cmd_packet(BtgattChannel *chnl, char *buffer, uint16 nBytes);
 bool Btgatt_Is_Connected(BtgattConn *Conn);
 void Btgatt_addsdp(uint16_t pServiceUUID, uint16_t startHandle, uint16_t endHandle);
 void Btgatt_restore_chnl_info(BtgattChannel *chnl,struct bdaddr_t *remote,uint16_t l2cap_handle);
-uint8_t Btgatt_get_tx_count(BtgattChannel *chnl);
 BtBtgattContext *Btgatt_get_context(void);
 
 #if defined(__cplusplus)

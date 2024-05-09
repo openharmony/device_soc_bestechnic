@@ -82,6 +82,60 @@ struct rfcomm_session {
     struct rfcomm_open_item_t open_waits[RFCOMM_OPEN_INFO_MAX_SIZE];
 };
 
+enum rfcomm_dlc_state_enum {
+    DLC_CLOSE,
+    DLC_CONFIG,     /*in dlc parameter config process*/
+    DLC_CONNECTING, /* config passed, then send sabm,waiting for ack */
+    DLC_RECEIVE_PN,
+    DLC_OPEN,
+    DLC_DISCONNECT /*in dlc disconnection process*/
+};
+
+struct rfcomm_dlc_rx_not_ready_data
+{
+    int pf;
+    struct pp_buff *ppb;
+};
+
+struct rfcomm_dlc {
+    struct list_node list;
+    struct rfcomm_session *session;
+    struct single_link_head_t rfc_tx_queue;
+
+    enum rfcomm_dlc_state_enum dlc_state;
+    bt_socket_state_t socket_state;
+    uint8_t remote_server_channel;
+    uint16_t dlc_mtu;
+    uint16_t tx_pend_packets;
+    uint32_t rfcomm_handle;
+    void *sock_priv;
+    bt_service_port_t *port;
+    struct rfcomm_open_request_t *req;
+
+    uint8 dlci;
+    uint8 addr;
+    bool local_trx_ready;
+    bool peer_trx_ready;
+    bool incoming_req;
+    bool save_sync_data;
+    uint8 save_give_rx_credits;
+    uint8 priority;
+    uint8 v24_sig;
+    uint8 cfc;   /* 0: no flow control; other: the credits we give remote;*/
+    uint8 rx_credits;  /*the remote device's tx credits now*/
+    uint8 tx_credits;  /*our tx credits*/
+    bool create_dlc_after_waiting_remote;
+    bool dont_report_rfcomm_close_event;
+    bool give_credit_with_uih;
+
+    struct rfcomm_dlc_rx_not_ready_data rx_not_ready_data;
+};
+
+struct rfcomm_same_dlc_result_t {
+    struct rfcomm_dlc *same_dlc;
+    uint8_t dlc_count;
+};
+
 void rfcomm_init(void);
 int8 rfcomm_send(uint32 rfcomm_handle, uint8 *data, uint32 datalen, void *priv);
 int8 rfcomm_send_hfp_at_cmd(uint32 rfcomm_handle, uint8 *data, uint32 datalen, void *priv, bool insert_head, bool give_credit_with_uih);

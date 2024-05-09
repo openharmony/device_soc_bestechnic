@@ -258,7 +258,7 @@ typedef uint16_t btif_avdtp_codec_sample_rate_t;
 #define BT_A2DP_CODEC_TYPE_MPEG1_2_AUDIO 0x01
 
 #define BT_A2DP_CODEC_TYPE_MPEG2_4_AAC   0x02
-
+ 
 #define BT_A2DP_CODEC_TYPE_ATRAC         0x04
 
 #define BT_A2DP_CODEC_TYPE_OPUS          0x08
@@ -273,7 +273,21 @@ typedef uint16_t btif_avdtp_codec_sample_rate_t;
 
 #define BT_A2DP_CODEC_TYPE_LHDC          0xFF
 
+#define BT_A2DP_CODEC_TYPE_LDAC          0xFF
+
 #define BT_A2DP_CODEC_TYPE_NON_A2DP      0xFF
+
+#define BT_A2DP_CODEC_NONE_TYPE_INVALID  (0x00)
+
+#define BT_A2DP_CODEC_NONE_TYPE_LHDC     (0x01)
+
+#define BT_A2DP_CODEC_NONE_TYPE_LHDCV5   (0x02)
+
+#define BT_A2DP_CODEC_NONE_TYPE_LDAC     (0x03)
+
+#define BT_A2DP_CODEC_NONE_TYPE_SCALABLE (0x04)
+
+#define BT_A2DP_CODEC_NONE_TYPE_LC3      (0x05)
 
 #define BT_A2DP_MAX_CODEC_ELEM_SIZE      10
 
@@ -1171,6 +1185,8 @@ typedef enum {
     BT_DISC_A2DP_PROFILE_ONLY,
     BT_A2DP_SET_CONN_FLAG,
     BT_A2DP_SET_STREAM_STATE,
+    BT_A2DP_GET_CONN_FLAG,
+    BT_A2DP_GET_STREAM_STATE,
     BT_A2DP_LAST_PAUSED_DEVICE,
 } BT_A2DP_FIELD_ENUM_T;
 

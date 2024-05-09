@@ -42,9 +42,7 @@
 
 #include "cmsis.h"
 #include "los_compiler.h"
-#ifdef CP_BUILD
 #include "hal_timer.h"
-#endif
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {
@@ -73,7 +71,11 @@ extern "C" {
 #endif
 #endif
 #else
+#if defined(OSTICK_USE_FAST_TIMER)
 #define OS_SYS_CLOCK            (6000000UL)
+#else
+#define OS_SYS_CLOCK            CONFIG_SYSTICK_HZ
+#endif
 #endif
 
 /**
@@ -531,7 +533,9 @@ extern UINT8 __os_heap_start__[];
 #define LOSCFG_BACKTRACE_TYPE 0
 #endif
 
+#ifndef LOSCFG_BASE_CORE_TICK_RESPONSE_MAX
 #define LOSCFG_BASE_CORE_TICK_RESPONSE_MAX 0xFFFFFFFF
+#endif
 
 #define UNALIGNFAULT                    (1 << 3)
 

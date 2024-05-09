@@ -116,7 +116,7 @@ typedef enum IRQn
     SENSOR_ENG1_IRQn            =  49,      /*!< Sensor Engine Interrupt            */
     SENSOR_ENG2_IRQn            =  50,      /*!< Sensor Engine Interrupt            */
     SENSOR_ENG3_IRQn            =  51,      /*!< Sensor Engine Interrupt            */
-    LM_SENSOR_IRQn              =  52,      /*!< LM Sensor Interrupt                */
+    LM_SENSOR0_IRQn             =  52,      /*!< LM Sensor Interrupt                */
     PMU_IRQn                    =  53,      /*!< PMU Interrupt                      */
     PMU1_IRQn                   =  54,      /*!< PMU1 Interrupt                     */
     DUMP_IRQn                   =  55,      /*!< DUMP Interrupt                     */
@@ -252,9 +252,7 @@ typedef enum IRQn
 #define TIMER11_IRQn            BTH_TIMER21_IRQn
 #else
 #define DMA0_IRQn               AUDMA_IRQn
-#ifndef CP_AS_SUBSYS
 #define DMA1_IRQn               GPDMA_IRQn
-#endif
 #define TIMER00_IRQn            AON_TIMER20_IRQn
 #define TIMER01_IRQn            AON_TIMER21_IRQn
 #define TIMER10_IRQn            BTH_TIMER00_IRQn
@@ -264,6 +262,7 @@ typedef enum IRQn
 #endif
 #define WDT_IRQn                AON_WDT_IRQn
 #define DSP_WDT_IRQn            DSPC0_WDT_IRQn
+#define JPEG_DEC_IRQn           SYS_JPEG_IRQn
 
 #define USB_PIN_IRQn            SYS_USB_PIN_IRQn
 
@@ -284,6 +283,7 @@ typedef enum IRQn
 /* --------  Configuration of Core Peripherals  ----------------------------------- */
 #define __CM33_REV                0x0000U   /* Core revision r0p1 */
 #define __MPU_PRESENT             1U        /* MPU present */
+#define __MPU_REGION_NUM          16U       /* MPU region number */
 #define __VTOR_PRESENT            1U        /* VTOR present */
 #define __NVIC_PRIO_BITS          3U        /* Number of Bits used for Priority Levels */
 #define __Vendor_SysTickConfig    0U        /* Set to 1 if different SysTick Config is used */

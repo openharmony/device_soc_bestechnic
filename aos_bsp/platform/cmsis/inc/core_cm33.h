@@ -2313,7 +2313,7 @@ typedef struct
   #endif
   #include CMSIS_VECTAB_VIRTUAL_HEADER_FILE
 #else
-#ifdef KERNEL_NUTTX
+#ifdef __NuttX__
   #define NVIC_SetVector(a,b)         NXIC_SetVector(a+NVIC_USER_IRQ_OFFSET,b)
   #define NVIC_EnableIRQ(a)           NXIC_EnableIRQ(a+NVIC_USER_IRQ_OFFSET)
   #define NVIC_DisableIRQ(a)          NXIC_DisableIRQ(a+NVIC_USER_IRQ_OFFSET)

@@ -195,6 +195,9 @@ typedef enum IRQn
 #elif (TIMER2_BASE == MCU_TIMER2_BASE)
 #define TIMER20_IRQn            MCU_TIMER20_IRQn
 #define TIMER21_IRQn            MCU_TIMER21_IRQn
+#else
+#define TIMER20_IRQn            INVALID_IRQn
+#define TIMER21_IRQn            INVALID_IRQn
 #endif
 #endif
 

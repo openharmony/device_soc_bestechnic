@@ -136,11 +136,11 @@ void norflaship_samdly(enum HAL_FLASH_ID_T id, uint32_t v);
 
 void norflaship_dual_mode(enum HAL_FLASH_ID_T id, uint32_t v);
 
-void norflaship_hold_pin(enum HAL_FLASH_ID_T id, uint32_t v);
+void norflaship_hold_pin(enum HAL_FLASH_ID_T id, uint32_t active_low);
 
-void norflaship_wpr_pin(enum HAL_FLASH_ID_T id, uint32_t v);
+void norflaship_wpr_pin(enum HAL_FLASH_ID_T id, uint32_t active_low);
 
-void norflaship_reset_pin(enum HAL_FLASH_ID_T id, uint32_t v);
+void norflaship_reset_pin(enum HAL_FLASH_ID_T id, uint32_t active_low);
 
 void norflaship_quad_mode(enum HAL_FLASH_ID_T id, uint32_t v);
 

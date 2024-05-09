@@ -73,6 +73,7 @@ enum HAL_SDIO_ERR {
     HAL_SDIO_RESPONSE_TIMEOUT,
     HAL_SDIO_DATA0_BUSY,
     HAL_SDIO_DMA_XFER_TIMEOUT,
+    HAL_SDIO_TIMER_ALLOC_ERR,
     HAL_SDIO_FIFO_DATA_CNT_ERR,
     HAL_SDIO_FIFO_XFER_TIMEOUT,
     HAL_SDIO_DATA_STE_MACHINE_BUSY,
@@ -211,6 +212,7 @@ enum HAL_SDIO_ERR hal_sdio_disable_asyn_int(enum HAL_SDIO_HOST_ID_T id);
 enum HAL_SDIO_ERR hal_sdio_set_bus_speed(enum HAL_SDIO_HOST_ID_T id, enum HAL_SDIO_BUS_SPEED_MODE bus_speed);
 enum HAL_SDIO_ERR hal_sdio_get_bus_speed(enum HAL_SDIO_HOST_ID_T id, uint8_t *bus_speed);
 enum HAL_SDIO_ERR hal_sdio_get_capability(enum HAL_SDIO_HOST_ID_T id, uint8_t *cap);
+void hal_sdio_dump_run_record(enum HAL_SDIO_HOST_ID_T id);
 
 //Special purpose use
 enum HAL_SDIO_ERR hal_sdio_host_gen_int_to_device(enum HAL_SDIO_HOST_ID_T id);

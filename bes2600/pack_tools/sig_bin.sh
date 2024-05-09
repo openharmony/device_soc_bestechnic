@@ -14,11 +14,13 @@
 
 bin_name=$1
 out_path=$2
-bin_path="${out_path}release_bin"
-bin_sig_path="${out_path}auto_build_tool/hash_sig"
+bin_path="${out_path}/release_bin"
+bin_sig_path="${out_path}/auto_build_tool/hash_sig"
 
 # gen hash of fs
 ./gen_hash_of_bin ${bin_path}/${bin_name}.bin
 mv ${bin_path}/${bin_name}_hash.bin ${bin_sig_path}/
 
 # todo implment sigature
+./bes_sign_tool/rsa3072_sign/best_sign_v4 --otp ./bes_sign_tool/rsa3072_sign/rsa3072_key/pri.pem ${bin_path}/${bin_name}.bin
+cp ${bin_path}/${bin_name}.bin ${bin_sig_path}/${bin_name}_sig.bin

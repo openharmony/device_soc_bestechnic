@@ -19,58 +19,21 @@
 extern "C" {
 #endif
 
+#include "plat_types.h"
 #include "stdio.h"
 #include "stdarg.h"
 
-// #define LITE_VERSION
+// Binary frame format:
+// <Magic> <FrameType> <FrameLenLowByte> <FrameLenHighByte> <FrameData> ...
+// Magic    : 0xB7
+// FrameType: e.g, 0xA5 for trace
+// FrameLen : 16-bit frame length including 2 bytes of this frame len field
+// FrameData: Content of frame
 
-#ifdef LITE_VERSION
-#define USE_ID_1_AS_CRC
-//#define USE_ID_2_AS_CRC
-#define ID1_CRC             0x15
+#define TRACE_BIN_MAGIC                     0xB7
+#define TRACE_ID_MAGIC                      ((0xA5 << 8) | TRACE_BIN_MAGIC)
 
-typedef struct {
-    unsigned int crc:5;     //5 bit crc
-    unsigned int count:4;   //16 param list
-    unsigned int tskid:5;   //32 taskid
-    unsigned int addr:18;   //256 KB trace space support
-}trace_info_t;
-
-typedef struct {
-    unsigned int id:8;
-    unsigned int timestamp:24; // 4 hours support
-}trace_head_t;
-
-#else
-//define USE_ID_1_AS_CRC
-#define USE_ID_2_AS_CRC
-//define USE_CRC_CHECK
-#define ID2_CRC             0xA5BE
-
-typedef struct {
-    unsigned int count:4;   //16 param list
-    unsigned int tskid:7;   //128 taskid
-    unsigned int addr:21;   //2048 KB trace space support
-}trace_info_t;
-
-typedef struct {
-    unsigned int id_reserved:8;
-    unsigned int timestamp:24; // 4 hours support
-    unsigned int id:16;
-#ifdef USE_ID_2_AS_CRC
-    unsigned int crc:16;
-#endif
-}trace_head_t;
-
-#endif
-
-typedef struct {
-    trace_head_t trace_head;
-    trace_info_t trace_info;
-}__attribute__((packed)) LOG_DATA_T;
-
-void hal_trace_set_id(char *buf, unsigned int value);
-unsigned int hal_trace_get_id(char *buf);
+#define TRACE_ID_MAX_ARG_NUM                15
 
 #define USER_ID_TWS_LR_SHIFT                (0)
 #define USER_ID_TWS_LR_MASK                 (0x03<<USER_ID_TWS_LR_SHIFT)   //2 bit ,L,R,N
@@ -109,12 +72,29 @@ unsigned int hal_trace_get_id(char *buf);
 #define USER_ID_SECURE_NS                   0
 #define USER_ID_SECURE_SE                   1
 
-#define USER_ID_SN_SHIFT                    (8)
-#define USER_ID_SN_MASK                     (0xff<<USER_ID_SN_SHIFT) //8 bit
-#define USER_ID_SN(n)                       (((n) & 0xff) << 8)
+#define USER_ID_RESERVED_SHIFT              (8)
+#define USER_ID_RESERVED_MASK               (0xff<<USER_ID_RESERVED_SHIFT) //8 bit
+#define USER_ID_RESERVED(n)                 (((n) & 0xff) << 8)
 
-#define USER_ID_RESERVED_SHIFT              (16)
-#define USER_ID_RESERVED                    (1<<USER_ID_RESERVED_SHIFT) //0 bit
+struct LOG_HDR_T {
+    uint16_t magic;
+    uint16_t len;
+
+    uint32_t ver        :  8;
+    uint32_t time       : 24;
+
+    uint32_t tag        : 16;
+    uint32_t seq        : 14;
+    uint32_t is_irq     :  1;
+    uint32_t reserved   :  1;
+
+    uint32_t task       :  8;
+    uint32_t addr       : 24;
+};
+
+void hal_trace_set_tag(char *buf, unsigned int value);
+
+unsigned int hal_trace_get_tag(char *buf);
 
 #ifdef __cplusplus
 }

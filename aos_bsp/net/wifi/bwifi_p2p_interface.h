@@ -81,9 +81,14 @@ void bwifi_set_p2p_connected_flag(int p2p_connected);
  * set the command to wpa_supplicant
  *
  * @vif_idx: The p2p vif_idx index.
+ * @find_params: find params
  * Returns: BWIFI_R_OK is success, other is fail
+ *
+ * bwifi_p2p_find find params format
+ * [timeout] [type=*] = find P2P Devices for up-to timeout seconds
+ * eg: "10 type=social/progressive" or NULL
  */
-int bwifi_p2p_find(int vif_idx);
+int bwifi_p2p_find(int vif_idx, char *find_params);
 
 /**
  * open p2p device
@@ -234,9 +239,8 @@ int bwifi_p2p_set_name(int vif_idx, char *p2p_name);
  * @vif_idx: The p2p vif_idx index
  * @ht40, 1 is p2p 2.4G ht40 support, 0 is p2p 2.4G ht40 not support.
  * default is 2.4G not support ht40.
- * Returns: BWIFI_R_OK is success, other is fail.
  */
-int bwifi_p2p_2g4_ht40(int vif_idx, int ht40);
+void bwifi_p2p_2g4_ht40(int vif_idx, int ht40);
 
 /**
  * Config 5G ht40
@@ -244,9 +248,8 @@ int bwifi_p2p_2g4_ht40(int vif_idx, int ht40);
  * @vif_idx: The p2p vif_idx index
  * @ht40, 1 is p2p 5G ht40 support, 0 is p2p 5G ht40 not support.
  * default is 5G not support ht40.
- * Returns: BWIFI_R_OK is success, other is fail.
  */
-int bwifi_p2p_5g_ht40(int vif_idx, int ht40);
+void bwifi_p2p_5g_ht40(int vif_idx, int ht40);
 
 /**
  * Config wps methods
@@ -307,6 +310,14 @@ void bwifi_p2p_set_p2p_role(int vif_idx, int role);
  */
 
 int bwifi_p2p_list_networks(int vif_idx);
+
+/**
+ * remove the configured networks.
+ * @vif_idx:The p2p vif_idx index.
+ * @cmd: NULL for all, else for id index.
+ * Returns: BWIFI_R_OK is success, other is fail.
+ */
+int bwifi_p2p_remove_network(int vif_idx, char *cmd);
 
 /**
  * Terminate a P2P group. If a new virtual network interface was used for
@@ -503,16 +514,13 @@ int bwifi_p2p_set_wfd_subelem(int vif_idx, u8 *ie, int len);
 int bwifi_p2p_get_wfd_subelem(int vif_idx, u8 *ie, int len, int *ret_len);
 #endif
 
-/*
- * Enable or disable using the static IP for subsequent connection.
+/**
+ * Set p2p wildcard ssid.
  *
- * The DHCP clent is enabled by default and collides with the static IP.
- * If this API is callbed with a valid pointer to the ip_info struct,
- * DHCP client will be disabled and the static IP in ip_info will be used;
- * if this API is called with NULL, then DHCP client will be enabled.
- * It depends on the latest configuration.
+ * @ssid: The p2p wildcard ssid.
+ * Returns: BWIFI_R_OK is success, other is fail.
  */
-int bwifi_p2p_set_static_ip(struct ip_info *ip);
+int bwifi_p2p_wildcard_ssid(char *ssid);
 
 #ifdef __cplusplus
 }

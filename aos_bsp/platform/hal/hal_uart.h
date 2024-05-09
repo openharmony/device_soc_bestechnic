@@ -254,6 +254,10 @@ uint32_t hal_uart_stop_dma_send(enum HAL_UART_ID_T id);
 // ========================================================================
 // Test function
 
+enum HAL_UART_ID_T hal_uart_get_port(void);
+
+int hal_uart_set_port(enum HAL_UART_ID_T uart_id);
+
 int hal_uart_printf_init(void);
 
 int hal_uart_printf_busy(void);

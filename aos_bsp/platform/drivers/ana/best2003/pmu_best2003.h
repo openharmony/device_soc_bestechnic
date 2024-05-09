@@ -91,6 +91,7 @@ enum CHIP_MODEL_T {
     /* add new 2003 ver here */
 
     CHIP_MODEL_2006  = 32,
+    CHIP_MODEL_2006B = 33,
     /* add new 2006 ver here*/
 };
 

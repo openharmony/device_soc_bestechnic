@@ -43,6 +43,7 @@ enum HAL_L2CACHE_ID_T {
 
 L2CACHE_FUNC_DECLARE(int hal_l2cache_enable(enum HAL_L2CACHE_ID_T id), return 0);
 L2CACHE_FUNC_DECLARE(int hal_l2cache_disable(enum HAL_L2CACHE_ID_T id), return 0);
+L2CACHE_FUNC_DECLARE(int hal_l2cache_enabled(enum HAL_L2CACHE_ID_T id), return 0);
 L2CACHE_FUNC_DECLARE(int hal_l2cache_invalidate_all(enum HAL_L2CACHE_ID_T id), return 0);
 L2CACHE_FUNC_DECLARE(int hal_l2cache_invalidate(enum HAL_L2CACHE_ID_T id, uint32_t start_address, uint32_t len), return 0);
 L2CACHE_FUNC_DECLARE(int hal_l2cache_sync_all(enum HAL_L2CACHE_ID_T id), return 0);
