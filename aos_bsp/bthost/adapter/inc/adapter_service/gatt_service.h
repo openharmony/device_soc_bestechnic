@@ -62,6 +62,9 @@ typedef enum {
     ATT_ERROR_NO_INCLUDE_EXIST          = 0x91,
     ATT_ERROR_ADD_INCL_SERVICE_FAILED   = 0x92,
     ATT_ERROR_NOT_FOUND                 = 0x93,
+    ATT_ERROR_IBRT_SLAVE_CANT_SEND      = 0x94,
+    ATT_ERROR_PEER_SERVICE_CHANGED      = 0x95,
+    ATT_ERROR_DEFER_SEND_RSP_DATA       = 0x96,
     ATT_ERROR_COMMON_PROFILE_SERVICE    = 0xE0, // 0xE0 ~ 0xFF common profile and service error codes defined in CSS
     ATT_ERROR_COMMON_PROFILE_SERVICE_RFU= 0xFB, // 0xE0 ~ 0xFB reserved for future use
     ATT_ERROR_WRITE_REQ_REJECTED        = 0xFC,
@@ -330,8 +333,12 @@ typedef enum {
         ATT_16BIT_UUID(GATT_DESC_UUID_CHAR_SERVER_CONFIG, ATT_RD_PERM|ATT_WR_PERM|(write_sec_perm)), \
     }
 
-// Characteristic Presentation Format Descriptor (CPFD)
-#define GATT_DECL_CPFD_DESCRIPTOR(name, format, exponent, unit, name_space, description) \
+#define GATT_DECL_CPFD_DESCRIPTOR(name) \
+    static const uint8_t name[] = { \
+        ATT_16BIT_UUID(GATT_DESC_UUID_EXT_REPORT_REFERENCE, ATT_RD_PERM), \
+    }
+
+#define GATT_DECL_CONST_CPFD_DESCRIPTOR(name, format, exponent, unit, name_space, description) \
     static const uint8_t name[] = { \
         ATT_16BIT_CONST_VALUE(GATT_DESC_UUID_EXT_REPORT_REFERENCE, ATT_RD_PERM), \
         CO_UINT8_VALUE(format), \
@@ -383,6 +390,14 @@ typedef enum {
 #define gatt_attribute(a) {(attr_byte_array_t*)(a), sizeof(a)}
 
 typedef struct {
+    uint8_t format;
+    uint8_t exponent;
+    uint16_t unit;
+    uint8_t name_space;
+    uint16_t description;
+} __attribute__ ((packed)) gatt_cpfd_data_t;
+
+typedef struct {
     uint8_t attr_flags;
     uint8_t attr_perm;
     uint8_t uuid_le_l;
@@ -402,7 +417,7 @@ typedef struct {
 } __attribute__ ((packed)) attr_byte_array_t;
 
 typedef struct {
-    const attr_byte_array_t *attr_data; // [perm:1B][flags:1B][uuid:2B or 16B][attr_value:nB]
+    attr_byte_array_t *attr_data; // [perm:1B][flags:1B][uuid:2B or 16B][attr_value:nB]
     uint16_t data_len;
     uint16_t inst_id;
 } gatt_attribute_t;
@@ -418,29 +433,12 @@ typedef struct gatt_character_t gatt_character_t;
 #define GATT_CCCD_SET_NOTIFICATION 0x01 // the char value shall be notified, can only be set if char ntf prop set
 #define GATT_CCCD_SET_INDICATION 0x02 // the char value shall be indicated, can only be set if char ind prop set
 
-typedef struct {
-    const char* device_name; // max 248 utf-8 string
-    uint8_t name_length;
-    uint16_t device_appearance;
-    bool local_central_addr_reso_supp;
-    bool local_only_use_rpa;
-    uint8_t local_client_supp_features;
-    uint8_t local_server_supp_eatt_bearer;
-    gap_conn_prefer_params_t local_perheral_prefer_conn_params;
-} gatt_service_config_t;
-
-typedef struct {
-    uint8_t prep_q_max_size;
-    bool gatt_over_br_edr;
-    bool eatt_over_br_edr;
-    bool ctkd_over_br_edr;
-    bool stack_new_design;
-    gatt_service_config_t *srvc_cfg;
-} gatt_config_t;
+#define GAP_SERVICE_START_HANDLE    0x01
+#define GAP_SERVICE_END_HANDLE      0x1F
+#define GATT_SERVICE_START_HANDLE   0x20
+#define GATT_SERVICE_END_HANDLE     0x3F
 
 void gatt_init(void);
-bt_status_t gatt_update_enc_data_key_material(const gap_key_material_t *key_material);
-bt_status_t gatt_read_peer_enc_data_key_material(uint16_t connhdl);
 
 typedef struct {
     const uint8_t *character;
@@ -461,6 +459,14 @@ typedef struct {
 } gatt_server_read_ctx_t;
 
 typedef struct {
+    uint32_t defer_code;
+    uint8_t req_opcode;
+    uint16_t attr_handle;
+    uint16_t conn_handle;
+    uint32_t chan_handle;
+} gatt_server_defer_ctx_t;
+
+typedef struct {
     void *write_context;
 } gatt_server_write_ctx_t;
 
@@ -477,6 +483,11 @@ typedef struct {
 } gatt_svc_t;
 
 typedef struct {
+    const gatt_attribute_t *service;
+    bt_status_t status;
+} gatt_server_register_cmp_t;
+
+typedef struct {
     uint8_t con_idx;
     uint16_t value_offset;
     gap_conn_item_t *conn;
@@ -485,6 +496,7 @@ typedef struct {
     const gatt_attribute_t *char_attr;
     att_error_code_t rsp_error_code;
     gatt_server_read_ctx_t *ctx;
+    gatt_server_defer_ctx_t defer_ctx;
 } gatt_server_char_read_t;
 
 typedef struct {
@@ -510,6 +522,7 @@ typedef struct {
     att_error_code_t rsp_error_code;
     gatt_server_read_ctx_t *ctx;
     const uint8_t *descriptor;
+    gatt_server_defer_ctx_t defer_ctx;
 } gatt_server_desc_read_t;
 
 typedef struct {
@@ -536,34 +549,23 @@ typedef struct {
 } gatt_server_indicate_cfm_t;
 
 typedef struct {
-    uint8_t con_idx;
-    uint8_t error_code;
     gap_conn_item_t *conn;
-} gatt_server_conn_opened_t;
-
-typedef struct {
-    uint8_t con_idx;
-    uint8_t error_code;
-    gap_conn_item_t *conn;
-} gatt_server_conn_closed_t;
-
-typedef struct {
+    const uint8_t *service;
     uint8_t con_idx;
     uint8_t error_code;
     uint16_t mtu;
-    gap_conn_item_t *conn;
-} gatt_server_mtu_changed_t;
+} gatt_server_conn_param_t;
 
-typedef struct {
-    uint8_t con_idx;
-    uint8_t error_code;
-    gap_conn_item_t *conn;
-} gatt_server_conn_updated_t;
-
-typedef gatt_server_conn_updated_t gatt_server_conn_encrypted_t;
+typedef gatt_server_conn_param_t gatt_server_conn_opened_t;
+typedef gatt_server_conn_param_t gatt_server_conn_closed_t;
+typedef gatt_server_conn_param_t gatt_server_mtu_changed_t;
+typedef gatt_server_conn_param_t gatt_server_conn_updated_t;
+typedef gatt_server_conn_param_t gatt_server_conn_encrypted_t;
 
 typedef union {
     void *param_ptr;
+    gatt_server_register_cmp_t *resgiter_cmp;
+    gatt_server_conn_param_t *conn_param;
     gatt_server_conn_opened_t *opened;
     gatt_server_conn_closed_t *closed;
     gatt_server_char_read_t *char_read;
@@ -577,6 +579,7 @@ typedef union {
 } gatt_server_callback_param_t;
 
 typedef enum {
+    GATT_SERV_EVENT_REGISTER_CMP,
     GATT_SERV_EVENT_CONN_OPENED = BT_EVENT_GATT_SERV_OPENED,
     GATT_SERV_EVENT_CONN_CLOSED,
     GATT_SERV_EVENT_CHAR_READ,
@@ -593,7 +596,9 @@ typedef enum {
 typedef struct {
     uint16_t svc_size;
     uint16_t preferred_mtu;
-    bool eatt_preferred;
+    uint8_t eatt_preferred: 1;
+    uint8_t btgatt_add_sdp: 1;
+    uint8_t dont_delay_report_conn_open: 1;
     uint8_t service_inst_id;
 } gatts_cfg_t;
 
@@ -616,9 +621,10 @@ typedef int (*gatt_server_callback_t)(gatt_svc_t *svc, gatt_server_event_t event
 
 bt_status_t gatts_register_service(const gatt_attribute_t *service, uint16_t attr_count, gatt_server_callback_t cb, const gatts_cfg_t *cfg);
 bt_status_t gatts_unregister_service(const gatt_attribute_t *service);
-bt_status_t gatts_ctrl_service(const gatt_attribute_t *service, bool enable);
+bt_status_t gatts_control_service(const gatt_attribute_t *service, uint16_t service_uuid_16, bool visible, uint16_t connhdl);
 bt_status_t gatts_write_read_rsp_data(gatt_server_read_ctx_t *ctx, const uint8_t *data, uint16_t len);
 bt_status_t gatts_send_write_rsp(gatt_server_write_ctx_t *write_ctx, uint16_t err_code);
+bt_status_t gatts_send_defer_read_rsp(const gatt_server_defer_ctx_t *defer_ctx, uint8_t error_code, const uint8_t *rsp_data, uint16_t data_len);
 bt_status_t gatts_send_indication(uint32_t con_bfs, const uint8_t *character, const uint8_t *data, uint16_t len);
 bt_status_t gatts_send_notification(uint32_t con_bfs, const uint8_t *character, const uint8_t *data, uint16_t len);
 bt_status_t gatts_send_multi_notifications(uint32_t con_bfs, gatt_multi_notify_item_t *notify, uint16_t count);
@@ -636,6 +642,10 @@ uint16_t gatts_get_character_16_bit_part_uuid(const gatt_attribute_t *attr);
 uint16_t gatts_get_service_16_bit_part_uuid(const gatt_attribute_t *attr);
 gatt_svc_t *gatts_get_service(uint16_t connhdl, const uint8_t *service, uint8_t service_inst_id);
 uint8_t *gatts_put_read_rsp_buffer(gatt_server_read_ctx_t *ctx, uint16_t len);
+void gatts_gen_local_database_hash(void (*cb)(void *priv, int error_code, const uint8_t *hash));
+void gatts_gen_visible_svc_database_hash(uint16_t connhdl, void (*cb)(void *priv, int error_code, const uint8_t *hash));
+bt_status_t gatts_server_cache_restore(uint16_t connhdl, const gatt_server_cache_t *server_cache);
+void gatt_start_att_mtu_exchange(uint16_t connhdl);
 
 #define GATT_PRF_NONE 0x00
 #define GATT_PRF_LAST_ID 0x7E
@@ -713,20 +723,11 @@ typedef struct gatt_peer_service_t {
 
 typedef struct {
     gap_conn_item_t *conn;
-    att_error_code_t error_code;
-    bool disc_end;
-    uint16_t start_hdl;
-    uint16_t end_hdl;
-    uint16_t uuid_len;
-    uint8_t* uuid;
-} gatt_profile_all_service_t;
-
-typedef struct {
-    gap_conn_item_t *conn;
     gatt_peer_service_t *service;
     att_error_code_t error_code;
     uint8_t count; // same uuid service count
     uint16_t service_uuid; // set when 16-bit uuid
+    uint8_t discover_cmpl;
 } gatt_profile_service_t;
 
 typedef struct {
@@ -734,17 +735,9 @@ typedef struct {
     gatt_peer_service_t *owner_service;
     gatt_peer_service_t *service;
     att_error_code_t error_code;
+    uint8_t discover_cmpl;
     uint16_t service_uuid; // set when 16-bit uuid
 } gatt_profile_include_t;
-
-typedef struct {
-    gap_conn_item_t *conn;
-    att_error_code_t error_code;
-    bool disc_end;
-    uint16_t value_handle;
-    uint8_t uuid_len;
-    uint8_t char_uuid[16]; // 16-bit or 128-bit characteristic uuid
-} gatt_profile_all_character_t;
 
 typedef struct {
     gap_conn_item_t *conn;
@@ -763,7 +756,9 @@ typedef struct {
 
 typedef struct {
     gap_conn_item_t *conn;
+    gatt_peer_character_t *owner_character;
     att_error_code_t error_code;
+    uint8_t discover_cmpl;
     uint16_t char_prop;
     uint16_t char_value_handle;
     uint16_t desc_handle;
@@ -856,10 +851,8 @@ typedef union {
     gatt_profile_param_t *conn_encrypted;
     gatt_profile_param_t *conn_updated;
     gatt_profile_param_t *service_changed;
-    gatt_profile_all_service_t *all_service;
     gatt_profile_service_t *service;
     gatt_profile_include_t *incl_service;
-    gatt_profile_all_character_t *all_character;
     gatt_profile_character_t *character;
     gatt_profile_descriptor_t *descriptor;
     gatt_profile_char_read_rsp_t *char_read_rsp;
@@ -877,10 +870,8 @@ typedef enum {
     GATT_PROF_EVENT_CONN_ENCRYPTED,
     GATT_PROF_EVENT_CONN_UPDATED,
     GATT_PROF_EVENT_SERVICE_CHANGED,
-    GATT_PROF_EVENT_ALL_SERVICE,
     GATT_PROF_EVENT_SERVICE,
     GATT_PROF_EVENT_INCLUDE,
-    GATT_PROF_EVENT_ALL_CHARACTER,
     GATT_PROF_EVENT_CHARACTER,
     GATT_PROF_EVENT_DESCRIPTOR,
     GATT_PROF_EVENT_CHAR_READ_RSP,
@@ -894,11 +885,16 @@ typedef enum {
 typedef int (*gatt_profile_callback_t)(gatt_prf_t *prf, gatt_profile_event_t event, gatt_profile_callback_param_t param);
 
 uint8_t gattc_register_profile(gatt_profile_callback_t cb, const gattc_cfg_t *cfg);
+bool gatt_is_user_profile_registered(void);
+void gatt_start_att_mtu_exchange(uint16_t connhdl);
 gatt_prf_t *gattc_get_profile(uint8_t prf_id, uint16_t connhdl);
+bool gattc_has_profile_eatt_preferred(uint16_t connhdl);
 bt_status_t gattc_get_service(gatt_prf_t *prf, uint16_t uuid_len, const uint8_t *uuid, gatt_peer_service_t ** srv_ptr);
 bt_status_t gattc_get_character(gatt_peer_service_t *srv, uint16_t uuid_len, const uint8_t *uuid, gatt_peer_character_t** char_ptr);
-gatt_peer_character_uuid_t gattc_get_character_uuid(const gatt_peer_character_t *c);
-gatt_peer_service_uuid_t gattc_get_service_uuid(const gatt_peer_service_t *s);
+void gattc_get_character_uuid(const gatt_peer_character_t *c, gatt_peer_character_uuid_t *param);
+void gattc_get_service_uuid(const gatt_peer_service_t *s, gatt_peer_service_uuid_t *param);
+bt_status_t gatt_create_att_bearer(uint16_t connhdl);
+bt_status_t gatt_disconnect_att_bearers(uint16_t connhdl, bool include_no_initiator_att, uint8_t reason);
 bt_status_t gatt_create_eatt_bearer(uint16_t connhdl);
 bt_status_t gatt_disconnect_eatt_bearers(uint16_t connhdl, bool include_no_initiator_eatt);
 bt_status_t gattc_activate_profile(uint8_t prf_id, bool active);
@@ -908,11 +904,13 @@ bt_status_t gatt_client_discover_all_characters(uint8_t prf_id, uint16_t connhdl
 bt_status_t gattc_discover_all_services(uint8_t prf_id, uint16_t connhdl);
 bt_status_t gattc_discover_service(gatt_prf_t *prf, uint16_t service_uuid, const uint8_t *uuid_128_le);
 bt_status_t gattc_discover_include(gatt_prf_t *prf, gatt_peer_service_t *s, uint16_t service_uuid, const uint8_t *uuid_128_le);
+bt_status_t gattc_discover_all_include_of_service(gatt_prf_t *prf, gatt_peer_service_t *s);
 bt_status_t gattc_discover_character(gatt_prf_t *prf, gatt_peer_service_t *s, uint16_t char_uuid, const uint8_t *uuid_128_le);
 bt_status_t gattc_discover_multi_characters(gatt_prf_t *prf, gatt_peer_service_t *s, const uint16_t *char_uuid, uint16_t count);
 bt_status_t gattc_discover_all_characters(gatt_prf_t *prf, gatt_peer_service_t *s);
 bt_status_t gattc_discover_multi_128_characters(gatt_prf_t *prf, gatt_peer_service_t *s, const gatt_char_uuid_t *char_uuid, uint16_t count);
 bt_status_t gattc_discover_descriptor_by_value_handle(gatt_prf_t *prf, uint16_t char_value_handle, uint16_t char_end_handle, uint16_t char_prop);
+bt_status_t gattc_discover_descriptor_by_character(gatt_prf_t *prf, gatt_peer_character_t *c);
 bt_status_t gattc_read_character_value(gatt_prf_t *prf, gatt_peer_character_t *c);
 bt_status_t gattc_read_character_by_uuid(gatt_prf_t *prf, gatt_peer_service_t *s, uint16_t char_uuid, const uint8_t *uuid_128_le);
 bt_status_t gattc_write_character_value(gatt_prf_t *prf, gatt_peer_character_t *c, const uint8_t *data, uint16_t len);
@@ -941,6 +939,155 @@ bt_status_t gattc_write_descriptor_by_handle(gatt_prf_t *prf, uint16_t desc_hand
 bt_status_t gattc_prepare_write_by_handle(gatt_prf_t *prf, uint16_t attr_handle, uint16_t offset, const uint8_t *data, uint16_t len);
 bt_status_t gattc_prepare_write_execute(gatt_prf_t *prf, bool execute);
 bt_status_t gattc_send_l2cap_packet(uint16_t connhdl, const uint8_t *data, uint16_t len, bool eatt_preferred);
+bt_status_t gattc_recv_peer_service_changed(uint16_t connhdl, uint16_t start_handle, uint16_t end_handle);
+bt_status_t gattc_recv_peer_database_hash(uint16_t connhdl, const uint8_t *hash, bool check_hash_change);
+#ifdef BLE_GATT_CLIENT_CACHE
+bt_status_t gattc_cache_restore_handles(uint16_t connhdl, gatt_client_cache_t *client_cache);
+#endif /* BLE_GATT_CLIENT_CACHE */
+
+typedef struct att_conn_item_t att_conn_item_t;
+typedef struct gatt_proc_node_t gatt_proc_node_t;
+
+typedef struct {
+    uint8_t is_initiator: 1;
+    uint8_t is_eatt: 1;
+    uint8_t is_mtu_exchanged: 1;
+    uint8_t tx_pending: 1;
+    uint8_t for_prep_write: 1;
+    uint8_t wait_prev_rsp_sent: 1;
+} __attribute__ ((packed)) att_bearer_flag_t;
+
+typedef struct att_bearer_t {
+    struct att_bearer_t *next;
+    att_conn_item_t *conn;
+    att_bearer_flag_t flag;
+    uint8_t bearer_id;
+    uint8_t rsp_wait_timer;
+    int32_t free_credits;
+    uint16_t att_mtu;
+    uint16_t connhdl;
+    uint32_t l2cap_handle;
+    struct single_link_head_t rx_req_pendq;
+    struct single_link_head_t req_ind_tx_q;
+    struct single_link_head_t cmd_ntf_tx_q;
+    struct single_link_head_t cmd_ntf_tx_wait_done_q;
+} att_bearer_t;
+
+typedef struct {
+    att_bearer_t *next;
+} att_bearer_q_t;
+
+typedef struct gatt_prf_reg_t {
+    struct gatt_prf_reg_t *next;
+    uint8_t multi_device_supp: 1;
+    uint8_t eatt_preferred: 1;
+    uint8_t enc_required: 1;
+    uint8_t is_active: 1;
+    uint8_t connected_count;
+    uint8_t prf_id;
+    uint8_t prf_size_div_4;
+    gatt_profile_callback_t profile_callback;
+} gatt_prf_reg_t;
+
+typedef struct {
+    gatt_prf_reg_t *next;
+} gatt_prf_reg_list_t;
+
+typedef struct gatt_prf_node_t {
+    struct gatt_prf_node_t *next;
+    gatt_prf_reg_t *reg;
+    gatt_prf_t prf_head;
+} gatt_prf_node_t;
+
+typedef struct {
+    gatt_prf_node_t *next;
+} gatt_prf_list_t;
+
+typedef struct gatt_svc_node_t {
+    struct gatt_svc_node_t *next;
+    gatt_service_t *service;
+    uint16_t reported_mtu;
+    uint8_t conn_open_reported: 1;
+    uint8_t encrypt_reported: 1;
+    gatt_svc_t svc_head;
+} gatt_svc_node_t;
+
+typedef struct {
+    gatt_svc_node_t *next;
+} gatt_svc_list_t;
+
+typedef struct {
+    void *character; // gatt_character_t or gatt_peer_character_t
+    uint16_t cccd_config;
+    uint16_t prf_id_service_handle;
+} att_notify_reg_t;
+
+typedef struct gatt_peer_char_node_t {
+    struct gatt_peer_char_node_t *next;
+    gatt_peer_service_t *service;
+    gatt_peer_character_t character[1];
+} gatt_peer_char_node_t;
+
+typedef struct gatt_peer_srvc_node_t {
+    struct gatt_peer_srvc_node_t *next;
+    gatt_peer_service_t service[1];
+} gatt_peer_srvc_node_t;
+
+typedef struct att_prep_write_t {
+    struct att_prep_write_t *next;
+    uint16_t attr_handle;
+    uint16_t value_offset;
+    uint16_t value_len;
+} att_prep_write_t;
+
+typedef struct {
+    att_prep_write_t *next;
+} att_prep_wr_q_t;
+
+typedef struct att_conn_item_t {
+    gap_conn_item_t head;
+    gatt_prf_list_t prf_list;
+    gatt_svc_list_t svc_list;
+    att_bearer_q_t bearer_q;
+    att_prep_wr_q_t prep_wr_q;
+    att_notify_reg_t *server_tx_ntf;
+    uint16_t tx_reg_count;
+    uint8_t bearer_id_seed;
+    uint8_t last_tx_bearer;
+    uint8_t bredr_att_added: 1;
+    uint8_t use_prev_tx_bearer: 1;
+    uint8_t mtu_ready_to_report: 1;
+    uint8_t real_mtu_exchanged: 1;
+    uint8_t mtu_wait_report: 1;
+    uint8_t encrypt_wait_report: 1;
+    uint8_t user_profile_started: 1;
+    uint8_t profile_is_allocated: 1;
+} att_conn_item_t;
+
+typedef struct {
+    // 16-bit/128-bit uuid services should be grouped together
+    // the same service may be exist multiple instances
+    struct list_node local_service_database;
+    uint16_t local_cust_16bit_srvc_count;
+    uint16_t local_cust_128bit_srvc_count;
+    uint8_t prf_id_seed;
+    uint8_t gatt_proc_seqn_seed;
+    uint8_t gatt_client_cache_seqn;
+    bool is_initialized;
+    bool has_user_profile_registered;
+    gatt_prf_reg_list_t prf_reg_list;
+} gatt_global_t;
+
+#if !defined(BLE_ONLY_ENABLED)
+gap_conn_item_t *gatt_over_bredr_is_profile_connected(uint16_t connhdl);
+void gatt_over_bredr_force_disconnect_profile(uint16_t connhdl, uint8_t reason);
+#ifdef IBRT
+uint32_t gatt_over_bredr_profile_save_ctx(btif_remote_device_t *rem_dev, uint8_t *buf, uint32_t buf_len);
+uint32_t gatt_over_bredr_profile_restore_ctx(const bt_bdaddr_t *remote, uint8_t *buf, uint32_t buf_len);
+void gatt_over_bredr_report_profile_connected(gap_conn_item_t *conn);
+void gatt_over_bredr_report_profile_disconnected(gap_conn_item_t *conn);
+#endif
+#endif
 
 /* GATT SERVICES */
 #define GATT_UUID_GAP_SERVICE   0x1800 // Generic Access
@@ -1004,8 +1151,9 @@ bt_status_t gattc_send_l2cap_packet(uint16_t connhdl, const uint8_t *data, uint1
 #define GATT_UUID_BCA_SERVICE   0x1852 // Broadcast Audio Announcement
 #define GATT_UUID_CAP_SERVICE   0x1853 // Common Audio
 #define GATT_UUID_HAP_SERVICE   0x1854 // Hearing Access
-#define GATT_UUID_TMA_SERVICE   0x1855 // TMAS
+#define GATT_UUID_TMA_SERVICE   0x1855 // Telephone and Media
 #define GATT_UUID_PBA_SERVICE   0x1856 // Public Broadcast Announcement
+#define GATT_UUID_GMA_SERVICE   0x1858 // Gaming Audio
 
 /* DECLARATIONS */
 #define GATT_UUID_PRI_SERVICE           0x2800 // Primary Service
@@ -1454,7 +1602,26 @@ bt_status_t gattc_send_l2cap_packet(uint16_t connhdl, const uint8_t *data, uint1
 #define GATT_CHAR_UUID_BATT_TIME_STATUS                                  0x2BEE
 #define GATT_CHAR_UUID_ESTIMATED_SERVICE_DATE                            0x2BEF
 #define GATT_CHAR_UUID_BATT_ENERGY_STATUS                                0x2BF0
+#define GATT_CHAR_UUID_OBSERVATION_SCHE_CHANGED                          0x2BF1
+#define GATT_CHAR_UUID_CURR_ELAPSED_TIME                                 0x2BF2
+#define GATT_CHAR_UUID_HEALTH_SENSOR_FEATURES                            0x2BF3
+#define GATT_CHAR_UUID_GHS_CONTROL_POINT                                 0x2BF4
 #define GATT_CHAR_UUID_LE_GATT_SECURITY_LEVELS                           0x2BF5
+#define GATT_CHAR_UUID_ESL_ADDRESS                                       0x2BF6
+#define GATT_CHAR_UUID_AP_SYNC_KEY_MATERIAL                              0x2BF7
+#define GATT_CHAR_UUID_ESL_RSP_KEY_MATERIAL                              0x2BF8
+#define GATT_CHAR_UUID_ESL_CURR_ABSOLUTE_TIME                            0x2BF9
+#define GATT_CHAR_UUID_ESL_DISPLAY_INFO                                  0x2BFA
+#define GATT_CHAR_UUID_ESL_IMAGE_INFO                                    0x2BFB
+#define GATT_CHAR_UUID_ESL_SENSOR_INFO                                   0x2BFC
+#define GATT_CHAR_UUID_ESL_LED_INFO                                      0x2BFD
+#define GATT_CHAR_UUID_ESL_CONTROL_POINT                                 0x2BFE
+#define GATT_CHAR_UUID_UDI_FOR_MEDICAL_DEVICES                           0x2BFF
+#define GATT_CHAR_UUID_GMAP_ROLE                                         0x2C00
+#define GATT_CHAR_UUID_GMAP_UGG_FEATURES                                 0x2C01
+#define GATT_CHAR_UUID_GMAP_UGT_FEATURES                                 0x2C02
+#define GATT_CHAR_UUID_GMAP_BGS_FEATURES                                 0x2C03
+#define GATT_CHAR_UUID_GMAP_BGR_FEATURES                                 0x2C04
 
 /* GATT UNIT */
 #define GATT_UNIT_UUID_UNITLESS                                          0x2700

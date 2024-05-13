@@ -67,7 +67,7 @@ extern "C" {
 #endif
 
 #ifdef __ARM_ARCH_ISA_ARM
-#ifdef RTOS
+#if defined(RTOS) && !defined(__NuttX__)
 #define A7_RECORD_DIRECT_CB // mic irq to cb directly
 #endif
 #endif

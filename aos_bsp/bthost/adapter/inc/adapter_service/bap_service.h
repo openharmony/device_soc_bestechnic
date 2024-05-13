@@ -341,8 +341,10 @@ typedef struct {
 } bap_big_sync_param_t;
 
 bt_status_t bap_create_big(bap_event_callback_t cb, uint8_t pa_train_adv_handle, const bap_big_param_t *big, bool use_test_cmd);
-bt_status_t bap_create_big_sync(bap_event_callback_t cb, uint16_t sync_handle, const bap_big_sync_param_t *big);
 bt_status_t bap_terminate_big(uint8_t big_id);
+bt_status_t bap_create_big_sync(bap_event_callback_t cb, uint16_t sync_handle, const bap_big_sync_param_t *big);
+bt_status_t bap_terminate_big_sync(uint8_t big_id);
+bt_status_t bap_terminate_big_sync_by_sync_hdl(uint16_t sync_handle);
 bt_status_t bap_set_big_sec_level(uint8_t big_id, gap_big_sec_level_t sec_level);
 bap_bis_t *bap_get_bis_item(uint16_t bis_handle);
 
@@ -390,6 +392,49 @@ bt_status_t bap_setup_iso_rx_data_path(uint16_t iso_handle, const bap_iso_param_
 bt_status_t bap_remove_iso_data_path(uint16_t iso_handle);
 bt_status_t bap_remove_iso_rx_data_path(uint16_t iso_handle);
 bt_status_t bap_remove_iso_tx_data_path(uint16_t iso_handle);
+
+typedef struct bap_cis_node_t
+{
+    struct bap_cis_node_t *next;
+    bap_cis_t cis;
+} bap_cis_node_t;
+
+typedef struct
+{
+    bap_cis_node_t *next;
+} bap_cis_list_t;
+
+typedef struct
+{
+    uint8_t cig_id; // 0x00 to 0xEF
+    uint8_t cig_op_id;
+    uint8_t cig_op_cis_count;
+    bap_event_callback_t bap_callback;
+    bap_cis_list_t cis_list;
+    bap_cig_param_t cig_param;
+    uint8_t cig_op_id_list[BAP_MAX_CIS_PER_CIG];
+} bap_cig_t;
+
+typedef struct
+{
+    bap_cig_t *cig;
+} bap_cig_item_t;
+
+typedef struct bap_big_node_t bap_big_node_t;
+
+typedef struct
+{
+    bap_big_node_t *next;
+} bap_big_list_t;
+
+typedef struct
+{
+    bap_cig_item_t cig[BAP_TOTAL_CIG_COUNT];
+    bap_big_list_t big_list;
+    uint8_t big_count;
+    uint8_t adv_handle;
+    bap_big_info_adv_report_callback_t big_info_recv_cb;
+} bap_global_t;
 
 #ifdef __cplusplus
 }

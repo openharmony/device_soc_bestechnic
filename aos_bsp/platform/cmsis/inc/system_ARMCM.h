@@ -22,6 +22,8 @@ extern "C" {
 
 #include "stdbool.h"
 
+#define PFCR                                0xE001E004
+
 void SystemInit (void);
 
 #ifdef UNALIGNED_ACCESS

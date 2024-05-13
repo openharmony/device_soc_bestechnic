@@ -50,7 +50,7 @@ extern void wifi_mac_unreg_rx_sniffer_handler();
 extern void wifi_send_work_channel_event(int chennel);
 extern void wifi_mac_ind_event(BWIFI_SYSTEM_EVENT_T *event);
 #ifdef CSI_REPORT
-extern void wifi_mac_ind_csi(uint8_t *data, int len);
+extern void wifi_mac_ind_csi(uint8_t *data, int len, uint8_t stbc);
 #endif
 extern void wifi_mac_ind_alive(int period, bool low_memory);
 extern int wifi_mac_ind_data(void *skb);

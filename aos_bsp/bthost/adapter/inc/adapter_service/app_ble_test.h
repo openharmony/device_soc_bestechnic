@@ -21,6 +21,8 @@ extern "C"{
 
 void app_ble_test_cmd_init(void);
 
+void app_ble_test_cmd_deinit(void);
+
 #ifdef __cplusplus
 }
 #endif

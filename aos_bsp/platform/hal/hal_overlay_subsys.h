@@ -17,6 +17,7 @@
 #ifndef __HAL_OVERLAY_SUBSYS_H__
 #define __HAL_OVERLAY_SUBSYS_H__
 
+#include "plat_addr_map.h"
 #include "hal_overlay.h"
 
 #ifdef __cplusplus
@@ -25,7 +26,11 @@ extern "C" {
 
 enum OVERLAY_SUBSYS_T {
     OVERLAY_M55,
-    OVERLAY_HIFI4,
+#ifdef M55C1_ITCM_BASE
+    OVERLAY_M55C1,
+#endif
+
+    OVERLAY_SUBSYS_QTY,
 };
 
 struct SUBSYS_OVERLAY_EXEC_T {
@@ -52,19 +57,19 @@ struct OVERLAY_INFO_T {
 };
 
 enum HAL_OVERLAY_RET_T hal_overlay_subsys_set_text_exec_addr(
-            enum OVERLAY_SUBSYS_T chip_id, uint32_t text_vma,
+            enum OVERLAY_SUBSYS_T subsys_id, uint32_t text_vma,
             uint32_t text_size, uint32_t data_vma, uint32_t data_size);
 
-enum HAL_OVERLAY_RET_T hal_overlay_subsys_set_text_addr(enum OVERLAY_SUBSYS_T chip_id,
+enum HAL_OVERLAY_RET_T hal_overlay_subsys_set_text_addr(enum OVERLAY_SUBSYS_T subsys_id,
             enum HAL_OVERLAY_ID_T id, uint32_t start, uint32_t stop);
 
-enum HAL_OVERLAY_RET_T hal_overlay_subsys_set_data_addr(enum OVERLAY_SUBSYS_T chip_id,
+enum HAL_OVERLAY_RET_T hal_overlay_subsys_set_data_addr(enum OVERLAY_SUBSYS_T subsys_id,
             enum HAL_OVERLAY_ID_T id, uint32_t start, uint32_t stop);
 
-enum HAL_OVERLAY_RET_T hal_overlay_subsys_load(enum OVERLAY_SUBSYS_T chip_id,
+enum HAL_OVERLAY_RET_T hal_overlay_subsys_load(enum OVERLAY_SUBSYS_T subsys_id,
                                                 enum HAL_OVERLAY_ID_T id);
 
-enum HAL_OVERLAY_RET_T hal_overlay_subsys_unload(enum OVERLAY_SUBSYS_T chip_id,
+enum HAL_OVERLAY_RET_T hal_overlay_subsys_unload(enum OVERLAY_SUBSYS_T subsys_id,
                                                 enum HAL_OVERLAY_ID_T id);
 
 int hal_overlay_subsys_init(uint32_t image_addr, enum OVERLAY_SUBSYS_T subsys_id,

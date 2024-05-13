@@ -99,6 +99,13 @@ enum HAL_PSRAM_ANAPHY_LOCK_RESULT_T {
     HAL_PSRAM_ANAPHY_LOCK_TIME_OUT = 3,
 };
 
+enum HAL_PSRAM_DYN_FREQ_ID_T {
+    HAL_PSRAM_DYN_FREQ_ID_0 = 0,
+    HAL_PSRAM_DYN_FREQ_ID_1 = 1,
+    HAL_PSRAM_DYN_FREQ_ID_MIAN = HAL_PSRAM_DYN_FREQ_ID_0,
+    HAL_PSRAM_DYN_FREQ_ID_SEC =  HAL_PSRAM_DYN_FREQ_ID_1,
+};
+
 struct HAL_PSRAM_DQS_BOUNDARY_T {
     uint8_t l;
     uint8_t r;
@@ -157,6 +164,8 @@ uint32_t hal_psram_ca_calib_result(void);
 uint32_t hal_psram_phy_get_dly_in_val(void);
 uint32_t hal_psram_phy_get_range_val(void);
 void hal_psram_change_speed(uint32_t psram_speed);
+void hal_psram_dump_mr(void);
+void hal_psram_dyn_freq_select(enum HAL_PSRAM_DYN_FREQ_ID_T freq_id);
 
 #ifdef __cplusplus
 }

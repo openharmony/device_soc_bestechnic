@@ -48,13 +48,6 @@ enum HAL_I2S_FIFO_STATUS_T {
     HAL_I2S_FIFO_TX_ERR         = (1 << 5),
 };
 
-enum HAL_I2S_SYNC_TRIG_ROUTE_T {
-    HAL_I2S_SYNC_TRIG_ROUTE0    = 0,
-    HAL_I2S_SYNC_TRIG_ROUTE1    = 1,
-    HAL_I2S_SYNC_TRIG_ROUTE2    = 2,
-    HAL_I2S_SYNC_TRIG_ROUTE3    = 3,
-};
-
 struct HAL_I2S_CONFIG_T {
     bool use_dma;
     bool chan_sep_buf;
@@ -94,7 +87,9 @@ void hal_i2s_rx_sync_enable(enum HAL_I2S_ID_T id, enum HAL_I2S_SYNC_TYPE_T type)
 void hal_i2s_rx_sync_disable(enum HAL_I2S_ID_T id);
 void hal_i2s_clk_sync_enable(enum HAL_I2S_ID_T id, enum HAL_I2S_SYNC_TYPE_T type);
 void hal_i2s_clk_sync_disable(enum HAL_I2S_ID_T id);
-void hal_i2s_clk_sync_sel_trig_route(enum HAL_I2S_ID_T id, enum HAL_I2S_SYNC_TRIG_ROUTE_T trig_route);
+void hal_i2s_event_config(enum HAL_I2S_ID_T id, uint32_t event);
+void hal_i2s_tsf_event_config(enum HAL_I2S_ID_T id, uint32_t tsf_event);
+void hal_i2s_trig_route_config(enum HAL_I2S_ID_T id, uint32_t route);
 
 //================================================================================
 // I2S Packet Mode

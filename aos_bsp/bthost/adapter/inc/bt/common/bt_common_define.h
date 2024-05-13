@@ -15,12 +15,14 @@
  ****************************************************************************/
 #ifndef __BT_COMMON_DEFINE_H__
 #define __BT_COMMON_DEFINE_H__
+#include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 #ifdef RTOS
 #include "cmsis_os.h"
 #endif
+#include "cmsis.h"
 #include "hal_aud.h"
 #include "hal_trace.h"
 #include "hal_timer.h"
@@ -276,6 +278,27 @@ static inline uint32_t co_host_to_uint24_be(uint32_t n) { return n; }
 static inline uint32_t co_uint24_be_to_host(uint32_t n) { return n; }
 #endif
 
+static inline void co_host_uint16_to_ptr_le(uint16_t n, uint8_t *p) {
+    p[0] = (uint8_t)(n & 0xFF);
+    p[1] = (uint8_t)((n >> 8) & 0xFF);
+}
+static inline void co_host_uint32_to_ptr_le(uint32_t n, uint8_t *p) {
+    p[0] = (uint8_t)(n & 0xFF);
+    p[1] = (uint8_t)((n >> 8) & 0xFF);
+    p[2] = (uint8_t)((n >> 16) & 0xFF);
+    p[3] = (uint8_t)((n >> 24) & 0xFF);
+}
+static inline void co_host_uint16_to_ptr_be(uint16_t n, uint8_t *p) {
+    p[1] = (uint8_t)(n & 0xFF);
+    p[0] = (uint8_t)((n >> 8) & 0xFF);
+}
+static inline void co_host_uint32_to_ptr_be(uint32_t n, uint8_t *p) {
+    p[3] = (uint8_t)(n & 0xFF);
+    p[2] = (uint8_t)((n >> 8) & 0xFF);
+    p[1] = (uint8_t)((n >> 16) & 0xFF);
+    p[0] = (uint8_t)((n >> 24) & 0xFF);
+}
+
 /**
  * list entry
  */
@@ -465,7 +488,7 @@ struct single_link_node_t {
 struct single_link_head_t {
     struct single_link_node_t head;
     struct single_link_node_t *tail;
-    uint32_t size;
+    uint16_t size;
 };
 
 #define DEF_SINGLE_LINK_HEAD(head) \
@@ -478,6 +501,12 @@ struct single_link_head_t {
 #define colist_single_link_iterate(pos, list) \
     for (uintptr_t __link__node_next_item = ((pos = (list)->head.next), (uintptr_t)(pos->next)), __list__node__iter__cnt = 0; \
          pos != &((list)->head); \
+         (pos = (struct single_link_node_t *)__link__node_next_item), \
+         (__link__node_next_item = (uintptr_t)(pos->next)), ITER_CHK(__list__node__iter__cnt))
+
+#define colist_single_link_iterate_trace(tag, pos, list) \
+    for (uintptr_t __link__node_next_item = ((pos = (list)->head.next), (uintptr_t)(pos->next)), __list__node__iter__cnt = 0; \
+         (pos != &((list)->head)) ? (TRACE(0, tag " slink_list: %d %d %p ca=%x %d", (list)->size, __list__node__iter__cnt+1, pos, CO_LR_ADDRESS, __LINE__), true) : (false); \
          (pos = (struct single_link_node_t *)__link__node_next_item), \
          (__link__node_next_item = (uintptr_t)(pos->next)), ITER_CHK(__list__node__iter__cnt))
 
@@ -917,6 +946,16 @@ enum BT_SOURCE_DEVICE_ID_T {
     BT_SOURCE_DEVICE_INVALID_ID = 0xff,
 };
 
+#define GAP_LE_CONN_ID_PREFIX 0x8000
+#define GAP_LE_CONN_ID_1 (GAP_LE_CONN_ID_PREFIX|BLE_DEVICE_ID_1)
+#define GAP_LE_CONN_ID_2 (GAP_LE_CONN_ID_PREFIX|BLE_DEVICE_ID_2)
+#define GAP_LE_CONN_ID_3 (GAP_LE_CONN_ID_PREFIX|BLE_DEVICE_ID_3)
+
+#define GAP_BT_CONN_ID_PREFIX 0x4000
+#define GAP_BT_CONN_ID_1 (GAP_BT_CONN_ID_PREFIX|BT_DEVICE_ID_1)
+#define GAP_BT_CONN_ID_2 (GAP_BT_CONN_ID_PREFIX|BT_DEVICE_ID_2)
+#define GAP_BT_CONN_ID_3 (GAP_BT_CONN_ID_PREFIX|BT_DEVICE_ID_3)
+
 #ifndef BT_ACL_MAX_LINK_NUMS
 #if defined(IBRT_UI) || defined(BT_MULTI_SOURCE)
 #define BT_ACL_MAX_LINK_NUMS   0x03
@@ -925,88 +964,9 @@ enum BT_SOURCE_DEVICE_ID_T {
 #endif
 #endif
 
-typedef bool (*bt_stack_func_is_patched_t)(uintptr_t func);
-typedef void *(*bt_stack_func_patch_t)(uintptr_t func, uintptr_t a, uintptr_t b, uintptr_t c, uintptr_t d, bool *dont_return);
-
-bool bt_stack_function_is_patched(uintptr_t func);
-void *bt_stack_function_patch(uintptr_t func, uintptr_t a, uintptr_t b, uintptr_t c, uintptr_t d, bool *dont_return);
-
-#if 0
-
-#define BT_STACK_X_FUNC(MOD, N) BT_STACK_MODULE_FUNC(MOD, N)
-
-#define BT_STACK_FUNC(N) BT_STACK_X_FUNC(CO_LOG_MODULE, N)
-
-#define BT_STACK_MODULE_FUNC(MOD, N) ((uintptr_t)(((N)<<24)|((MOD)<<16)|(__LINE__&0xFFFF)))
-
-#define BT_STACK_PATCH_FUNC_0(func, RETURN_TYPE) \
-    if (bt_stack_function_is_patched((uintptr_t)(func))) \
-    { \
-        bool __local_dont_return = false; \
-        void *__local_result = bt_stack_function_patch((uintptr_t)(func), \
-            0, 0, 0, 0, &__local_dont_return); \
-        if (!__local_dont_return) \
-        { \
-            return RETURN_TYPE(uintptr_t)(__local_result); \
-        } \
-    }
-
-#define BT_STACK_PATCH_FUNC_1(func, a, RETURN_TYPE) \
-    if (bt_stack_function_is_patched((uintptr_t)(func))) \
-    { \
-        bool __local_dont_return = false; \
-        void *__local_result = bt_stack_function_patch((uintptr_t)(func), \
-            (uintptr_t)(a), 0, 0, 0, &__local_dont_return); \
-        if (!__local_dont_return) \
-        { \
-            return RETURN_TYPE(uintptr_t)(__local_result); \
-        } \
-    }
-
-#define BT_STACK_PATCH_FUNC_2(func, a, b, RETURN_TYPE) \
-    if (bt_stack_function_is_patched((uintptr_t)(func))) \
-    { \
-        bool __local_dont_return = false; \
-        void *__local_result = bt_stack_function_patch((uintptr_t)(func), \
-            (uintptr_t)(a), (uintptr_t)(b), 0, 0, &__local_dont_return); \
-        if (!__local_dont_return) \
-        { \
-            return RETURN_TYPE(uintptr_t)(__local_result); \
-        } \
-    }
-
-#define BT_STACK_PATCH_FUNC_3(func, a, b, c, RETURN_TYPE) \
-    if (bt_stack_function_is_patched((uintptr_t)(func))) \
-    { \
-        bool __local_dont_return = false; \
-        void *__local_result = bt_stack_function_patch((uintptr_t)(func), \
-            (uintptr_t)(a), (uintptr_t)(b), (uintptr_t)(c), 0, &__local_dont_return); \
-        if (!__local_dont_return) \
-        { \
-            return RETURN_TYPE(uintptr_t)(__local_result); \
-        } \
-    }
-
-#define BT_STACK_PATCH_FUNC_4(func, a, b, c, d, RETURN_TYPE) \
-    if (bt_stack_function_is_patched((uintptr_t)(func))) \
-    { \
-        bool __local_dont_return = false; \
-        void *__local_result = bt_stack_function_patch((uintptr_t)(func), \
-            (uintptr_t)(a), (uintptr_t)(b), (uintptr_t)(c), (uintptr_t)(d), &__local_dont_return); \
-        if (!__local_dont_return) \
-        { \
-            return RETURN_TYPE(uintptr_t)(__local_result); \
-        } \
-    }
-
-#else /* BUILD_BTH_ROM */
-
-#define BT_STACK_PATCH_FUNC_0(func, RETURN_TYPE)
-#define BT_STACK_PATCH_FUNC_1(func, a, RETURN_TYPE)
-#define BT_STACK_PATCH_FUNC_2(func, a, b, RETURN_TYPE)
-#define BT_STACK_PATCH_FUNC_3(func, a, b, c, RETURN_TYPE)
-#define BT_STACK_PATCH_FUNC_4(func, a, b, c, d, RETURN_TYPE)
-#endif /* BUILD_BTH_ROM */
+#define Plt_Assert ASSERT
+#define Plt_TICKS_TO_MS(ticks) TICKS_TO_MS(ticks)
+#define Plt_DUMP8 DUMP8
 
 #ifdef MOUDLE
 #define CO_LOG_MODULE BT_DBG_CONCAT(MOUDLE, _MODULE)
@@ -1345,12 +1305,10 @@ typedef void (*BESBT_HOOK_HANDLER)(void);
 
 typedef struct APP_KEY_STATUS APP_KEY_STATUS;
 
-typedef void (*app_bt_cmd_function_handle)(void);
-
 typedef struct
 {
     const char* string;
-    app_bt_cmd_function_handle function;
+    void (*cmd_function)(const char* param, uint32_t param_len);
 } app_bt_cmd_handle_t;
 
 enum APP_BT_REQ_T {
@@ -1427,6 +1385,7 @@ typedef void (*l2cap_sdp_disconnect_callback)(const bt_bdaddr_t *bdaddr);
 typedef uint8 (*bt_get_ibrt_role_callback)(const bt_bdaddr_t *para);
 typedef uint8 (*bt_get_ui_role_callback)(void);
 typedef uint8_t (*bt_get_tss_state_callback)(const bt_bdaddr_t *para);
+typedef bool (*bt_user_allow_accept_sco_callback)(uint8_t device_id, void *addr);
 typedef bool (*extra_acl_conn_req_callback)(uint8_t *remote, uint8_t *cod);
 typedef void (*bt_cmgr_sniff_timeout_ext_handler)(evm_timer_t * timer, unsigned int* skipInternalHandler);
 typedef bool (*bt_remote_is_mobile_callback_t)(const bt_bdaddr_t *remote);

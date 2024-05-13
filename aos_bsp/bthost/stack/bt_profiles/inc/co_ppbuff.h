@@ -35,14 +35,14 @@ struct pp_buff_flag_t {
     uint16_t is_sent_by_ble: 1;
 };
 
-struct pp_buff {
+typedef struct pp_buff {
     struct single_link_node_t node;
     struct pp_buff_flag_t ppb_flag;
     uint16_t buff_size;
     uint16_t len; // data len
     uint16_t data_start;
     void *context;
-};
+} ppb_buff_t;
 
 #define ppb_alloc(size) ppb_alloc_with_ca((size), (uint32_t)(uintptr_t)__builtin_return_address(0), __LINE__)
 #define ppb_auto_grow_alloc(size) ppb_auto_grow_alloc_with_ca((size), (uint32_t)(uintptr_t)__builtin_return_address(0), __LINE__)

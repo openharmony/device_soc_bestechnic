@@ -29,7 +29,6 @@ struct HAL_CHS_CFG_T {
     uint32_t src;
     uint32_t dst;
     uint8_t proto;
-    bool out_bigd;
 };
 
 typedef void (*HAL_CHS_RUN_CB_T)(const uint16_t res, uint32_t error);

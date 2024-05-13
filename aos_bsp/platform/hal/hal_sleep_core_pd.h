@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- * Copyright 2015-2019 BES.
+ * Copyright 2015-2023 BES.
  * All rights reserved. All unpublished rights reserved.
  *
  * No part of this work may be used or reproduced in any form or by any
@@ -13,8 +13,8 @@
  * trademark and other intellectual property rights.
  *
  ****************************************************************************/
-#ifndef __HAL_SLEEP_MCU_PD_H__
-#define __HAL_SLEEP_MCU_PD_H__
+#ifndef __HAL_SLEEP_CORE_PD_H__
+#define __HAL_SLEEP_CORE_PD_H__
 
 #ifdef __cplusplus
 extern "C" {

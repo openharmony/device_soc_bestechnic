@@ -235,9 +235,9 @@ void hal_fast_sys_timer_set(uint32_t val);
 
 void hal_fast_sys_timer64_set(uint64_t val);
 
-void hal_fast_timer_sleep();
+void hal_fast_timer_sleep(void);
 
-void hal_fast_timer_wakeup();
+void hal_fast_timer_wakeup(void);
 
 //=============================================================================
 // Non-OS compatibility

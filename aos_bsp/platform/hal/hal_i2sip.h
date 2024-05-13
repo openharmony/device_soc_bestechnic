@@ -150,17 +150,6 @@ static inline uint32_t i2sip_r_tx_overflow_clear(uint32_t reg_base, uint32_t cha
 {
     return i2sip_read32(reg_base, I2SIP_CLR_TX_OVER_FLOW_REG_OFFSET(chan));
 }
-static inline void i2sip_w_enable_tx_dma(uint32_t reg_base, uint32_t v)
-{
-    uint32_t val = 0;
-    val = i2sip_read32(reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
-    if (v)
-        val |= I2SIP_DMA_CTRL_TX_ENABLE_MASK;
-    else
-        val &= ~I2SIP_DMA_CTRL_TX_ENABLE_MASK;
-
-    i2sip_write32(val, reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
-}
 static inline void i2sip_w_enable_rx_dma(uint32_t reg_base, uint32_t v)
 {
     uint32_t val = 0;
@@ -172,7 +161,54 @@ static inline void i2sip_w_enable_rx_dma(uint32_t reg_base, uint32_t v)
 
     i2sip_write32(val, reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
 }
+static inline void i2sip_w_enable_tx_dma(uint32_t reg_base, uint32_t v)
+{
+    uint32_t val = 0;
+    val = i2sip_read32(reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+    if (v)
+        val |= I2SIP_DMA_CTRL_TX_ENABLE_MASK;
+    else
+        val &= ~I2SIP_DMA_CTRL_TX_ENABLE_MASK;
+
+    i2sip_write32(val, reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+}
 #ifndef CHIP_BEST1000
+static inline void i2sip_w_rx_dma_all_chan(uint32_t reg_base, uint32_t v)
+{
+    uint32_t val = 0;
+    val = i2sip_read32(reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+    if (v)
+        val |= I2SIP_DMA_CTRL_RX_ALL_CHAN_MASK;
+    else
+        val &= ~I2SIP_DMA_CTRL_RX_ALL_CHAN_MASK;
+
+    i2sip_write32(val, reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+}
+static inline void i2sip_w_tx_dma_all_chan(uint32_t reg_base, uint32_t v)
+{
+    uint32_t val = 0;
+    val = i2sip_read32(reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+    if (v)
+        val |= I2SIP_DMA_CTRL_TX_ALL_CHAN_MASK;
+    else
+        val &= ~I2SIP_DMA_CTRL_TX_ALL_CHAN_MASK;
+
+    i2sip_write32(val, reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+}
+static inline void i2sip_w_rx_dma_chan_sel(uint32_t reg_base, uint32_t v)
+{
+    uint32_t val = 0;
+    val = i2sip_read32(reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+    val = SET_BITFIELD(val, I2SIP_DMA_CTRL_RX_CHAN_SEL, v);
+    i2sip_write32(val, reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+}
+static inline void i2sip_w_tx_dma_chan_sel(uint32_t reg_base, uint32_t v)
+{
+    uint32_t val = 0;
+    val = i2sip_read32(reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+    val = SET_BITFIELD(val, I2SIP_DMA_CTRL_TX_CHAN_SEL, v);
+    i2sip_write32(val, reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+}
 static inline void i2sp_w_enable_rx_dma_block(uint32_t reg_base, uint32_t v)
 {
     uint32_t val = 0;
@@ -189,6 +225,24 @@ static inline void i2sip_w_rx_dma_blk_size(uint32_t reg_base, uint32_t v)
     uint32_t val = 0;
     val = i2sip_read32(reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
     val = SET_BITFIELD(val, I2SIP_DMA_CTRL_RX_DMA_BLK_SIZE, v);
+    i2sip_write32(val, reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+}
+static inline void i2sp_w_enable_tx_dma_block(uint32_t reg_base, uint32_t v)
+{
+    uint32_t val = 0;
+    val = i2sip_read32(reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+    if (v)
+        val |= I2SIP_DMA_CTRL_TX_DMA_BLK_EN_MASK;
+    else
+        val &= ~I2SIP_DMA_CTRL_TX_DMA_BLK_EN_MASK;
+
+    i2sip_write32(val, reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+}
+static inline void i2sip_w_tx_dma_blk_size(uint32_t reg_base, uint32_t v)
+{
+    uint32_t val = 0;
+    val = i2sip_read32(reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
+    val = SET_BITFIELD(val, I2SIP_DMA_CTRL_TX_DMA_BLK_SIZE, v);
     i2sip_write32(val, reg_base, I2SIP_DMA_CTRL_REG_OFFSET);
 }
 #endif
@@ -230,9 +284,6 @@ static inline void i2sip_w_clk_sync_enable(uint32_t reg_base, enum HAL_I2S_SYNC_
     uint32_t val = 0;
     val = i2sip_read32(reg_base, I2SIP_EN_SEL_OFFSET);
     val = SET_BITFIELD(val, I2SIP_CLK_EN_SEL, type);
-#ifdef WIFITSF_TRIGGER
-    val |= I2SIP_TSF_EVENT_SEL;
-#endif
     i2sip_write32(val, reg_base, I2SIP_EN_SEL_OFFSET);
 }
 
@@ -244,11 +295,37 @@ static inline void i2sip_w_clk_sync_disable(uint32_t reg_base)
     i2sip_write32(val, reg_base, I2SIP_EN_SEL_OFFSET);
 }
 
-static inline void i2sip_w_clk_sync_sel_trig_route(uint32_t reg_base, enum HAL_I2S_SYNC_TRIG_ROUTE_T trig_route)
+static inline void i2sip_w_event_sel(uint32_t reg_base, uint32_t event)
 {
     uint32_t val = 0;
     val = i2sip_read32(reg_base, I2SIP_EN_SEL_OFFSET);
-    val = SET_BITFIELD(val, I2SIP_TRIG_ROUTE_SEL, trig_route);
+    val = SET_BITFIELD(val, I2SIP_EVENT_SEL, event) ;
+    i2sip_write32(val, reg_base, I2SIP_EN_SEL_OFFSET);
+}
+
+#ifdef WIFITSF_TRIGGER
+static inline void i2sip_w_tsf_event_sel(uint32_t reg_base, uint32_t event)
+{
+    uint32_t val = 0;
+    val = i2sip_read32(reg_base, I2SIP_EN_SEL_OFFSET);
+#if defined(CHIP_BEST2003) || defined(CHIP_BEST2005)
+    if (event) {
+        val |= I2SIP_TSF_EVENT_SEL;
+    } else {
+        val &= ~I2SIP_TSF_EVENT_SEL;
+    }
+#else
+    val = SET_BITFIELD(val, I2SIP_TSF_EVENT_SEL, event) ;
+#endif
+    i2sip_write32(val, reg_base, I2SIP_EN_SEL_OFFSET);
+}
+#endif
+
+static inline void i2sip_w_trig_route_sel(uint32_t reg_base, uint32_t route)
+{
+    uint32_t val = 0;
+    val = i2sip_read32(reg_base, I2SIP_EN_SEL_OFFSET);
+    val = SET_BITFIELD(val, I2SIP_TRIG_ROUTE_SEL, route);
     i2sip_write32(val, reg_base, I2SIP_EN_SEL_OFFSET);
 }
 

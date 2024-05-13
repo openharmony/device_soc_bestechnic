@@ -21,6 +21,8 @@ extern "C" {
 #endif
 
 #include "plat_types.h"
+#include "plat_addr_map.h"
+#include "hal_cmu.h"
 
 enum HAL_WDT_ID_T {
     HAL_WDT_ID_0 = 0,
@@ -34,6 +36,8 @@ enum HAL_WDT_EVENT_T {
 typedef void (*HAL_WDT_IRQ_CALLBACK)(enum HAL_WDT_ID_T id, enum HAL_WDT_EVENT_T event);
 
 void hal_wdt_set_irq_callback(enum HAL_WDT_ID_T id, HAL_WDT_IRQ_CALLBACK handler);
+void hal_wdt_irq_clr(enum HAL_WDT_ID_T id);
+void hal_wdt_disable_nmi_irq(enum HAL_WDT_ID_T id);
 
 /* mandatory operations */
 int hal_wdt_start(enum HAL_WDT_ID_T id);
@@ -46,6 +50,16 @@ int hal_wdt_set_timeout_ms(enum HAL_WDT_ID_T id, unsigned int ms);
 unsigned int hal_wdt_get_timeleft_ms(enum HAL_WDT_ID_T id);
 int hal_wdt_set_timeout(enum HAL_WDT_ID_T id, unsigned int sec);
 unsigned int hal_wdt_get_timeleft(enum HAL_WDT_ID_T id);
+
+#ifdef WDT_BASE
+void hal_wdt_sleep(enum HAL_CMU_LPU_SLEEP_MODE_T mode);
+void hal_wdt_wakeup(enum HAL_CMU_LPU_SLEEP_MODE_T mode);
+void hal_wdt_disable_irq(enum HAL_WDT_ID_T id);
+#else
+__STATIC_FORCEINLINE void hal_wdt_sleep(enum HAL_CMU_LPU_SLEEP_MODE_T mode) {}
+__STATIC_FORCEINLINE void hal_wdt_wakeup(enum HAL_CMU_LPU_SLEEP_MODE_T mode) {}
+__STATIC_FORCEINLINE void hal_wdt_disable_irq(enum HAL_WDT_ID_T id) {}
+#endif
 
 #ifdef __cplusplus
 }

@@ -775,6 +775,7 @@ void wifi_write_rcosc_cali_res(uint8 band, uint8 band_width);
 // void wifi_dc_iq_line_fit(void);
 uint32_t *wifi_get_new_run_flag();
 uint32_t wifi_get_lmac_sleep_lock_bit();
+
 #ifdef __cplusplus
 }
 #endif

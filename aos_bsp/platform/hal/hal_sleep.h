@@ -69,7 +69,7 @@ enum HAL_BUS_WAKE_LOCK_USER_T {
     HAL_BUS_WAKE_LOCK_USER_RPTUN,
     HAL_BUS_WAKE_LOCK_USER_EMMC,
     HAL_BUS_WAKE_LOCK_USER_SDIO,
-    HAL_BUS_WAKE_LOCK_USER_9,
+    HAL_BUS_WAKE_LOCK_USER_BLE_ADPT,
     HAL_BUS_WAKE_LOCK_USER_10,
     HAL_BUS_WAKE_LOCK_USER_11,
     HAL_BUS_WAKE_LOCK_USER_12,
@@ -219,19 +219,19 @@ int hal_cpu_wake_lock(enum HAL_CPU_WAKE_LOCK_USER_T user);
 
 int hal_cpu_wake_unlock(enum HAL_CPU_WAKE_LOCK_USER_T user);
 
-uint32_t hal_cpu_wake_lock_get();
+uint32_t hal_cpu_wake_lock_get(void);
 
 int hal_bus_wake_lock(enum HAL_BUS_WAKE_LOCK_USER_T user);
 
 int hal_bus_wake_unlock(enum HAL_BUS_WAKE_LOCK_USER_T user);
 
-uint32_t hal_bus_wake_lock_get();
+uint32_t hal_bus_wake_lock_get(void);
 
 int hal_subsys_wake_lock(enum HAL_SUBSYS_WAKE_LOCK_USER_T user);
 
 int hal_subsys_wake_unlock(enum HAL_SUBSYS_WAKE_LOCK_USER_T user);
 
-uint32_t hal_subsys_wake_lock_get();
+uint32_t hal_subsys_wake_lock_get(void);
 
 void hal_sleep_power_down_mode_set(enum HAL_SLEEP_POWER_DOWN_MODE_T mode);
 

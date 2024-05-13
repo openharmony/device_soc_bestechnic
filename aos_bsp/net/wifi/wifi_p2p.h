@@ -33,7 +33,8 @@ typedef enum {
     P2P_CONNECTED                  = 1,
 }WIFI_P2P_CONNECT_STATUS;
 
-bool wpa_is_p2p_name(const char *name, int len);
+#define SUP_WPS_CONFIG_PUSHBUTTON 0x0080
+
 bool wifi_is_p2p_index();
 #ifdef __cplusplus
 }

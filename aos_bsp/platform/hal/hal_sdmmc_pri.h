@@ -22,7 +22,6 @@ extern "C" {
 
 #include "hal_dma.h"
 #include "hal_sdmmc.h"
-#include "hwtimer_list.h"
 
 /*************************Functional configuration area************************/
 #define MMC_WRITE
@@ -275,8 +274,9 @@ struct mmc {
 
 struct sdmmc_ip_host {
     uint8_t host_id;
-    uint32_t clock;
-    uint32_t bus_hz;
+    uint32_t src_clk_hz;        /* Clock input to the module */
+    uint32_t desired_bus_speed; /* The speed the user wishes to set */
+    uint32_t final_bus_speed;   /* The final clock speed on the wire */
     uint32_t div;
     uint8_t buswidth;
     uint8_t yield;
@@ -284,7 +284,6 @@ struct sdmmc_ip_host {
     volatile uint8_t volt_switch_flag;
     uint32_t fifoth_val;
     uint32_t period_st_ns;
-    uint32_t final_bus_speed;
 
     void *ioaddr;
     void *priv;
@@ -295,8 +294,6 @@ struct sdmmc_ip_host {
     uint8_t dma_en;
     uint8_t dma_ch;
     uint8_t dma_in_use;
-    HWTIMER_ID fifo_timer;
-    volatile uint8_t fifo_rw_flag;
     volatile uint8_t sdmmc_dma_lock;
     HAL_DMA_IRQ_HANDLER_T tx_dma_handler;
     HAL_DMA_IRQ_HANDLER_T rx_dma_handler;

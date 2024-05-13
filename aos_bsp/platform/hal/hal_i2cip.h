@@ -350,10 +350,6 @@ static inline uint32_t i2cip_w_sda_hold_time(uint32_t reg_base, uint32_t val)
 {
     return i2cip_write32(val, reg_base, I2CIP_SDA_HOLD_REG_OFFSET);
 }
-static inline uint32_t i2cip_r_ic_enable_status(uint32_t reg_base)
-{
-    return i2cip_read32(reg_base, I2CIP_IC_ENABLE_STATUS_REG_OFFSET);
-}
 static inline uint32_t i2cip_w_fs_spklen(uint32_t reg_base, uint32_t val)
 {
     return i2cip_write32(val, reg_base, I2CIP_IC_FS_SPKLEN_REG_OFFSET);

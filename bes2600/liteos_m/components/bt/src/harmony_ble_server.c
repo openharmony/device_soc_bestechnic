@@ -560,7 +560,7 @@ int BleGattsStartService(int serverId, int srvcHandle)
     {
         return BT_STS_FAILED;
     }
-    ret = gatts_ctrl_service(BleGattsEnv.SrvAttrList, true);
+    ret = gatts_control_service(BleGattsEnv.SrvAttrList, serverId, true, srvcHandle);
     if (ret != BT_STS_SUCCESS)
     {
         return BT_STS_FAILED;
@@ -575,7 +575,7 @@ int BleGattsStopService(int serverId, int srvcHandle)
 {
     int ret;
 
-    ret = gatts_ctrl_service(BleGattsEnv.SrvAttrList, false);
+    ret = gatts_control_service(BleGattsEnv.SrvAttrList, serverId, false, srvcHandle);
     if (ret != BT_STS_SUCCESS)
     {
         return BT_STS_FAILED;

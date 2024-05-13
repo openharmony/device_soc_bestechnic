@@ -23,6 +23,7 @@ extern "C" {
 #endif
 
 #define SDP_REQUEST_DATA_MAX_LEN (512)
+#define SDP_RESPONSE_HANDLES_SIZE (14)
 
 enum sdp_error_code {
     SDP_Reserved_for_future_use = 0x0000,
@@ -42,6 +43,66 @@ enum sdp_pdu_id {
     SDP_PDU_ServiceAttributeResponse = 0x05,
     SDP_PDU_ServiceSearchAttributeRequest = 0x06,
     SDP_PDU_ServiceSearchAttributeResponse = 0x07,
+};
+
+struct sdp_request {
+    struct list_node node;
+    bt_sdp_service_uuid_t uuid;
+    enum sdp_pdu_id type;
+    uint16_t request_len;
+    uint8_t *request_data;
+    bt_sdp_callback_t sdp_callback;
+    void *priv;
+};
+
+enum sdp_connection_state {
+    SDP_ST_STANDBY = 0,
+    SDP_ST_CONNECTING,
+    SDP_ST_CONNECTED,
+    SDP_ST_CLT_QUERING,
+    SDP_ST_DISCONNETING,
+};
+
+enum sdp_connection_role {
+    SDP_ROLE_CLIENT = 0,
+    SDP_ROLE_SERVER,
+};
+
+struct sdp_control_t
+{
+    struct sdp_proto_conn_t *conn;
+    struct bdaddr_t remote;
+    enum sdp_connection_state conn_state;
+    enum sdp_connection_role sdp_role;
+    bool query_after_chan_disc;
+    uint8 client_conn_retry_count;
+    uint8 client_conn_tx_wait_timer; // wait for client sdp conn req and client sdp tx
+    uint8 client_wait_disc_timer; // wait client sdp disconnecting complete and reconnect sdp
+    uint32 l2cap_handle;
+    uint32 sdp_rsp_pending_packet_count;
+
+    // for server
+    uint32 count_seqn;
+    uint32 max_attr_bytes_count;
+    uint16 response_trans_id;
+    uint32 response_handle_buff[SDP_RESPONSE_HANDLES_SIZE];
+    uint8 response_handle_count;
+    uint8 response_handle_offset;
+    uint8 *response_buff;
+    uint32 response_buff_offset;
+    uint32 response_buff_len;
+    uint8 response_cont_data_len;
+    uint8 response_cont_data[16+1]; // 1 byte more to store cont data len
+
+    // for client
+    uint16 request_num;
+    struct list_node request_list;
+    struct sdp_request *curr_request;
+    struct sdp_record_handle_list *handle_list;
+    struct pp_buff *attr_list_ppb;
+    uint16 request_trans_id;
+    uint8 request_cont_data_len;
+    uint8 request_cont_data[16+1]; // 1 byte more to store cont data len
 };
 
 struct sdp_control_t;

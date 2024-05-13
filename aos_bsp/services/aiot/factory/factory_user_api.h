@@ -42,7 +42,7 @@ struct wifi_get_power_cali_t {
     uint16_t cali_chan_mode;
     uint16_t tx_power_ch[4];
     uint16_t tx_power_type;
-    uint16_t tx_power_ch_5G[13];
+    uint16_t tx_power_ch_5G[14];
     uint16_t tx_power_flags_5G;
 };
 

@@ -90,7 +90,7 @@ typedef enum IRQn
   SPDIF1_IRQn                   =  27,      /*!< SPDIF1 Interrupt                   */
   CAM_IRQn                      =  28,      /*!< CAM Interrupt                      */
   DSDIF_IRQn                    =  29,      /*!< DSDIF Interrupt                    */
-  GPIOAUX_IRQn                  =  30,      /*!< GPIO AUX Interrupt                 */
+  GPIO1_IRQn                    =  30,      /*!< GPIO AUX Interrupt                 */
   RESERVED31_IRQn               =  31,      /*!< Reserved Interrupt                 */
   ISDONE_IRQn                   =  32,      /*!< Intersys MCU2BT Data Done Interrupt */
   ISDONE1_IRQn                  =  33,      /*!< Intersys MCU2BT Data1 Done Interrupt */

@@ -215,6 +215,8 @@ void pmu_usb_disable_pin_status_check(void);
 
 void pmu_usb_get_pin_status(int *dp, int *dm);
 
+void pmu_codec_mic_bias_set_volt(uint32_t map, uint32_t mv);
+
 void pmu_rtc_enable(void);
 
 void pmu_rtc_disable(void);
@@ -296,6 +298,10 @@ enum HAL_PWRKEY_IRQ_T pmu_pwrkey_irq_value_to_state(uint16_t irq_status);
 int pmu_gpadc_div_ctrl(enum HAL_GPADC_CHAN_T channel, int enable);
 
 enum PMU_BOOT_CAUSE_T pmu_boot_cause_get(void);
+
+void pmu_power_key_hw_reset_enable(uint8_t seconds);
+
+void pmu_power_key_hw_reset_disable(void);
 
 //=========================================================================
 // APIs for internal use only

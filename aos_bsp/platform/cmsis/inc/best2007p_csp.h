@@ -83,17 +83,24 @@ typedef enum IRQn
     CSP2MCU_DATA1_IRQn          =  20,      /*!< Intersys CSP2MCU Data1 Indication Interrupt */
     MCU2CSP_DONE_IRQn           =  21,      /*!< Intersys MCU2CSP Data Done Interrupt */
     MCU2CSP_DONE1_IRQn          =  22,      /*!< Intersys MCU2CSP Data Done Interrupt */
+    MODEM_WAKEUP_IRQn           =  23,      /*!< CSP MODEM WAKEUP Interrupt */
+    MCU_RESET_IRQn              =  24,      /*!< MCU RESET Interrupt */
     CROSSFEM_IREQ0              =  32,
     CROSSFEM_IREQ1              =  33,
     CROSSFEM_IREQ2              =  34,
     CROSSFEM_IREQ3              =  35,
     CROSSFEM_IREQ4              =  36,
     CROSSFEM_IREQ5              =  37,
-    CROSSTUNER_IREQ0            =  38,
-    CROSSTUNER_IREQ1            =  39,
-    CROSSTUNER_IREQ2            =  40,
-    CROSSTUNER_IREQ3            =  41,
-    CROSSTUNER_IREQ4            =  42,
+    CROSSFEM_IREQ6              =  38,
+    CROSSTUNER_IREQ0            =  39,
+    CROSSTUNER_IREQ1            =  40,
+    CROSSTUNER_IREQ2            =  41,
+    CROSSTUNER_IREQ3            =  42,
+    CROSSTUNER_IREQ4            =  43,
+    DWCOEX2CSP_2G_IRQn          =  44,
+    DWCOEX2CSP_5G_IRQn          =  45,
+    UART_RX_WAKEUP_IRQn         =  46,
+    CSP_GPIO_IRQn               =  47,
 
     USER_IRQn_QTY,
     INVALID_IRQn                = USER_IRQn_QTY,
@@ -101,8 +108,9 @@ typedef enum IRQn
 
 
 #define GPIO_IRQn               AON_GPIO_IRQn
+#define GPIO1_IRQn              CSP_GPIO_IRQn
 #define GPIOAUX_IRQn            AON_GPIOAUX_IRQn
-#define WDT_IRQn                AON_WDT_IRQn
+#define WDT_IRQn                CSP_WDT_IRQn
 
 #include "plat_addr_map.h"
 

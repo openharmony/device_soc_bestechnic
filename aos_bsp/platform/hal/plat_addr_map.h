@@ -20,6 +20,8 @@
 extern "C" {
 #endif
 
+#ifndef HOST_TOOL_BUILD
+
 #if 0
 #elif defined(CHIP_FPGA1000)
 #define CHIP_ID_LITERAL                         fpga1000
@@ -29,12 +31,18 @@ extern "C" {
 #define CHIP_ID_LITERAL                         best1305
 #elif defined(CHIP_BEST1306)
 #define CHIP_ID_LITERAL                         best1306
+#elif defined(CHIP_BEST1306P)
+#define CHIP_ID_LITERAL                         best1306p
+#elif defined(CHIP_BEST1307)
+#define CHIP_ID_LITERAL                         best1307
 #elif defined(CHIP_BEST1400) || defined(CHIP_BEST1402)
 #define CHIP_ID_LITERAL                         best1400
 #elif defined(CHIP_BEST1501)
 #define CHIP_ID_LITERAL                         best1501
 #elif defined(CHIP_BEST1501P)
 #define CHIP_ID_LITERAL                         best1501p
+#elif defined(CHIP_BEST1502P)
+#define CHIP_ID_LITERAL                         best1502p
 #elif defined(CHIP_BEST1502X)
 #define CHIP_ID_LITERAL                         best1502x
 #elif defined(CHIP_BEST1503)
@@ -43,6 +51,8 @@ extern "C" {
 #define CHIP_ID_LITERAL                         best1600
 #elif defined(CHIP_BEST1603)
 #define CHIP_ID_LITERAL                         best1603
+#elif defined(CHIP_BEST1605)
+#define CHIP_ID_LITERAL                         best1605
 #elif defined(CHIP_BEST1700)
 #define CHIP_ID_LITERAL                         best1700
 #elif defined(CHIP_BEST2000)
@@ -59,6 +69,8 @@ extern "C" {
 #define CHIP_ID_LITERAL                         best2007
 #elif defined(CHIP_BEST2007P)
 #define CHIP_ID_LITERAL                         best2007p
+#elif defined(CHIP_BEST2007H)
+#define CHIP_ID_LITERAL                         best2007h
 #elif defined(CHIP_BEST2009)
 #define CHIP_ID_LITERAL                         best2009
 #elif defined(CHIP_BEST2300)
@@ -71,6 +83,8 @@ extern "C" {
 #define CHIP_ID_LITERAL                         best3001
 #elif defined(CHIP_BEST3003)
 #define CHIP_ID_LITERAL                         best3003
+#elif defined(CHIP_BEST3601)
+#define CHIP_ID_LITERAL                         best3601
 #elif defined(CHIP_BEST1501SIMU)
 #define CHIP_ID_LITERAL                         best1501simu
 #elif defined(CHIP_BEST1600SIMU)
@@ -79,12 +93,16 @@ extern "C" {
 #error "Unknown chip ID"
 #endif
 
+#endif /* !HOST_TOOL_BUILD */
+
 #define _TO_STRING_A(s)                         # s
 #define _TO_STRING(s)                           _TO_STRING_A(s)
 
 #define CONCAT_NAME_A(a, b)                     a ## b
 #define CONCAT_NAME(a, b)                       CONCAT_NAME_A(a, b)
 #define CONCAT_SUFFIX(a, b)                     a.b
+
+#ifndef HOST_TOOL_BUILD
 
 #define CONSTRUCT_HDR_NAME_A(d, n)              d/n ## _ ## d
 #define CONSTRUCT_HDR_NAME(d, n)                CONSTRUCT_HDR_NAME_A(d, n)
@@ -172,9 +190,28 @@ extern "C" {
 #define PSRAMUHS_C_TO_NC(a)                     ((a) - PSRAMUHS_BASE + PSRAMUHS_NC_BASE)
 #define PSRAMUHS_NC_TO_C(a)                     ((a) - PSRAMUHS_NC_BASE + PSRAMUHS_BASE)
 
+#ifndef HAL_NORFLASH_ADDR_MASK
+/* 64M Bytes */
+#define HAL_NORFLASH_ADDR_MASK                  0x03FFFFFF
+#endif
+#if defined(HAL_NORFLASH0_ADDR_MASK) || defined(HAL_NORFLASH1_ADDR_MASK) || defined(HAL_NORFLASH2_ADDR_MASK)
+#define HAL_NORFLASH_ADDR_MASK_BY_CTRL_ID
+#endif
+#if defined(FLASH_CTRL_BASE) && !defined(HAL_NORFLASH0_ADDR_MASK)
+#define HAL_NORFLASH0_ADDR_MASK                 HAL_NORFLASH_ADDR_MASK
+#endif
+#if defined(FLASH1_CTRL_BASE) && !defined(HAL_NORFLASH1_ADDR_MASK)
+#define HAL_NORFLASH1_ADDR_MASK                 HAL_NORFLASH_ADDR_MASK
+#endif
+#if defined(FLASH2_CTRL_BASE) && !defined(HAL_NORFLASH2_ADDR_MASK)
+#define HAL_NORFLASH2_ADDR_MASK                 HAL_NORFLASH_ADDR_MASK
+#endif
+
+#endif /* !HOST_TOOL_BUILD */
+
 #define BUILD_INFO_MAGIC                        0xBE57341D
 
-#define TRACE_ID_STR_OFFSET                     0xFFC00000
+#define TRACE_ID_STR_OFFSET                     0xFF000000
 
 #ifdef LINKER_SCRIPT
 
@@ -222,3 +259,4 @@ extern "C" {
 #endif
 
 #endif
+

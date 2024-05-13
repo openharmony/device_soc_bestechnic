@@ -77,6 +77,8 @@ int subsys_loader_load_image_fs(const char *file_name,
 
 int subsys_loader_get_segment_fs(const char *file_name, const char *seg_name, struct SUBSYS_SEGMENT *seg_out);
 
+int subsys_customized_copy(void *dst, void *src, unsigned int size);
+
 #ifdef __cplusplus
 }
 #endif

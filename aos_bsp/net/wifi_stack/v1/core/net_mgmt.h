@@ -28,7 +28,7 @@ int netdev_sniffer_stop(void);
 int netdev_sniffer_set_channel(u8 channel);
 int netdev_sniffer_set_filter(u32 filter);
 #ifdef ENABLE_FW_KEEP_ALIVE
-int net_device_add_ip_offload(struct ip_alive_paras *paras);
+int net_device_add_ip_offload(struct ip_alive_param *paras);
 int net_device_del_ip_offload(int idx);
 int net_device_en_ip_offload(int period);
 #endif
@@ -39,9 +39,9 @@ int net_device_set_multicast_filter(u8 mode, u8 *addr);
 int net_device_set_broadcast_filter(u8 enable);
 #endif
 #ifdef __SET_ARP_OFFLOAD__
-int net_device_set_arp_offload(u32 enable);
+int net_device_set_arp_offload(u32 ipaddr);
 #endif
-int netdev_wifi_low_power(int lowpoer);
-uint8_t netdev_get_wifi_low_power_stat(void);
+int netdev_set_wifi_low_power(uint8_t state);
+uint8_t netdev_get_wifi_low_power(void);
 
 #endif /* __NET_MGMT_H__ */

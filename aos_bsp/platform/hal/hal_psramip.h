@@ -40,7 +40,9 @@ enum HAL_PSRAM_ANAPHY_LOCK_RESULT_T hal_psram_phy_dll_set_range(uint32_t range, 
 uint32_t hal_psram_phy_dll_range_dyn_config(uint32_t clk);
 void hal_psram_anaphy_dll_range_init(uint32_t clk_freq);
 void hal_psram_anaphy_set_dly(enum HAL_PSRAMPHY_ID_T phy_id, enum HAL_PSRAM_PHY_CHANNEL_T c, enum HAL_PSRAM_DLL_DLY_T t, uint16_t dly);
+void hal_psram_anaphy_set_dly_1(enum HAL_PSRAMPHY_ID_T phy_id, enum HAL_PSRAM_PHY_CHANNEL_T c, enum HAL_PSRAM_DLL_DLY_T t, uint16_t dly);
 uint32_t hal_psram_anaphy_get_dll_dly_in_val(enum HAL_PSRAMPHY_ID_T phy_id);
+void hal_psram_anaphy_open_auto(void);
 uint32_t hal_psram_mc_set_mgr_ch(enum HAL_PSRAM_ID_T id, enum HAL_PSRAM_MC_MGR_CHANEL_T c);
 void hal_psram_mc_init_complete(enum HAL_PSRAM_ID_T id);
 bool hal_psram_mc_is_reset(enum HAL_PSRAM_ID_T id);
@@ -61,5 +63,7 @@ void hal_psram_mc_write_buffer_invalidate(enum HAL_PSRAM_ID_T id);
 void hal_psram_mc_priority_config(enum HAL_PSRAM_ID_T id);
 uint32_t hal_psram_device_mr_read(enum HAL_PSRAM_ID_T id, uint32_t mr);
 void hal_psram_device_mr_write(enum HAL_PSRAM_ID_T id, uint32_t mr, uint32_t val);
+void hal_psram_mc_enable_dyn_freq(enum HAL_PSRAM_ID_T id, struct PSRAM_CFG_T *psram_cfg);
 
 #endif /*__HAL_PSRAMIP_H_*/
+

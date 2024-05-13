@@ -28,11 +28,6 @@ void ble_buffer_free_with_ca(void *buffer, uint32_t ca, uint32_t line);
 int bt_audio_event_handler(uint8_t device_id, enum app_bt_audio_event_t event, uint32_t data);
 void bt_audio_set_event_handler(int (*hdlr)(uint8_t device_id, enum app_bt_audio_event_t event, uint32_t data));
 
-#if defined(APP_TRACE_RX_ENABLE) || defined(IBRT)
-void bes_bt_me_init_cmd(void);
-void bes_bt_me_add_cmd_test_table(const app_bt_cmd_handle_t *start_cmd, uint16_t cmd_count);
-#endif
-
 #define BT_BES_CFG_VENDOR_CODEC_EN 1
 #define BT_BES_CFG_DONT_PLAY_MUTE_WHEN_A2DP_STUCK 2
 #define BT_BES_CFG_MARK_CODE_FOR_FUZZ_TEST 3
@@ -82,7 +77,7 @@ uint8_t bes_bt_me_set_io_capabilities(uint8_t ioCap);
 
 uint8_t bes_bt_me_set_authrequirements(uint8_t authRequirements);
 
-int bes_bt_me_set_bt_local_name(const unsigned char *dev_name, uint8_t len);
+int bes_bt_me_set_bt_local_name(const unsigned char *device_name, uint8_t len);
 
 void bes_bt_me_set_extended_inquiry_response(uint8_t* eir, uint32_t len);
 
@@ -153,10 +148,6 @@ void bes_bt_me_cmgr_start_sniff_timer(evm_timer_t* timer, uint32_t time);
 bt_status_t bes_bt_me_cmgr_register_callback(void *cmgr_handler, btif_cmgr_callback callback);
 
 void bes_bt_me_acl_set_remote_device_role(uint16_t conn_handle, uint8_t role);
-
-#ifdef RTOS
-osTimerId bes_bt_me_get_access_mode_timer(void);
-#endif
 
 bool bes_bt_me_is_device_profile_connected(uint8_t device_id);
 
@@ -233,8 +224,6 @@ void bes_bt_sleep_init(void);
 
 bool bes_bt_me_is_bt_thread(void);
 
-void bes_bt_me_add_string_test_table(void);
-
 void bes_bt_me_gen_addr_for_debug(void);
 
 void bes_bt_me_gen_ecdh_key_pair(void);
@@ -242,8 +231,6 @@ void bes_bt_me_gen_ecdh_key_pair(void);
 void bes_bt_me_gen_full_ecdh_key_pair(void);
 
 void bes_bt_me_transfer_pairing_to_connectable(void);
-
-void bes_bt_me_cmd_line_handler(char *cmd, unsigned int cmd_length);
 
 int8_t bes_bt_me_get_bt_rssi(void);
 
@@ -295,8 +282,20 @@ void bes_bt_conn_ibrt_disconnected_handle(struct btm_conn_item_t *btm_conn);
 
 void bes_bt_device_snoop_acl_disconnected(uint8_t device_id, void* addr);
 
-void bes_bt_me_set_accessible_mode(btif_accessible_mode_t mode,
+bt_status_t bes_bt_me_set_accessible_mode(btif_accessible_mode_t mode,
                                         const btif_access_mode_info_t *info);
+
+bt_status_t bes_bt_me_cancel_create_connection(const bt_bdaddr_t *remote);
+
+bt_status_t bes_bt_get_remote_dev_addr_by_device_id(uint8_t deviceId, uint8_t* btAddr);
+
+bt_status_t bes_bt_get_remote_device_id_by_addr(uint8_t* btAddr, uint8_t *deviceId);
+
+uint8_t bes_bt_get_remote_device_id_by_handle(uint16_t conn_hdl);
+
+uint16_t bes_bt_get_remote_conn_handle_by_addr(uint8_t* btAddr);
+
+bt_status_t bes_bt_get_remote_addr_by_conn_handle( uint16_t conn_hdl, uint8_t* btAddr);
 
 void bes_bt_me_confirmation_register_callback(btif_confirmation_req_callback_t callback);
 

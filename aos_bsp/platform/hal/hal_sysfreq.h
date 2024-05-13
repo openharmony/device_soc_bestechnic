@@ -35,46 +35,28 @@ enum HAL_SYSFREQ_USER_T {
     HAL_SYSFREQ_USER_DSP,               // 9
     HAL_SYSFREQ_USER_EMMC,              // 10
     HAL_SYSFREQ_USER_LCDC,              // 11
-    HAL_SYSFREQ_USER_WIFI,              // 12
-    HAL_SYSFREQ_USER_NET,               // 13
-    HAL_SYSFREQ_USER_SDIO,              // 14
+    HAL_SYSFREQ_USER_WIFI_RF,           // 12
+    HAL_SYSFREQ_USER_SDIO,              // 13
 
-    HAL_SYSFREQ_USER_APP_0,             // 15
-    HAL_SYSFREQ_USER_APP_1,             // 16
-    HAL_SYSFREQ_USER_APP_2,             // 17
-    HAL_SYSFREQ_USER_APP_3,             // 18
-    HAL_SYSFREQ_USER_APP_4,             // 19
-    HAL_SYSFREQ_USER_APP_5,             // 20
-    HAL_SYSFREQ_USER_APP_6,             // 21
-    HAL_SYSFREQ_USER_APP_7,             // 22
-    HAL_SYSFREQ_USER_APP_8,             // 23
-    HAL_SYSFREQ_USER_APP_9,             // 24
-    HAL_SYSFREQ_USER_APP_10,            // 25
-    HAL_SYSFREQ_USER_APP_11,            // 26
-    HAL_SYSFREQ_USER_APP_12,            // 27
-    HAL_SYSFREQ_USER_APP_13,            // 28
-    HAL_SYSFREQ_USER_APP_14,            // 29
-    HAL_SYSFREQ_USER_APP_15,            // 30
-    HAL_SYSFREQ_USER_APP_16,            // 31
-    HAL_SYSFREQ_USER_APP_17,            // 32
-    HAL_SYSFREQ_USER_APP_18,            // 33
-    HAL_SYSFREQ_USER_APP_19,            // 34
-    HAL_SYSFREQ_USER_APP_20,            // 35
-    HAL_SYSFREQ_USER_APP_21,            // 36
+    HAL_SYSFREQ_USER_APP_0,             // 14
+    HAL_SYSFREQ_USER_APP_COMMON = HAL_SYSFREQ_USER_APP_0,
+    HAL_SYSFREQ_USER_APP_1,             // 15
+    HAL_SYSFREQ_USER_APP_2,             // 16
+    HAL_SYSFREQ_USER_APP_QOS = HAL_SYSFREQ_USER_APP_2,
+    HAL_SYSFREQ_USER_APP_3,             // 17
+    HAL_SYSFREQ_USER_APP_NET = HAL_SYSFREQ_USER_APP_3,
 
     HAL_SYSFREQ_USER_QTY
 };
 
-#ifdef SYSFREQ_STATS
-typedef struct {
+struct SYSTEM_SYSFREQ_STAT_T {
     uint32_t total_intvl;
     uint32_t sysfreq_intvl[HAL_SYSFREQ_USER_QTY][2];
-} SYSTEM_SYSFREQ_STAT_T;
-#endif
+};
 
-typedef int (*HAL_SYSFREQ_CP_SET_FREQ_CB_T)(enum HAL_CMU_FREQ_T freq);
+typedef int (*HAL_SYSFREQ_SUBSYS_SET_FREQ_CB_T)(enum HAL_CMU_FREQ_T freq);
 
-void hal_sysfreq_cp_set_freq_register(HAL_SYSFREQ_CP_SET_FREQ_CB_T cb);
+void hal_sysfreq_subsys_set_freq_register(HAL_SYSFREQ_SUBSYS_SET_FREQ_CB_T cb);
 
 void hal_sysfreq_set_min_freq(enum HAL_CMU_FREQ_T freq);
 
@@ -96,15 +78,12 @@ void hal_sysfreq_add_freq_time(int idle, uint32_t cur_time);
 
 void hal_sysfreq_print_freq_stats(void);
 
-#ifdef SYSFREQ_STATS
-SYSTEM_SYSFREQ_STAT_T* system_sysfreq_stat_get(void);
+struct SYSTEM_SYSFREQ_STAT_T* system_sysfreq_stat_get(void);
 
-void system_sysfreq_stat_update(uint32_t tot, uint32_t arrFreq[][2], uint8_t size);
-#endif
+void system_sysfreq_stat_update(uint32_t tot, uint32_t arrFreq[][2], uint32_t size);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-

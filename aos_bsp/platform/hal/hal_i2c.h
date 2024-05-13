@@ -49,6 +49,12 @@ enum HAL_I2C_ID_T {
 #ifdef I2C5_BASE
     HAL_I2C_ID_5,
 #endif
+#ifdef I2C6_BASE
+    HAL_I2C_ID_6,
+#endif
+#ifdef I2C7_BASE
+    HAL_I2C_ID_7,
+#endif
 
     HAL_I2C_ID_NUM,
 };

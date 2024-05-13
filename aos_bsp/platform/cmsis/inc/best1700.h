@@ -98,9 +98,9 @@ typedef enum IRQn
     CODEC_IRQn                  =  34,      /*!< CODEC Interrupt                    */
     CODEC_TX_PEAK_IRQn          =  35,      /*!< CODEC TX PEAK Interrupt            */
     XDMA_IRQn                   =  36,      /*!< AXI DMA Interrupt                  */
-    DMA0_IRQn                   =  37,      /*!< General Purpose DMA Interrupt      */
-    DMA1_IRQn                   =  38,      /*!< General Purpose DMA Interrupt      */
-    DMA2_IRQn                   =  39,      /*!< General Purpose DMA Interrupt      */
+    SYS_DMA0_IRQn               =  37,      /*!< General Purpose DMA Interrupt      */
+    SYS_DMA1_IRQn               =  38,      /*!< General Purpose DMA Interrupt      */
+    SYS_DMA2_IRQn               =  39,      /*!< General Purpose DMA Interrupt      */
     PAGE_SPY_IRQn               =  40,      /*!< Page Spy Interrupt                 */
     SPI_WAKEUP_IRQn             =  41,      /*!< SPI Slave Wakeup Interrupt         */
     WIFI_HOST_IRQn              =  42,      /*!< WIFI Host Interrupt                */
@@ -191,7 +191,9 @@ typedef enum IRQn
 #define MCU2DSP_DONE_IRQn       MCU_DSPC0_DONE_IRQn
 #define MCU2DSP_DONE1_IRQn      MCU_DSPC0_DONE1_IRQn
 
-#ifdef CHIP_ROLE_CP
+#include "plat_addr_map.h"
+
+#ifdef CHIP_SUBSYS_M55C1
 #define TIMER00_IRQn            AON_TIMER10_IRQn
 #define TIMER01_IRQn            AON_TIMER11_IRQn
 #define TIMER10_IRQn            SYS_TIMER10_IRQn
@@ -205,8 +207,26 @@ typedef enum IRQn
 #define WDT_IRQn                AON_WDT_IRQn
 #endif
 
+
+#ifdef CHIP_SUBSYS_M55C1
+#if defined(CHIP_DMA_CFG_IDX) && (CHIP_DMA_CFG_IDX == 3)
+#define DMA0_IRQn                               SYS_DMA1_IRQn
+#else
+//todo
+#endif
+#else  // CHIP_SUBSYS_M55C0
+#if defined(CHIP_DMA_CFG_IDX) && (CHIP_DMA_CFG_IDX == 3)
+#define DMA0_IRQn                               SYS_DMA0_IRQn
+#else
+#define DMA0_IRQn                               SYS_DMA0_IRQn
+#define DMA1_IRQn                               SYS_DMA1_IRQn
+#define DMA2_IRQn                               SYS_DMA2_IRQn
+#endif
+#endif
+
 #define GPIO_IRQn               AON_IRQn
 #define DSP_WDT_IRQn            DSPC0_WDT_IRQn
+#define JPEG_DEC_IRQn           SYS_JPEG_IRQn
 
 #define FULLMAP_MMU0_IRQn       FULLMAP_MMU_PSRAM0_IRQn
 #define FULLMAP_MMU1_IRQn       FULLMAP_MMU_PSRAM1_IRQn

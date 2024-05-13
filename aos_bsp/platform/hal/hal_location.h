@@ -44,11 +44,17 @@ extern "C" {
 #define HAL_FUNC_SEC_ATTR
 #endif
 
+#ifdef ASAN
+#define HAL_FUNC_NO_ASAN_ATTR           __attribute__((no_sanitize_address))
+#else
+#define HAL_FUNC_NO_ASAN_ATTR
+#endif
+
 #if defined(__GNUC__) && !((defined(ROM_BUILD) && !defined(ROM_IN_FLASH)) || defined(PROGRAMMER)) && !defined(NANDFLASH_BUILD)
 
-#define BOOT_TEXT_SRAM_LOC              HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.boot_text_sram)
+#define BOOT_TEXT_SRAM_LOC              HAL_FUNC_NO_ASAN_ATTR HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.boot_text_sram)
 #define BOOT_TEXT_SRAM_DEF(n)           HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.boot_text_sram, n)
-#define BOOT_TEXT_FLASH_LOC             HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.boot_text_flash)
+#define BOOT_TEXT_FLASH_LOC             HAL_FUNC_NO_ASAN_ATTR HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.boot_text_flash)
 #define BOOT_TEXT_FLASH_DEF(n)          HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.boot_text_flash, n)
 #define BOOT_RODATA_SRAM_LOC            HAL_SEC_LOC(.boot_rodata_sram)
 #define BOOT_RODATA_SRAM_DEF(n)         HAL_SEC_DEF(.boot_rodata_sram, n)
@@ -76,16 +82,26 @@ extern "C" {
 #define SRAM_NC_RODATA_DEF(n)           HAL_SEC_DEF(.sram_nc_rodata, n)
 #define SRAM_NC_DATA_LOC                HAL_SEC_LOC(.sram_nc_data)
 #define SRAM_NC_DATA_DEF(n)             HAL_SEC_DEF(.sram_nc_data, n)
+#define RAM_EXTRA0_TEXT_LOC             HAL_SEC_LOC(.ram_extra0_text)
+#define RAM_EXTRA0_TEXT_DEF(n)          HAL_SEC_DEF(.ram_extra0_text, n)
+#define RAM_EXTRA0_RODATA_LOC           HAL_SEC_LOC(.ram_extra0_rodata)
+#define RAM_EXTRA0_RODATA_DEF(n)        HAL_SEC_DEF(.ram_extra0_rodata, n)
+#define RAM_EXTRA0_DATA_LOC             HAL_SEC_LOC(.ram_extra0_data)
+#define RAM_EXTRA0_DATA_DEF(n)          HAL_SEC_DEF(.ram_extra0_data, n)
 #ifdef __ARMCC_VERSION
 #define SRAM_BSS_LOC                    HAL_SEC_LOC(.bss.sram_bss)
 #define SRAM_BSS_DEF(n)                 HAL_SEC_DEF(.bss.sram_bss, n)
 #define SRAM_NC_BSS_LOC                 HAL_SEC_LOC(.bss.sram_nc_bss)
 #define SRAM_NC_BSS_DEF(n)              HAL_SEC_DEF(.bss.sram_nc_bss, n)
+#define RAM_EXTRA0_BSS_LOC              HAL_SEC_LOC(.bss.ram_extra0_bss)
+#define RAM_EXTRA0_BSS_DEF(n)           HAL_SEC_DEF(.bss.ram_extra0_bss, n)
 #else
 #define SRAM_BSS_LOC                    HAL_SEC_LOC(.sram_bss)
 #define SRAM_BSS_DEF(n)                 HAL_SEC_DEF(.sram_bss, n)
 #define SRAM_NC_BSS_LOC                 HAL_SEC_LOC(.sram_nc_bss)
 #define SRAM_NC_BSS_DEF(n)              HAL_SEC_DEF(.sram_nc_bss, n)
+#define RAM_EXTRA0_BSS_LOC              HAL_SEC_LOC(.ram_extra0_bss)
+#define RAM_EXTRA0_BSS_DEF(n)           HAL_SEC_DEF(.ram_extra0_bss, n)
 #endif
 
 #define FRAM_TEXT_LOC                   HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.fast_text_sram)
@@ -95,12 +111,18 @@ extern "C" {
 #define CP_TEXT_SRAM_DEF(n)             HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.cp_text_sram, n)
 #define CP_DATA_LOC                     HAL_SEC_LOC(.cp_data)
 #define CP_DATA_DEF(n)                  HAL_SEC_DEF(.cp_data, n)
+#define CP_AON_DATA_LOC                 HAL_SEC_LOC(.cp_always_on_data)
+#define CP_AON_DATA_DEF(n)              HAL_SEC_DEF(.cp_always_on_data, n)
 #ifdef __ARMCC_VERSION
 #define CP_BSS_LOC                      HAL_SEC_LOC(.bss.cp_bss)
 #define CP_BSS_DEF(n)                   HAL_SEC_DEF(.bss.cp_bss, n)
+#define CP_AON_BSS_LOC                  HAL_SEC_LOC(.bss.cp_always_on_bss)
+#define CP_AON_BSS_DEF(n)               HAL_SEC_DEF(.bss.cp_always_on_bss, n)
 #else
 #define CP_BSS_LOC                      HAL_SEC_LOC(.cp_bss)
 #define CP_BSS_DEF(n)                   HAL_SEC_DEF(.cp_bss, n)
+#define CP_AON_BSS_LOC                  HAL_SEC_LOC(.cp_always_on_bss)
+#define CP_AON_BSS_DEF(n)               HAL_SEC_DEF(.cp_always_on_bss, n)
 #endif
 
 #define FLASH_TEXT_LOC                  HAL_FUNC_SEC_ATTR HAL_SEC_LOC(.flash_text)
@@ -225,10 +247,18 @@ extern "C" {
 #define SRAM_NC_RODATA_DEF(n)           n
 #define SRAM_NC_DATA_LOC
 #define SRAM_NC_DATA_DEF(n)             n
+#define RAM_EXTRA0_TEXT_LOC
+#define RAM_EXTRA0_TEXT_DEF(n)          n
+#define RAM_EXTRA0_RODATA_LOC
+#define RAM_EXTRA0_RODATA_DEF(n)        n
+#define RAM_EXTRA0_DATA_LOC
+#define RAM_EXTRA0_DATA_DEF(n)          n
 #define SRAM_BSS_LOC
 #define SRAM_BSS_DEF(n)                 n
 #define SRAM_NC_BSS_LOC
 #define SRAM_NC_BSS_DEF(n)              n
+#define RAM_EXTRA0_BSS_LOC
+#define RAM_EXTRA0_BSS_DEF(n)           n
 
 #define FRAM_TEXT_LOC
 #define FRAM_TEXT_DEF(n)                n
@@ -238,20 +268,30 @@ extern "C" {
 #define CP_TEXT_SRAM_DEF(n)             HAL_FUNC_SEC_ATTR HAL_SEC_DEF(.cp_text_sram, n)
 #define CP_DATA_LOC                     HAL_SEC_LOC(.cp_data)
 #define CP_DATA_DEF(n)                  HAL_SEC_DEF(.cp_data, n)
+#define CP_AON_DATA_LOC                 HAL_SEC_LOC(.cp_always_on_data)
+#define CP_AON_DATA_DEF(n)              HAL_SEC_DEF(.cp_always_on_data, n)
 #ifdef __ARMCC_VERSION
 #define CP_BSS_LOC                      HAL_SEC_LOC(.bss.cp_bss)
 #define CP_BSS_DEF(n)                   HAL_SEC_DEF(.bss.cp_bss, n)
+#define CP_AON_BSS_LOC                  HAL_SEC_LOC(.bss.cp_always_on_bss)
+#define CP_AON_BSS_DEF(n)               HAL_SEC_DEF(.bss.cp_always_on_bss, n)
 #else
 #define CP_BSS_LOC                      HAL_SEC_LOC(.cp_bss)
 #define CP_BSS_DEF(n)                   HAL_SEC_DEF(.cp_bss, n)
+#define CP_AON_BSS_LOC                  HAL_SEC_LOC(.cp_always_on_bss)
+#define CP_AON_BSS_DEF(n)               HAL_SEC_DEF(.cp_always_on_bss, n)
 #endif
 #else
 #define CP_TEXT_SRAM_LOC
 #define CP_TEXT_SRAM_DEF(n)             n
 #define CP_DATA_LOC
 #define CP_DATA_DEF(n)                  n
+#define CP_AON_DATA_LOC
+#define CP_AON_DATA_DEF(n)              n
 #define CP_BSS_LOC
 #define CP_BSS_DEF(n)                   n
+#define CP_AON_BSS_LOC
+#define CP_AON_BSS_DEF(n)               n
 #endif
 
 #if defined(__GNUC__) && defined(PROGRAMMER_INFLASH)
@@ -343,6 +383,13 @@ extern "C" {
 #define SYNC_FLAGS_LOC
 #define SYNC_FLAGS_DEF(n)               n
 #endif
+
+#define AON_MBX_DATA_LOC                HAL_SEC_LOC(.aon_mbx_data)
+#define AON_MBX_DATA_DEF(n)             HAL_SEC_DEF(.aon_mbx_data, n)
+#define AON_MBX_BSS_LOC                 HAL_SEC_LOC(.aon_mbx_bss)
+#define AON_MBX_BSS_DEF(n)              HAL_SEC_DEF(.aon_mbx_bss, n)
+#define AON_MBX_BUF_LOC                 HAL_SEC_LOC(.aon_mbx_buf)
+#define AON_MBX_BUF_DEF(n)              HAL_SEC_DEF(.aon_mbx_buf, n)
 
 #define NOINIT_FLAGS_LOC                HAL_SEC_LOC(.noinit)
 #define NOINIT_FLAGS_DEF(n)             HAL_SEC_DEF(.noinit, n)

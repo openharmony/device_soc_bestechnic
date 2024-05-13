@@ -30,6 +30,7 @@ enum HAL_PAGE_SPY_FLAG_T {
 };
 
 struct HAL_PAGE_SPY_HIT_INFO_T {
+    uint32_t spy_base;
     uint32_t addr;
     uint32_t len;
     uint16_t master_id;

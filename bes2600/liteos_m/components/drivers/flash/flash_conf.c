@@ -26,109 +26,62 @@
 
 /* Logic partition on flash devices */
 hal_logic_partition_t g_halPartitions[] = {
-    [NORFLASH_API_MODULE_ID_BOOTLOADER] = {
+    [HAL_PARTITION_BOOTLOADER] = {
         .partition_owner = HAL_FLASH_EMBEDDED,
-        .partition_description = "boot1",
+        .partition_description = "bootloader",
         .partition_start_addr = 0x0,
         .partition_length = 0x10000, //64KB
         .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
     },
-    [NORFLASH_API_MODULE_ID_BOOT] = {
+    [HAL_PARTITION_BOOTINFO] = {
         .partition_owner = HAL_FLASH_EMBEDDED,
-        .partition_description = "boot2A",
+        .partition_description = "bootinfo",
         .partition_start_addr = 0x10000,
-        .partition_length = 0x10000, //64KB
+        .partition_length = 0x8000, //32KB
         .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
     },
-    [NORFLASH_API_MODULE_ID_2ND_BOOT] = {
+    [HAL_PARTITION_RTOSA] = {
         .partition_owner = HAL_FLASH_EMBEDDED,
-        .partition_description = "boot2B",
-        .partition_start_addr = 0x20000,
-        .partition_length = 0x10000, //64KB
+        .partition_description = "RTOSA",
+        .partition_start_addr = 0x18000,
+        .partition_length = 0xC00000, //12M
         .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
     },
-    [NORFLASH_API_MODULE_ID_TRUSTZONE] = {
+    [HAL_PARTITION_RTOSB] = {
         .partition_owner = HAL_FLASH_EMBEDDED,
-        .partition_description = "trustzoneA",
-        .partition_start_addr = 0x30000,
-        .partition_length = 0x26000, //152KB
+        .partition_description = "RTOSB",
+        .partition_start_addr = 0xC18000,
+        .partition_length = 0xC00000, //12M
         .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
     },
-    [NORFLASH_API_MODULE_ID_2ND_TRUSTZONE] = {
-        .partition_owner = HAL_FLASH_EMBEDDED,
-        .partition_description = "trustzoneB",
-        .partition_start_addr = 0x56000,
-        .partition_length = 0x26000, //152KB
-        .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
-    },
-    [NORFLASH_API_MODULE_ID_TRUSTZONE_INFO] = {
-        .partition_owner = HAL_FLASH_EMBEDDED,
-        .partition_description = "trustzoneInfo",
-        .partition_start_addr = 0x7C000,
-        .partition_length = 0x4000, //16KB
-        .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
-    },
-    [NORFLASH_API_MODULE_ID_RTOSA] = {
-        .partition_owner = HAL_FLASH_EMBEDDED,
-        .partition_description = "cm33_main",
-        .partition_start_addr = 0x80000,
-        .partition_length = 0x7E0000, //8064KB
-        .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
-    },
-    [NORFLASH_API_MODULE_ID_MINISYSTEM] = {
-        .partition_owner = HAL_FLASH_EMBEDDED,
-        .partition_description = "system_mini",
-        .partition_start_addr = 0x860000,
-        .partition_length = 0x300000, //3072KB
-        .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
-    },
-    [NORFLASH_API_MODULE_ID_LITTLEFS] = {
+    // need to rebuild bootloader if upper partitions changed
+    [HAL_PARTITION_RESOURCE] = {
         .partition_owner = HAL_FLASH_EMBEDDED,
         .partition_description = "littlefs",
-        .partition_start_addr = 0xB60000,
-        .partition_length = 0x400000, //4096KB
+        .partition_start_addr = 0x1818000,
+        .partition_length = 0x400000, //4MB
         .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
     },
-    [NORFLASH_API_MODULE_ID_LOG_DUMP] = {
-        .partition_owner = HAL_FLASH_EMBEDDED,
-        .partition_description = "log",
-        .partition_start_addr = 0xF60000,
-        .partition_length = 0x30000, //192KB
-        .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
-    },
-    [NORFLASH_API_MODULE_ID_DATA] = {
-        .partition_owner = HAL_FLASH_EMBEDDED,
-        .partition_description = "data",
-        .partition_start_addr = 0xF90000,
-        .partition_length = 0x40000, //256KB
-        .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
-    },
-    [NORFLASH_API_MODULE_ID_AUDIO] = {
-        .partition_owner = HAL_FLASH_EMBEDDED,
-        .partition_description = "misc",
-        .partition_start_addr = 0xFD0000,
-        .partition_length = 0xC000, //48KB
-        .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
-    },
-    [NORFLASH_API_MODULE_ID_USERDATA] = {
+    // 0x1C18000 ~ 0x1FF0000 for user
+    [HAL_PARTITION_USERDATA] = {
         .partition_owner = HAL_FLASH_EMBEDDED,
         .partition_description = "userdata",
-        .partition_start_addr = 0xFDC000,
-        .partition_length = 0x4000, //16KB
+        .partition_start_addr = 0x1FF0000,
+        .partition_length = 0xE000, //56KB
         .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
     },
-    [NORFLASH_API_MODULE_ID_FACTORY] = {
+    [HAL_PARTITION_ENV] = {
         .partition_owner = HAL_FLASH_EMBEDDED,
         .partition_description = "factory",
-        .partition_start_addr = 0xFE0000,
-        .partition_length = 0x10000, //64KB
+        .partition_start_addr = 0x1FFE000,
+        .partition_length = 0x1000, //4KB
         .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
     },
-    [NORFLASH_API_MODULE_ID_FACTORY_BACKUP] = {
+    [HAL_PARTITION_ENV_REDUND] = {
         .partition_owner = HAL_FLASH_EMBEDDED,
         .partition_description = "factory_backup",
-        .partition_start_addr = 0xFF0000,
-        .partition_length = 0x10000, //64KB
+        .partition_start_addr = 0x1FFF000,
+        .partition_length = 0x1000, //4KB
         .partition_options = PAR_OPT_READ_EN | PAR_OPT_WRITE_EN,
     },
 };
@@ -175,7 +128,7 @@ static uint32_t FlashGetResource(const struct DeviceResourceNode *resourceNode)
         return HDF_FAILURE;
     }
     int32_t num = resource->GetElemNum(resourceNode, "partitions");
-    if (num < 0 || num > NORFLASH_API_MODULE_ID_COUNT) {
+    if (num < 0 || num > HAL_PARTITION_MAX) {
         HDF_LOGE("%s: invalid partitions num %d", __func__, num);
         return HDF_FAILURE;
     }
@@ -185,7 +138,7 @@ static uint32_t FlashGetResource(const struct DeviceResourceNode *resourceNode)
             HDF_LOGE("%s: failed to get partitions", __func__);
             return HDF_FAILURE;
         }
-        if (partition >= NORFLASH_API_MODULE_ID_COUNT) {
+        if (partition >= HAL_PARTITION_MAX) {
             HDF_LOGE("%s: invalid partition %u", __func__, partition);
             return HDF_FAILURE;
         }
@@ -235,24 +188,15 @@ static int32_t FlashDriverInit(struct HdfDeviceObject *object)
         }
     }
 #endif
-    uint32_t block_size = norflash_api_get_block_size(HAL_FLASH_ID_0);
-    uint32_t sector_size =norflash_api_get_sector_size(HAL_FLASH_ID_0);
-    uint32_t page_size =norflash_api_get_page_size(HAL_FLASH_ID_0);
-    int lengthArray[NORFLASH_API_MODULE_ID_COUNT];
-    int addrArray[NORFLASH_API_MODULE_ID_COUNT];
-    for (int i = 0; i < NORFLASH_API_MODULE_ID_COUNT; i++) {
+
+    int lengthArray[HAL_PARTITION_MAX];
+    int addrArray[HAL_PARTITION_MAX];
+    for (int i = 0; i < HAL_PARTITION_MAX; i++) {
         lengthArray[i] = g_halPartitions[i].partition_length;
         addrArray[i] = g_halPartitions[i].partition_start_addr;
-        norflash_api_register(i, HAL_FLASH_ID_0, TO_FLASH_NC_ADDR(g_halPartitions[i].partition_start_addr),
-                                                 g_halPartitions[i].partition_length,
-                                                 block_size,
-                                                 sector_size,
-                                                 page_size,
-                                                 sector_size,
-                                                 NULL);
     }
 
-    (VOID)LOS_DiskPartition(DEV_FLASH_NAME, "littlefs", lengthArray, addrArray, NORFLASH_API_MODULE_ID_COUNT);
+    (VOID)LOS_DiskPartition(DEV_FLASH_NAME, "littlefs", lengthArray, addrArray, HAL_PARTITION_MAX);
 
     return HDF_SUCCESS;
 }

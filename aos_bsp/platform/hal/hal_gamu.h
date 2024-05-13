@@ -1,7 +1,7 @@
 
 /***************************************************************************
  *
- * Copyright 2015-2022 BES.
+ * Copyright 2015-2023 BES.
  * All rights reserved. All unpublished rights reserved.
  *
  * No part of this work may be used or reproduced in any form or by any
@@ -15,56 +15,97 @@
  *
  * **************************************************************************/
 
-
-#ifndef __HAL_GAMU_H
-#define __HAL_GAMU_H
+#ifndef __HAL_GAMU_H__
+#define __HAL_GAMU_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/*
- * Included Files
+enum GAMU_FORMAT_E {
+    GAMU_RGB32 = 0,
+    GAMU_RGB16 = 2,
+    GAMU_RGB24 = 3,
+};
+
+struct GAMU_LINE_CONFIG_T {
+    uint16_t pixel_start;
+    uint16_t pixel_end;
+};
+
+/**
+ * @brief Enable GAMU clock and initialize settings.
+ *
+ * @param fmt Buffer color format, RGB32/24/16;
+ *
+ * @return 0 for success, other for failed.
  */
-#include "plat_types.h"
+int hal_gamu_open(enum GAMU_FORMAT_E fmt);
 
-typedef void* (*fbmalloc)(uint8_t id, uint32_t size, uint8_t aligns);
-typedef float (*sqrtf_f)(float x);
+/**
+ * @brief Disable GAMU clock and clear settings.
+ */
+void hal_gamu_close(void);
 
-typedef struct {
-    uint16_t id;           //buffer id
-    uint16_t width;        //screen width
-    uint16_t height;       //screen heigth
-    uint16_t stride;       //line stride
-    uint8_t  bpp;          //buffer color deepth
-    fbmalloc align_malloc; //provided by user, used to alloc memory for gfx buffers
-    sqrtf_f sqrtf;           //provided by user, used to calculate line visible length
-    uint32_t vmem_size;    //
-    uint32_t *vmem;        //buffer start mmu virtual memory address, used by cpu,gpu,lcdc
-    uint32_t phymem_size;  //for debug only
-    uint32_t *phymem;      //for debug only
-    uint32_t bufferoffset; //virtual buffer middle physical address offset
-    uint32_t xoffset;
-    uint32_t yoffset;
-    uint16_t radius;       //internal use only
-    uint32_t used_vblocks; //internal use only
-}gamu_fb_info_t;
+/**
+ * @brief Enter low power mode.
+ */
+void hal_gamu_sleep(void);
 
-void hal_gamu_setup(gamu_fb_info_t *fb);
+/**
+ * @brief Exit low power mode.
+ */
+void hal_gamu_wakeup(void);
 
-/*
- *  hal_gamu_set_fake_rdata
- *  @rdata : pixel value returned for points outside the valid circle area
-*/
-void hal_gamu_set_fake_rdata(uint32_t rdata);
+/**
+ * @brief Configure GAMU buffer shape, line by line;
+ *
+ * @param cfg Buffer line configs to define visible area;
+ * @param count Buffer line configs count;
+ *
+ * @return 0 for success, other for failed.
+ */
+int hal_gamu_config_shape(struct GAMU_LINE_CONFIG_T *cfg, int count);
 
-/*
- *  hal_gamu_set_fake_wrdata_buffer
- *  @wrdata : start address of a hw internal buffer
-*/
-void hal_gamu_set_fake_wrdata_buffer(uint32_t *wrbuffer);
+/**
+ * @brief Configure and enable GAMU buffer, call after hal_gamu_config_shape().
+ *
+ * @param id Buffer ID, 0~3;
+ * @param paddr Buffer physical memory address;
+ * @param psize Buffer Physical memory size;
+ *
+ * @return 0 for success, other for failed.
+ */
+int hal_gamu_config_buf(uint8_t id, uint32_t paddr, uint32_t psize);
+
+/**
+ * @brief Get the width of GAMU buffer;
+ */
+uint16_t hal_gamu_buf_width(void);
+
+/**
+ * @brief Get the height of GAMU buffer;
+ */
+uint16_t hal_gamu_buf_height(void);
+
+/**
+ * @brief Get the virtual address of pixel in GAMU buffer.
+ *
+ * @param id Buffer ID, 0~3;
+ * @param x  pixel offset x;
+ * @param y  pixel offset y;
+ *
+ * @return 0 for invalid address;
+ */
+uint32_t hal_gamu_buf_vaddr(uint8_t id, uint16_t x, uint16_t y);
+
+/**
+ * @brief Set the fake read data.
+ */
+void hal_gamu_set_fake_rdata(uint32_t val);
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* __HAL_GAMU_H */
+
+#endif /* __HAL_GAMU_H__ */

@@ -432,6 +432,7 @@ int  hal_codec_dac_dc_auto_calib_disable(void);
 void hal_codec_dac_dc_offset_enable(int32_t dc_l, int32_t dc_r);
 void hal_codec_set_dig_dac_gain_dr(enum AUD_CHANNEL_MAP_T map, CODEC_DAC_VOL_T gain);
 
+bool hal_codec_adc_dc_auto_calib_check(void);
 int hal_codec_adc_dc_auto_calib_enable(enum AUD_CHANNEL_MAP_T ch_map);
 int hal_codec_adc_dc_auto_calib_disable(enum AUD_CHANNEL_MAP_T ch_map);
 void hal_codec_adc_dc_offset_update(enum AUD_CHANNEL_MAP_T ch_map, uint16_t calib_step, uint16_t calib_value);

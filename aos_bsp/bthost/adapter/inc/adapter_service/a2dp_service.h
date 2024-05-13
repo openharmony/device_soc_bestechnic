@@ -68,6 +68,11 @@ typedef struct {
     uint8_t error_code;
 } bt_a2dp_stream_close_param_t;
 
+typedef struct {
+    uint8_t *buf;
+    uint16_t len;
+} bt_a2dp_stream_data_param_t;
+
 typedef union {
     bt_a2dp_opened_param_t *opened;
     bt_a2dp_closed_param_t *closed;
@@ -75,6 +80,7 @@ typedef union {
     bt_a2dp_stream_reconfig_param_t *stream_reconfig;
     bt_a2dp_stream_suspend_param_t *stream_suspend;
     bt_a2dp_stream_close_param_t *stream_close;
+    bt_a2dp_stream_data_param_t *stream_data;
 } bt_a2dp_callback_param_t;
 
 typedef enum {

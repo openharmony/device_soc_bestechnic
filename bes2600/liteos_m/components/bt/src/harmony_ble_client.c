@@ -183,42 +183,6 @@ static int BleGattcClosedCb(gatt_prf_t *prf, gatt_profile_callback_param_t param
     return BT_STS_SUCCESS;
 }
 
-static int BleGattcAllServiceCb(gatt_prf_t *prf, gatt_profile_callback_param_t param)
-{
-    OhosGattcPrf_t *MsgPrf = (OhosGattcPrf_t *)prf;
-    OhosGattcObj_t *UserGattc = NULL;
-
-    UserGattc = &BleGattcEnv.UserClient[MsgPrf->UserId];
-    LOG_I("discovery all end=%d, %d" ,param.all_service->disc_end, UserGattc->CacheSrvNum);
-
-    if (!param.all_service->disc_end)
-    {
-        osMutexWait(BleGattcEnv.mutex_id, osWaitForever);
-        memcpy(&UserGattc->CacheSrv[UserGattc->CacheSrvNum],
-            param.all_service, sizeof(gatt_profile_all_service_t));
-        memcpy(UserGattc->CacheSrv[UserGattc->CacheSrvNum].Uuid,
-            param.all_service->uuid, param.all_service->uuid_len);
-        UserGattc->CacheSrvNum++;
-        osMutexRelease(BleGattcEnv.mutex_id);
-    } else {
-        if (UserGattc->CacheSrvNum)
-        {
-            UserGattc->FindSrvCount++;
-            if (UserGattc->CacheSrv[0].UuidLen == 2)
-            {
-                uint16_t *uuid = (uint16 *)UserGattc->CacheSrv[0].Uuid;
-                gattc_discover_service(UserGattc->StackPrf.prf, *uuid, NULL);
-            }
-            else
-            {
-                gattc_discover_service(UserGattc->StackPrf.prf, 0, UserGattc->CacheSrv[0].Uuid);
-            }
-        }
-    }
-
-    return BT_STS_SUCCESS;
-}
-
 static int BleGattcServiceCb(gatt_prf_t *prf, gatt_profile_callback_param_t param)
 {
     uint8_t FindCharSrvNum;
@@ -277,46 +241,6 @@ static int BleGattcIncludeCb(gatt_prf_t *prf, gatt_profile_callback_param_t para
 
     return BT_STS_SUCCESS;
 }
-
-static int BleGattcAllCharacterCb(gatt_prf_t *prf, gatt_profile_callback_param_t param)
-{
-    OhosGattcPrf_t *MsgPrf = (OhosGattcPrf_t *)prf;
-    OhosGattcObj_t *UserGattc = NULL;
-
-    UserGattc = &BleGattcEnv.UserClient[MsgPrf->UserId];
-    LOG_I("discovery All char dis, %d, %d!!", UserGattc->CacheCharNum, param.all_character->disc_end);
-    DUMP8("0x%02x ", param.all_character->char_uuid, 16);
-
-
-    if (!param.all_character->disc_end)
-    {
-        osMutexWait(BleGattcEnv.mutex_id, osWaitForever);
-        memcpy(&UserGattc->CacheChar[UserGattc->CacheCharNum],
-            param.all_character, sizeof(gatt_profile_all_service_t));
-        memcpy(UserGattc->CacheChar[UserGattc->CacheCharNum].CharUuid,
-            param.all_character->char_uuid, param.all_character->uuid_len);
-        UserGattc->CacheCharNum++;
-        osMutexRelease(BleGattcEnv.mutex_id);
-    } else {
-        if (UserGattc->CacheCharNum)
-        {
-            UserGattc->FindCharCount++;
-            if (UserGattc->CacheChar[0].UuidLen == 2)
-            {
-                uint16_t *uuid = (uint16 *)UserGattc->CacheChar[0].CharUuid;
-                gattc_discover_character(UserGattc->StackPrf.prf, UserGattc->CharByService, *uuid, NULL);
-            }
-            else
-            {
-                gattc_discover_character(UserGattc->StackPrf.prf, UserGattc->CharByService,
-                    0, UserGattc->CacheChar[0].CharUuid);
-            }
-        }
-    }
-
-    return BT_STS_SUCCESS;
-}
-
 
 static int BleGattcCharacterCb(gatt_prf_t *prf, gatt_profile_callback_param_t param)
 {
@@ -445,10 +369,8 @@ static const ohos_gattc_stack_event_list_t GattcStackEventList[] =
 {
     {GATT_PROF_EVENT_OPENED, BleGattcOpenedCb},
     {GATT_PROF_EVENT_CLOSED, BleGattcClosedCb},
-    {GATT_PROF_EVENT_ALL_SERVICE, BleGattcAllServiceCb},
     {GATT_PROF_EVENT_SERVICE, BleGattcServiceCb},
     {GATT_PROF_EVENT_INCLUDE, BleGattcIncludeCb},
-    {GATT_PROF_EVENT_ALL_CHARACTER, BleGattcAllCharacterCb},
     {GATT_PROF_EVENT_CHARACTER, BleGattcCharacterCb},
     {GATT_PROF_EVENT_CHAR_READ_RSP, BleGattcCharReadRspCb},
     {GATT_PROF_EVENT_DESC_READ_RSP, BleGattcDescReadRspCb},

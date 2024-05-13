@@ -495,7 +495,7 @@ extern uint32_t __nsc_text_end__[];
 //   <o.30> Interrupt 94  <0=> Secure state <1=> Non-Secure state
 //   <o.31> Interrupt 95  <0=> Secure state <1=> Non-Secure state
 */
-#define NVIC_INIT_ITNS2_VAL      0xFFFFFFF7 // PAGESPY_IRQn: Secure state
+#define NVIC_INIT_ITNS2_VAL      0xFFFFFFF7 // PAGE_SPY_IRQn: Secure state
 
 /*
 //   </e>

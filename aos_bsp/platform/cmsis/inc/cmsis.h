@@ -71,10 +71,10 @@ __STATIC_FORCEINLINE uint32_t int_lock_global(void)
     uint32_t pri = __get_PRIMASK();
     uint32_t pc;
     if ((pri & 0x1) == 0) {
+        __disable_irq();
         __ASM volatile ("mov %0, PC" : "=r"(pc));
         irq_g_masked_addr.pc = pc;
         irq_g_masked_addr.lr = (uint32_t)__builtin_return_address(0);
-        __disable_irq();
     }
     return pri;
 #endif
@@ -155,15 +155,16 @@ __STATIC_FORCEINLINE uint32_t int_lock(void)
     return mask;
 #else
     uint32_t pri = __get_BASEPRI();
+
     if (pri != ((IRQ_PRIORITY_HIGHPLUS << (8 - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL)) {
         uint32_t pc;
+        // Only allow IRQs with priority IRQ_PRIORITY_HIGHPLUSPLUS and IRQ_PRIORITY_REALTIME
+        __set_BASEPRI(((IRQ_PRIORITY_HIGHPLUS << (8 - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL));
         __ASM volatile ("mov %0, PC" : "=r"(pc));
         irq_masked_addr.pc = pc;
         irq_masked_addr.lr = (uint32_t)__builtin_return_address(0);
     }
 
-    // Only allow IRQs with priority IRQ_PRIORITY_HIGHPLUSPLUS and IRQ_PRIORITY_REALTIME
-    __set_BASEPRI(((IRQ_PRIORITY_HIGHPLUS << (8 - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL));
     return pri;
 #endif
 #else
@@ -199,14 +200,17 @@ __STATIC_FORCEINLINE void int_unlock_local(uint32_t pri)
 
 #endif
 
-#ifdef KERNEL_NUTTX
+#ifdef __NuttX__
 #include "arch/irq.h"
 #endif
 
 __STATIC_FORCEINLINE int in_isr(void)
 {
-#ifdef KERNEL_NUTTX
+#ifdef __NuttX__
     return (int)up_interrupt_context();
+#elif defined(KERNEL_LITEOS_A) || defined(KERNEL_RHINO)
+    extern int os_in_isr(void);
+    return (int)os_in_isr();
 #else
 #ifdef __ARM_ARCH_ISA_ARM
     uint32_t mode = __get_mode();

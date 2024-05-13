@@ -74,6 +74,11 @@ void hal_iomux_set_uart0(void);
 void hal_iomux_set_uart1(void);
 void hal_iomux_set_uart2(void);
 void hal_iomux_set_uart3(void);
+void hal_iomux_set_uart0_ctsrts(void);
+void hal_iomux_set_uart1_ctsrts(void);
+void hal_iomux_set_uart2_ctsrts(void);
+void hal_iomux_set_uart3_ctsrts(void);
+void hal_iomux_set_sci(void);
 void hal_iomux_set_analog_i2c(void);
 void hal_iomux_set_analog_i2c_master_slave(void);
 void hal_iomux_set_jtag(void);
@@ -86,6 +91,7 @@ void hal_iomux_clear_sdmmc1(void);
 void hal_iomux_set_i2s0(void);
 void hal_iomux_set_i2s1(void);
 void hal_iomux_set_i2s2(void);
+void hal_iomux_set_i2s3(void);
 void hal_iomux_set_i2s0_mclk(void);
 void hal_iomux_set_i2s1_mclk(void);
 void hal_iomux_set_i2s0_mclk_in(void);
@@ -109,6 +115,8 @@ void hal_iomux_set_i2c2(void);
 void hal_iomux_set_i2c3(void);
 void hal_iomux_set_i2c4(void);
 void hal_iomux_set_i2c5(void);
+void hal_iomux_set_i2c6(void);
+void hal_iomux_set_i2c7(void);
 void hal_iomux_set_i3c0(void);
 void hal_iomux_set_i3c1(void);
 void hal_iomux_set_pwm0(void);
@@ -125,6 +133,7 @@ enum HAL_IOMUX_PIN_VOLTAGE_DOMAINS_T hal_iomux_get_sdio_voltage(void);
 void hal_iomux_set_sdio(void);
 void hal_iomux_set_sdio1(void);
 void hal_iomux_set_clock_out(void);
+void hal_iomux_set_clock_32k(void);
 void hal_iomux_set_clock_12m(void);
 void hal_iomux_clear_clock_12m(void);
 void hal_iomux_set_bt_tport(void);
@@ -154,6 +163,9 @@ void hal_iomux_set_i2s_tx_trig(void);
 
 void hal_iomux_set_analog_io(enum HAL_IOMUX_PIN_T pin);
 void hal_iomux_clear_analog_io(enum HAL_IOMUX_PIN_T pin);
+
+void hal_iomux_set_lm_sensor0(void);
+void hal_iomux_clear_lm_sensor0(void);
 
 #ifdef __cplusplus
 }

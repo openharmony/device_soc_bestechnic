@@ -131,18 +131,16 @@ typedef enum IRQn
     CHKSUM_IRQn                 =  64,      /*!< Checksum Interrupt                 */
     CRC_IRQn                    =  65,      /*!< CRC Interrupt                      */
     CP_DSLP_IRQn                =  66,      /*!< CP Deep Sleep Interrupt            */
-    PAGESPY_IRQn                =  67,      /*!< PAGESPY Interrupt                  */
+    PAGE_SPY_IRQn               =  67,      /*!< PAGE SPY Interrupt                 */
     TRUSTZONE_IRQn              =  68,      /*!< TrustZone Interrupt                */
     BT_STAMP_IRQn               =  69,      /*!< BT Playtime Stamp Interrupt        */
     ISDATA2_IRQn                =  70,
     CSI0_IRQn                   =  ISDATA2_IRQn,/*!< CSI0 Interrupt                 */
     CSI1_IRQn                   =  CSI0_IRQn,   /*!< CSI1 Interrupt                 */
-    CSIDMA_IRQn                 =  CSI0_IRQn,   /*!< CSI DMA Interrupt              */
     ISDATA3_IRQn                =  71,
     DSI0_IRQn                   =  ISDATA3_IRQn,/*!< DSI0 Interrupt                 */
     DSI1_IRQn                   =  DSI0_IRQn,   /*!< DSI1 Interrupt                 */
     DSI_IRQn                    =  DSI0_IRQn,   /*!< DSI Interrupt                  */
-    DISPLAY_IRQn                =  DSI0_IRQn,   /*!< DISPLAY Interrupt              */
     UART4_IRQn                  =  72,          /*!< UART4 Interrupt                */
     I2C3_IRQn                   =  73,          /*!< I2C3 Interrupt                 */
     I2C4_IRQn                   =  74,          /*!< I2C4 Interrupt                 */
@@ -153,7 +151,7 @@ typedef enum IRQn
     I2S3_IRQn                   =  79,          /*!< I2S3 Interrupt                 */
     SPI3_IRQn                   =  80,          /*!< SPI3 Interrupt                 */
     LM_SENSOR_IRQn              =  81,          /*!< LM Sensor Interrupt            */
-    SCI_IRQn                    =  82,          /*!< SCI Interrupt                 */
+    SCI_IRQn                    =  82,          /*!< SCI Interrupt                  */
     CAN_IRQn                    =  83,          /*!< CAN Interrupt                  */
     I3C0_IRQn                   =  84,          /*!< I3C0 Interrupt                 */
     I3C1_IRQn                   =  85,          /*!< I3C1 Interrupt                 */
@@ -198,13 +196,51 @@ typedef enum IRQn
     THERMAL_IRQn                =  122,         /*!< Thermal Interrupt              */
     SHANHAI_NS_IRQn             =  123,         /*!< Shanhai NS Interrupt           */
     SHANHAI_S_IRQn              =  124,         /*!< Shanhai S Interrupt            */
-    JIAYU_IRQn                  =  131,         /*!< Jiayu NS and S Interrupt       */
+    NONE125_IRQn                =  125,         /*!< None125 Interrupt              */
+    NONE126_IRQn                =  126,         /*!< None126 Interrupt              */
+    NONE127_IRQn                =  127,         /*!< None127 Interrupt              */
+    SYS_WDT_IRQn                =  128,         /*!< Sys WDT Interrupt              */
+    SYS_SPY_IRQn                =  129,         /*!< Sys Spy Interrupt              */
+    SYS_TZC_IRQn                =  130,         /*!< Sys Tzc Interrupt              */
+    SYS_TE600_IRQn              =  131,         /*!< Sys TE600 Interrupt            */
+    SYS_DMA0_IRQn               =  132,         /*!< Sys DMA0 Interrupt             */
+    SYS_DMA1_IRQn               =  133,         /*!< Sys DMA1 Interrupt             */
+    SYS_ISP_IRQn                =  134,         /*!< Sys ISP Interrupt              */
+    SYS_GPU_IRQn                =  135,         /*!< Sys GPU Interrupt              */
+    SYS_EMMC_IRQn               =  136,         /*!< Sys Emmc Interrupt             */
+    SYS_EMAC_IRQn               =  137,         /*!< Sys Emac Interrupt             */
+    SYS_DDRC_IRQn               =  138,         /*!< Sys DDRC Interrupt             */
+    SYS_CVP_IRQn                =  139,         /*!< Sys CVP Interrupt              */
+    SYS_DSI_IRQn                =  140,         /*!< Sys DSI Interrupt              */
+    SYS_DISPLAY_IRQn            =  141,         /*!< Sys Display Interrupt          */
+    DISPLAY_IRQn                =  SYS_DISPLAY_IRQn,
+    SYS_CSI2_DMAC_IRQn          =  142,         /*!< Sys CSI2_DMAC Interrupt        */
+    SYS_CSI1_DMAC_IRQn          =  143,         /*!< Sys CSI1_DMAC Interrupt        */
+    SYS_CSI0_DMAC_IRQn          =  144,         /*!< Sys CSI0_DMAC Interrupt        */
+#ifdef CONFIG_CSI2_2LANE_MODE
+    CSIDMA_IRQn                 =  SYS_CSI2_DMAC_IRQn,
+#else
+    CSIDMA_IRQn                 =  SYS_CSI0_DMAC_IRQn,
+#endif
+    SYS_PCM_IRQn                =  145,         /*!< Sys PCM Interrupt              */
+    SYS_SPI0_IRQn               =  146,         /*!< Sys SPI0 Interrupt             */
+    SYS_I2C0_IRQn               =  147,         /*!< Sys I2C0 Interrupt             */
+    SYS_XDMA_IRQn               =  148,         /*!< Sys XDMA Interrupt             */
+    SYS_UART0_IRQn              =  149,         /*!< Sys UART0 Interrupt            */
+    SYS_ETR_BUF_IRQn            =  150,         /*!< Sys ETR BUF Interrupt          */
+    SYS_SDC_EXT_IRQn            =  151,         /*!< Sys SDC EXT Interrupt          */
+    SYS_GIC_EXT_PMU_IRQn        =  152,         /*!< Sys GIC EXT PMU Interrupt      */
+    SYS_GIC_EXT_ERR_IRQn        =  153,         /*!< Sys EXT ERR Interrupt          */
+    SYS_GIC_EXT_FAULT_IRQn      =  154,         /*!< Sys EXT FAULT Interrupt        */
 
     USER_IRQn_QTY,
     INVALID_IRQn                = USER_IRQn_QTY,
 } IRQn_Type;
 
 #define GPIO_IRQn               AON_GPIO_IRQn
+#define GPIO1_IRQn              AON_GPIO_IRQn
+#define GPIO2_IRQn              AON_GPIO_IRQn
+#define GPIO3_IRQn              AON_GPIO_IRQn
 #define GPIOAUX_IRQn            AON_GPIOAUX_IRQn
 #ifdef CORE_SLEEP_POWER_DOWN
 #define TIMER00_IRQn            AON_TIMER00_IRQn
@@ -227,6 +263,9 @@ typedef enum IRQn
 #define TRANSQ1_RMT_IRQn        TRANSQD_RMT_IRQn
 #define TRANSQ1_LCL_IRQn        TRANSQD_LCL_IRQn
 
+#define JIAYU_IRQn              SYS_TE600_IRQn
+#define EMMC_IRQn               SYS_EMMC_IRQn
+#define GPU_IRQn                SYS_GPU_IRQn
 #endif
 
 /* ================================================================================ */

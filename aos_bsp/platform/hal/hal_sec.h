@@ -42,6 +42,8 @@ void hal_sec_wakeup(void);
 
 void hal_sec_get_spy_base_list(const uint32_t **base, uint32_t *cnt);
 
+int hal_sec_spy_irq_on(uint32_t spy_base);
+
 #ifdef __cplusplus
 }
 #endif

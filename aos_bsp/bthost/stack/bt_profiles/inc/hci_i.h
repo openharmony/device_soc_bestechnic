@@ -162,6 +162,10 @@ extern "C" {
 #define    AUDIO_DATA_PATH_HCI               0
 #define    AUDIO_DATA_PATH_PCM               1
 
+#ifndef BTM_NAME_MAX_LEN
+#define BTM_NAME_MAX_LEN 248
+#endif
+
 /******************************************************************************************
  * Event Evtcode Definition  (OLD)
  *****************************************************************************************/
@@ -513,6 +517,7 @@ struct bt_hci_evt_keypress_notify {
 
 
 #define HCI_LE_META_EVT    0x3E
+#define HCI_SLE_META_EVT   0xEF
 
 #define HCI_LE_EV_CONN_COMPLETE 0x01
 struct hci_ev_le_conn_complete {
@@ -580,18 +585,18 @@ struct hci_ev_rd_mem_cmp_evt
 
 
 /* vendor event */
-#define HCI_EV_VENDOR_EVENT                (0xFF)
+#define HCI_EV_VENDOR_EVENT                     (0xFF)
 
 //sub event code
-#define HCI_DBG_TRACE_WARNING_EVT_CODE      0x01
-#define HCI_ACL_SNIFFER_STATUS_EVT_CODE     0x03
-#define HCI_TWS_EXCHANGE_CMP_EVT_CODE       0x04
-#define HCI_NOTIFY_CURRENT_ADDR_EVT_CODE    0x05
-#define HCI_NOTIFY_DATA_XFER_EVT_CODE       0x06
-#define HCI_START_SWITCH_EVT_CODE           0x09
-#define HCI_LL_MONITOR_EVT_CODE             0x0A
+#define HCI_DBG_TRACE_WARNING_EVT_CODE          0x01
+#define HCI_ACL_SNIFFER_STATUS_EVT_CODE         0x03
+#define HCI_TWS_EXCHANGE_CMP_EVT_CODE           0x04
+#define HCI_NOTIFY_CURRENT_ADDR_EVT_CODE        0x05
+#define HCI_NOTIFY_DATA_XFER_EVT_CODE           0x06
+#define HCI_START_SWITCH_EVT_CODE               0x09
+#define HCI_LL_MONITOR_EVT_CODE                 0x0A
 #define HCI_DBG_LMP_MESSAGE_RECORD_EVT_SUBCODE  0x0B
-#define HCI_GET_TWS_SLAVE_MOBILE_RSSI_CODE             0x0C
+#define HCI_GET_TWS_SLAVE_MOBILE_RSSI_CODE      0x0C
 
 #define HCI_SCO_SNIFFER_STATUS_EVT_CODE 0x02
 #define SNIFFER_SCO_STOP                0
@@ -607,7 +612,8 @@ struct hci_ev_ibrt_snoop_sco {
     uint32_t bandwidth;
 } __attribute__ ((packed));
 
-#define HCI_DBG_IBRT_CONNECTED_EVT_SUBCODE 0x0E
+#define HCI_DBG_IBRT_SWITCH_COMPLETE_EVT_SUBCODE    0x0D
+#define HCI_DBG_IBRT_CONNECTED_EVT_SUBCODE          0x0E
 struct hci_ev_ibrt_snoop_conn {
     uint8_t subcode;
     uint16_t connhdl;
@@ -616,7 +622,7 @@ struct hci_ev_ibrt_snoop_conn {
     uint8_t role;
 } __attribute__ ((packed));
 
-#define HCI_DBG_IBRT_DISCONNECTED_EVT_SUBCODE 0x0f
+#define HCI_DBG_IBRT_DISCONNECTED_EVT_SUBCODE       0x0f
 struct hci_ev_ibrt_snoop_disc {
     uint8_t subcode;
     uint16_t connhdl;
@@ -1634,6 +1640,14 @@ struct hci_dbg_ibrt_update_time_slice_struct
     uint8_t update;
     uint8_t num_link_env;
     struct link_env link_env[0];
+} __attribute__((packed));
+
+#define HCI_DBG_SET_BT_BLE_ACTIVE_LINK_CMD_OPCODE   0xFCDD
+
+struct hci_dbg_set_bt_ble_active_link_struct
+{
+    uint8_t active_mode;
+    uint16_t  link_handle;
 } __attribute__((packed));
 
 #define HCI_LE_READ_BUFFER_SIZE             0x2002
@@ -4188,6 +4202,19 @@ struct hci_ev_le_set_pa_sync_subevent_cmpl {
 } __attribute__ ((packed));
 
 
+/**
+ * BES TWS fast pair vender HCI command
+*/
+#define HCI_LE_TWS_FASTPAIR_CONFIG  0xFCF8
+struct hci_le_tws_fastpair_config {
+    bool enable;
+    uint8_t tws_role;
+    uint8_t activity_id;
+    uint8_t tws_addr[6];
+    uint8_t peer_le_addr[6];
+} __attribute__ ((packed));
+
+
 #ifdef IBRT
 typedef void (*hci_tx_buf_tss_process_cb_type)(void);
 typedef void (*bt_hci_acl_ecc_softbit_handler_func)(uint16_t*,uint16_t*, uint16_t, uint8_t*);
@@ -4197,7 +4224,6 @@ void register_hci_acl_ecc_softbit_handler_callback(bt_hci_acl_ecc_softbit_handle
 bool hci_tx_buff_process(void);
 void hci_rx_handle(struct hci_rx_desc_t *rx_desc);
 struct pp_buff *hci_fc_each_link_has_tx_chance(hci_conn_type_t conn_type);
-void hci_defer_free_rx_buffer(struct pp_buff *ppb, uint32_t ca, uint32_t line);
 
 bool hci_tx_buff_process(void);
 void hci_rx_handle(struct hci_rx_desc_t *rx_desc);
@@ -4205,12 +4231,10 @@ struct pp_buff *hci_fc_each_link_has_tx_chance(hci_conn_type_t conn_type);
 
 bt_status_t hci_simulate_event(const uint8_t *buff, uint16_t buff_len);
 bt_status_t hci_send_cmd_direct(const uint8_t *cmd_packet, uint8_t packet_len);
-struct hci_conn_item_t *hci_find_conn_by_priv_param(hci_conn_type_t type, void *priv_param);
 struct hci_conn_item_t *hci_find_conn_by_address(hci_conn_type_t conn_type, bt_addr_type_t addr_type, const bt_bdaddr_t *peer_addr);
 void hci_foreach_acl_conn_item(hci_conn_type_t conn_type, int (*cb)(void *priv_param, void *param), void *param);
 struct hci_conn_item_t *hci_find_conn_by_handle(hci_conn_type_t type, uint16_t connhdl);
 struct hci_conn_item_t *hci_find_acl_conn_item(hci_conn_type_t type, uint16_t connhdl);
-int hci_count_conn_type_items(hci_conn_type_t conn_type);
 
 #if defined(__cplusplus)
 }

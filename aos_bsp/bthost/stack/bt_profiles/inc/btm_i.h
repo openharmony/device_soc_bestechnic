@@ -125,7 +125,6 @@ enum btm_name_event
 };
 
 typedef void (*btm_pairing_callback_t)(enum btm_pairing_event event,void *pdata);
-typedef void (*btm_confirmation_req_callback_t)(struct bdaddr_t *bdaddr, uint32 numeric_value);
 
 typedef void (*btm_chip_init_ready_callback_t)(int status);
 
@@ -664,7 +663,8 @@ typedef uint8  connection_role;
 #define BTM_FEAT_TRAIN_NUDGING      2,1,0x08
 #define BTM_FEAT_SLOT_AVAIL_MASK    2,1,0x10
 
-#define BTM_MAX_FEATURE_PAGE (3)
+#define BTM_MAX_FEATURE_PAGE        (3)
+#define BTM_MAX_REMOTE_NAME_LEN     (32)    /* The value must be the same as BTM_SHORT_NAME_MAX_LEN */
 
 struct btm_feature_t
 {
@@ -789,7 +789,16 @@ struct btm_conn_item_t
     struct bt_mhdt_data_rate mhdt_data_rate;
     uint16 mhdt_timeout;
 #endif
+
+    char remote_name[BTM_MAX_REMOTE_NAME_LEN];
 };
+
+struct remote_version_t
+{
+    uint8    lmp_version;
+    uint16   manufacturer_name;
+    uint16   lmp_subversion;
+} __attribute__ ((packed));
 
 #define IS_REMOTE_FEAT_SUPPORT(conn, FEAT_MASK) \
     btm_is_remote_feature_support(conn, FEAT_MASK)
@@ -856,7 +865,6 @@ enum btm_stack_init_sub_state {
 };
 
 typedef void (*btm_init_start_callback_t)(void);
-typedef void (*btm_mhdt_mode_change_callback_t)(struct bdaddr_t, bool);
 
 struct btm_sync_conn_param {
     uint16 max_latency;
@@ -898,7 +906,15 @@ struct btm_ctrl_t {
     uint8 host_ssp_mode;
 
     void (*btm_event_report)(uint16 evt_id, void* pdata);
+    void (*btm_user_event_report)(void* pdata);
     void (*btm_cmgr_event_report)(uint16 evt_id, void* conn);
+    void (*btm_debug_event_report)(uint8_t* p_buf, uint16_t buf_len);
+    void (*btm_get_local_address_cb)(void *remote);
+    bool (*btm_is_creating_source_link_cb)(const void *remote);
+    int  (*btm_sco_request_cb)(uint8_t device_id, const uint8_t *remote);
+    void (*btm_ibrt_snoop_acl_connected_report)(uint8_t device_id, void* remote, void* btm_conn);
+    void (*btm_ibrt_snoop_acl_disconnected_report)(uint8_t device_id, void* remote);
+    void (*btm_ibrt_check_to_accept_new_sco)(uint8_t device_id);
     bool conn_req_cb_enable;
     uint8 con_num;
     uint8 sync_cmd_busy;
@@ -912,7 +928,7 @@ struct btm_ctrl_t {
     uint8_t min_enc_key_size;
 
 #if mHDT_SUPPORT
-    btm_mhdt_mode_change_callback_t btm_mhdt_mode_change_cb;
+    void    (*btm_mhdt_mode_change_cb)(struct bdaddr_t remote, bool isIn_mhdt_mode);
     uint8_t bt_mhdt_host_support;//local bt host mhdt support,used for enable/disable bt mHDT feature
     uint8_t bt_mhdt_feature;//bit0-bit3,local bt controller mhdt feature
 
@@ -997,6 +1013,7 @@ void btm_register_mhdt_mode_change_callback(void (*modechange_cb)(struct bdaddr_
 #endif
 
 int8 btm_device_mode_set(enum device_mode_dis_enum discoverable, enum device_mode_conn_enum connectable);
+int8 btm_device_mode_recover(void);
 int8 btm_device_write_iac(uint8 num);
 int8 btm_device_write_page_scan_activity(uint16 interval, uint16 window);
 int8 btm_device_write_inquiry_scan_activity(uint16 interval, uint16 window);
@@ -1034,7 +1051,7 @@ void btm_start_pairing(	struct bdaddr_t remote_addr, btm_pairing_callback_t call
 void btm_unpair_reomte(struct bdaddr_t remote_addr, btm_pairing_callback_t callback);
 
 void btm_pairing_register_callback(btm_pairing_callback_t callback);
-void btm_confirmation_register_callback(btm_confirmation_req_callback_t callback);
+void btm_confirmation_register_callback(void (*cb)(struct bdaddr_t *bdaddr, uint32 numeric_value));
 int8 btm_confirmation_resp(struct bdaddr_t *bdaddr, bool accept);
 
 void btm_pairing_exit(void);
@@ -1124,7 +1141,6 @@ struct btm_conn_item_t *btm_conn_search ( struct bdaddr_t *bdaddr );
 struct btm_conn_item_t *btm_conn_search_by_device_id(uint8 device_id);
 uint16 btm_conn_find_scohdl_by_connhdl(uint16 conn_handle);
 struct btm_conn_item_t *btm_conn_search_linkup ( struct bdaddr_t *bdaddr );
-struct btm_conn_item_t *btm_conn_find_or_add ( struct bdaddr_t *bdaddr );
 struct btm_sco_conn_item_t *btm_conn_sco_find_or_add( struct btm_conn_item_t *conn);
 struct btm_conn_item_t *btm_conn_acl_search_by_handle( uint16 conn_handle);
 struct btm_sco_conn_item_t *btm_conn_sco_search_by_handle( uint16 conn_handle);
@@ -1303,8 +1319,8 @@ int8 btlib_hcicmd_write_simple_pairing_mode(uint8 enable);
 int8 btlib_hcicmd_dbg_le_tx_power_request(uint16 conn_handle,  uint8 enable, int8 delta, uint8 rx_rate);
 int8 btlib_hcicmd_ble_audio_dbg_trc_enable_cmd(uint32_t trc_enable_opcode);
 int8 btlib_hcicmd_dbg_ibrt_update_time_slice(uint8_t nb, struct link_env* multi_ibrt);
-typedef void (*ble_audio_hci_debug_trace_handler)(uint8_t* p_buf, uint16_t buf_len);
-void register_hci_debug_trace_callback(ble_audio_hci_debug_trace_handler func);
+int8 btlib_hcicmd_dbg_set_bt_ble_active_link(uint8_t active_mode, uint16_t link_handle);
+void register_hci_debug_trace_callback(void (*cb)(uint8_t* p_buf, uint16_t buf_len));
 #if BLE_AUDIO_ENABLED
 int8 btlib_hcicmd_dbg_set_iso_quality_rep_thr(uint16 conn_handle,                   uint16 qlty_rep_evt_cnt_thr,
     uint16 tx_unack_pkts_thr, uint16 tx_flush_pkts_thr, uint16 tx_last_subevent_pkts_thr, uint16 retrans_pkts_thr,
@@ -1524,6 +1540,10 @@ int8 btlib_hcicmd_mhdt_le_read_local_feature(void);
 int8 btlib_hcicmd_mhdt_le_read_remote_feature(uint16 conn_handle);
 
 #endif /* mHDT_SUPPORT */
+
+int8 btlib_hcicmd_set_local_class_of_device(uint32_t class_of_device);
+int8 btlib_hcicmd_set_host_secure_connections_support(bool support);
+int8 btlib_hcicmd_set_ble_host_support(bool support);
 
 #ifdef __cplusplus
 }

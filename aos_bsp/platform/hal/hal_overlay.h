@@ -83,15 +83,8 @@ enum HAL_OVERLAY_RET_T {
     HAL_OVERLAY_RET_BAD_ID,
     HAL_OVERLAY_RET_IN_CFG,
     HAL_OVERLAY_RET_IN_USE,
+    HAL_OVERLAY_RET_BAD_SUBSYS,
 };
-
-#define CHECK_OVERLAY_ID(id) \
-    do {\
-        if ((id < 0) || (id >= HAL_OVERLAY_ID_QTY)) { \
-            ASSERT(0, "overlay id error %d", id); \
-        } \
-    } while (0)
-
 
 #ifndef NO_OVERLAY
 enum HAL_OVERLAY_RET_T hal_overlay_load(enum HAL_OVERLAY_ID_T id);

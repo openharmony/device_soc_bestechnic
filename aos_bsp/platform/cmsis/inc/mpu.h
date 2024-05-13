@@ -100,6 +100,10 @@ int mpu_disable(void);
 
 int mpu_enable(void);
 
+int mpu_no_access_set(uint32_t addr, uint32_t len);
+
+int mpu_no_access_clear(int no_access_id);
+
 #ifdef __cplusplus
 }
 #endif
