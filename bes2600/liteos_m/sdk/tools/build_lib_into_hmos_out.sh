@@ -130,11 +130,11 @@ fi
 
 cd ../../../aos_bsp
 
-chmod a+x tools/build_best2600w_ohos_into_lib.sh
+chmod a+x tools/build_2003_liteos.sh
 
-tools/build_best2600w_ohos_into_lib.sh \
--a="$OPT_LITEOS_A7  LIB_BIN_IN_SRC_DIR=0  $build_type" \
--m="$OPT_LITEOS_MAIN NO_LIBC=1 LIB_BIN_IN_SRC_DIR=0 BOARD_OS_WRAP_MALLOC=1 NET_LWIP_SUPPORT=1 LWIP_SUPPORT=1 $rel_filter $rel_flash_config $flash_config NO_LIBC=1 MODULE_KERNEL_STUB_INC=1 EXTERN_ROOT_PATH=./../../../../ $build_type" \
+tools/build_2003_liteos.sh \
+-a="$OPT_LITEOS_A7 $build_type" \
+-m="$OPT_LITEOS_MAIN NO_LIBC=1 BOARD_OS_WRAP_MALLOC=1 $rel_filter $rel_flash_config $flash_config MODULE_KERNEL_STUB_INC=1 EXTERN_ROOT_PATH=./../../../../ $build_type" \
 -c="$OPT_LITEOS_CP $build_type $flash_config " \
 -s="$OPT_LITEOS_MAIN_MINI_SE $build_type" \
 -l="$OPT_LITEOS_MINI NO_LIBC=1 BOARD_OS_WRAP_MALLOC=1 $rel_flash_config $flash_config MODULE_KERNEL_STUB_INC=1 EXTERN_ROOT_PATH=./../../../../ $build_type" \

@@ -150,6 +150,23 @@ lwip_netif_mac_addr_init(struct netif *netif, uint8_t *mac, int mac_len)
     memcpy(netif->hwaddr, mac, mac_len);
 }
 
+int
+lwip_netif_is_link_up(struct netif *netif)
+{
+    return (((netif)->flags & NETIF_FLAG_LINK_UP) ? (u8_t)1 : (u8_t)0);
+}
+
+int
+lwip_netif_ip_addr_isany(struct netif *netif)
+{
+#if LWIP_IPV4
+    return (((&netif->ip_addr) == NULL) ? 1 : ip4_addr_isany(ip_2_ip4(&netif->ip_addr)));
+#endif
+#if LWIP_IPV6
+    return (((&netif->ip_addr) == NULL) ? 1 : ((IP_IS_V6(&netif->ip_addr)) ? ip6_addr_isany(ip_2_ip6(&netif->ip_addr)) : ip4_addr_isany(ip_2_ip4(&netif->ip_addr))));
+#endif
+}
+
 #ifdef CHECKSUM_BY_HARDWARE
 #if LWIP_IPV6
 /** Split an u32_t in two u16_ts and add them up */
