@@ -1,0 +1,30 @@
+create libbest2003_aiot.a
+addlib out/best2003_aiot/apps/built-in.a
+addlib out/best2003_aiot/apps/aiot_generic/built-in.a
+addlib out/best2003_aiot/apps/app_eshell/built-in.a
+addmod out/best2003_aiot/build_info.o
+addlib out/best2003_aiot/config/built-in.a
+addlib out/best2003_aiot/multimedia/built-in.a
+addlib out/best2003_aiot/net/libnet.a
+addlib out/best2003_aiot/net/wifi/built-in.a
+addmod out/best2003_aiot/net/net_main.o
+addlib out/best2003_aiot/net/iperf/built-in.a
+addlib out/best2003_aiot/rtos/liteos/liteos_m/built-in.a
+addlib out/best2003_aiot/platform/built-in.a
+addlib out/best2003_aiot/services/built-in.a
+addlib out/best2003_aiot/services/aiot/built-in.a
+addlib out/best2003_aiot/services/aiot/a7_dsp/prj/built-in.a
+addlib out/best2003_aiot/services/aiot/ota_secboot/built-in.a
+addlib out/best2003_aiot/services/aiot/bes_kv/built-in.a
+addlib out/best2003_aiot/utils/boot_struct/built-in.a
+addlib out/best2003_aiot/utils/cppobject/built-in.a
+addlib out/best2003_aiot/utils/cqueue/built-in.a
+addlib out/best2003_aiot/utils/crash_catcher/built-in.a
+addlib out/best2003_aiot/utils/eshell/built-in.a
+addlib out/best2003_aiot/utils/hexdump/built-in.a
+addlib out/best2003_aiot/utils/intersyshci/built-in.a
+addlib out/best2003_aiot/utils/list/built-in.a
+addlib out/best2003_aiot/utils/lzma/built-in.a
+addlib out/best2003_aiot/utils/xyzmodem/built-in.a
+save
+end

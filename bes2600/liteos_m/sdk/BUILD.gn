@@ -104,6 +104,7 @@ config("public") {
     "$BSP_PATH/platform/cmsis/inc",
     "$BSP_PATH/utils/eshell",
     "$BSP_PATH/services/aiot/ota_secboot",
+    "$BSP_PATH/net",
   ]
   ldflags =
       [ "-Wl,-T" + rebase_path("$BSP_PATH/out/best2003_aiot/_best2003.lds") ]
