@@ -67,6 +67,11 @@ enum HAL_SDMMC_ERR {
     HAL_SDMMC_FIFO_XFER_TIMEOUT     = 31,
     HAL_SDMMC_BAD_ID                = 32,
     HAL_SDMMC_TIMER_ALLOC_ERR       = 33,
+    HAL_SDMMC_DMA_RX_ERR            = 34,
+    HAL_SDMMC_DMA_TX_ERR            = 35,
+    HAL_SDMMC_DMA_CH_ERR            = 36,
+    HAL_SDMMC_DMA_DESC_ERR          = 37,
+    HAL_SDMMC_DMA_START_ERR         = 38,
 
     //mmc_bread/mmc_berase/mmc_bwrite special code
     HAL_SDMMC_BLK_CNT_ERR           = 0xFFFFFFE0,

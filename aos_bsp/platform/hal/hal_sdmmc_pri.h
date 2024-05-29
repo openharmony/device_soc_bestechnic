@@ -294,6 +294,7 @@ struct sdmmc_ip_host {
     uint8_t dma_en;
     uint8_t dma_ch;
     uint8_t dma_in_use;
+    uint8_t dma_error;
     volatile uint8_t sdmmc_dma_lock;
     HAL_DMA_IRQ_HANDLER_T tx_dma_handler;
     HAL_DMA_IRQ_HANDLER_T rx_dma_handler;

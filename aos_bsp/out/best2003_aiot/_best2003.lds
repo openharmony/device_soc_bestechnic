@@ -1532,6 +1532,7 @@ SECTIONS
   _hdf_drivers_start = .;
   KEEP(*(.hdf.driver))
   _hdf_drivers_end = .;
+/*openamp resource table */
   __data_end__ = .;
   _edata = .;
         __shell_root_cmds_start = .;

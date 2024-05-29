@@ -187,6 +187,18 @@ extern "C" {
 #endif
 #endif
 
+#ifdef DDR_ENABLE
+#define DDR_DATA_LOC                    HAL_SEC_LOC(.ddr_data)
+#define DDR_DATA_DEF(n)                 HAL_SEC_DEF(.ddr_data, n)
+#ifdef __ARMCC_VERSION
+#define DDR_BSS_LOC                     HAL_SEC_LOC(.bss.ddr_bss)
+#define DDR_BSS_DEF(n)                  HAL_SEC_DEF(.bss.ddr_bss, n)
+#else
+#define DDR_BSS_LOC                     HAL_SEC_LOC(.ddr_bss)
+#define DDR_BSS_DEF(n)                  HAL_SEC_DEF(.ddr_bss, n)
+#endif
+#endif
+
 #ifdef ARM_CMSE
 #ifdef INTSRAM_RUN // For 1501 series
 #define CMSE_API_TEXT_LOC               SRAM_TEXT_LOC
@@ -346,6 +358,11 @@ extern "C" {
 #define PSRAMUHS_BSS_DEF(n)             n
 #define PSRAMUHS_NC_BSS_LOC
 #define PSRAMUHS_NC_BSS_DEF(n)          n
+
+#define DDR_DATA_LOC
+#define DDR_DATA_DEF(n)                 n
+#define DDR_BSS_LOC
+#define DDR_BSS_DEF(n)                  n
 
 #define CONST_STR_LOC(s, L)             s
 

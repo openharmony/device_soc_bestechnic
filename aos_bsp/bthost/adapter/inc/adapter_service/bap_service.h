@@ -376,10 +376,6 @@ typedef struct bap_big_info
     bool      encrypted;
 } bap_big_info_t;
 
-typedef void (*bap_big_info_adv_report_callback_t)(uintptr_t pa_sync_hdl, const bap_big_info_t *p_big_info);
-
-bt_status_t bap_register_big_info_adv_report_callback(const bap_big_info_adv_report_callback_t big_info_recv_cb);
-
 typedef struct {
     uint32_t controller_delay_us;
     uint8_t codec_id[5];
@@ -433,7 +429,6 @@ typedef struct
     bap_big_list_t big_list;
     uint8_t big_count;
     uint8_t adv_handle;
-    bap_big_info_adv_report_callback_t big_info_recv_cb;
 } bap_global_t;
 
 #ifdef __cplusplus

@@ -61,6 +61,8 @@ extern "C" {
     _TR_MODULE_DEF(VOICE_COMPRESS),         \
     _TR_MODULE_DEF(BT_GATT),                \
     _TR_MODULE_DEF(APP_UX),                 \
+    _TR_MODULE_DEF(IBRT_CORE),              \
+    _TR_MODULE_DEF(APP_IBRT),               \
     _TR_MODULE_DEF(CC_DECODE),              \
     _TR_MODULE_DEF(CC_ENCODE),              \
     _TR_MODULE_DEF(ESHELL),                 \

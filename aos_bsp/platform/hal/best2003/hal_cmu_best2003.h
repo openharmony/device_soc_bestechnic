@@ -398,6 +398,11 @@ enum HAL_CMU_BT_TRIGGER_SRC_T {
 
 #define HAL_CMU_SYS_REBOOT
 
+enum JTAG_SELECT_T {
+    JTAG_SELECT_MCU             = 0x0,
+    JTAG_SELECT_DSP             = 0x2,
+};
+
 typedef void (*HAL_CMU_BT_TRIGGER_HANDLER_T)(enum HAL_CMU_BT_TRIGGER_SRC_T src);
 
 int hal_cmu_bt_trigger_set_handler(enum HAL_CMU_BT_TRIGGER_SRC_T src, HAL_CMU_BT_TRIGGER_HANDLER_T hdlr);
@@ -463,6 +468,8 @@ void hal_cmu_dsp_stop_cpu(void);
 void hal_cmu_jtag_set_cp(void);
 
 void hal_cmu_jtag_set_a7(void);
+
+void hal_cmu_jtag_select(enum JTAG_SELECT_T select);
 
 void hal_cmu_dma_req_init(void);
 

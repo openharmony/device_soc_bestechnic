@@ -228,6 +228,12 @@ while it is in active mode. Then, keep resetting the sniff timer.
 
 #define BTIF_BTEVENT_USER_PASSKEY_REQUEST_EVENT     90
 
+#if defined(IBRT)
+#define BTIF_BTEVENT_IBRT_CONNECT_EVENT             91
+
+#define BTIF_BTEVENT_IBRT_DISCONNECT_EVENT          92
+#endif
+
 #define BTIF_BTEVENT_BES_AUD_CONNECTED              200
 
 #define BTIF_BTEVENT_BES_AUD_DISCONNECTED           201
@@ -676,11 +682,6 @@ typedef uint8_t btif_accessible_mode_t;
 #define QOS_SETUP_SERVICE_TYPE_NO_TRAFFIC       0x00
 #define QOS_SETUP_SERVICE_TYPE_BEST_EFFORT      0x01
 #define QOS_SETUP_SERVICE_TYPE_GUARANTEED       0x02
-
-typedef uint8_t voice_report_role_t;
-#define VOICE_REPORT_MASTER   0x00
-#define VOICE_REPORT_SLAVE    0x01
-#define VOICE_REPORT_LOCAL    0x02
 
 typedef bool (*ibrt_io_capbility_callback)(void *bdaddr);
 typedef void (*btif_cmgr_callback) (void *handler, uint8_t event, int status);

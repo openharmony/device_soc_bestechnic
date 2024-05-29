@@ -153,7 +153,6 @@ typedef void (*HAL_PSRAM_WINDOW_1D_CB_T)(struct HAL_PSRAM_WINDOW_1D_ANALYSIS_T *
 void hal_psram_sleep(enum HAL_CMU_LPU_SLEEP_MODE_T mode);
 void hal_psram_wakeup(enum HAL_CMU_LPU_SLEEP_MODE_T mode);
 void hal_psram_init(void);
-void hal_psram_phy_sleep(void);
 void hal_psram_snoop_enable(void);
 void hal_psram_snoop_disable(void);
 void hal_psram_write_buffer_invalidate(void);

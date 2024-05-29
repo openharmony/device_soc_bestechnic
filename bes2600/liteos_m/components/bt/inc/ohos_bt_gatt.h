@@ -45,6 +45,15 @@ extern "C" {
 #endif
 
 /**
+ * @brief Enumerates ble address type
+ *
+ * @since 6
+ */
+typedef enum {
+    BLE_ADDR_RANDOM = 0x01,
+} BleAddrType;
+
+/**
  * @brief Enumerates advertising filtering parameters.
  *
  * The parameters specify whether the advertiser uses a whitelist to filter scan or connection requests from scanners.
@@ -160,6 +169,8 @@ typedef enum {
     OHOS_BLE_SCAN_MODE_OP_P100_1000_1000 = 0x06,
     /** Duty cycle 50 */
     OHOS_BLE_SCAN_MODE_OP_P50_100_200 = 0x07,
+    /** Duty cycle 10 30/300 */
+    OHOS_BLE_SCAN_MODE_OP_P10_30_300 = 0x08,
 } BleScanMode;
 
 /**
@@ -272,6 +283,16 @@ typedef enum {
     /** Coded PHY */
     OHOS_BLE_SCAN_PHY_CODED = 0x03
 } BleScanResultPhyType;
+
+/**
+ * @brief Defines BLE advertising own address parameters.
+ *
+ * @since 6
+ */
+typedef struct {
+    uint8_t addr[OHOS_BD_ADDR_LEN]; // little endian
+    BleAddrType addrType;
+} AdvOwnAddrParams;
 
 /**
  * @brief Defines BLE advertising parameters.
@@ -746,6 +767,23 @@ int BleRegisterScanCallbacks(BleScanCallbacks *func, int32_t *scannerId);
 int BleDeregisterScanCallbacks(int32_t scannerId);
 
 /**
+ * @brief Sets own address, own address type, advertising data and parameters and starts advertising.
+ *
+ * This function is available for softbus only.
+ *
+ * @param advId Indicates the pointer to the advertisement ID.
+ * @param rawData Indicates the advertising data. For details, see {@link StartAdvRawData}.
+ * @param advParam Indicates the advertising parameters. For details, see {@link BleAdvParams}.
+ * @param ownAddrParams Indicates the own address(little endian) and own address type.
+ * For details, see {@link AdvOwnAddrParams}.
+ * @return Returns {@link OHOS_BT_STATUS_SUCCESS} if the operation is successful;
+ * returns an error code defined in {@link BtStatus} otherwise.
+ * @since 6
+ */
+int BleStartAdvWithAddr(int *advId, const StartAdvRawData *rawData, const BleAdvParams *advParam,
+    const AdvOwnAddrParams *ownAddrParams);
+
+/**
  * @brief Sets advertising data and parameters and starts advertising.
  *
  * This function is available for system applications only. \n
@@ -758,6 +796,30 @@ int BleDeregisterScanCallbacks(int32_t scannerId);
  * @since 6
  */
 int BleStartAdvEx(int *advId, const StartAdvRawData rawData, BleAdvParams advParam);
+
+/**
+ * @brief Enable advertising.
+ *
+ * This function is available for system applications only. \n
+ *
+ * @param advId Indicates the pointer to the advertisement ID.
+ * @return Returns {@link OHOS_BT_STATUS_SUCCESS} if the operation is successful;
+ * returns an error code defined in {@link BtStatus} otherwise.
+ * @since 11
+ */
+int BleEnableAdvEx(int advId);
+
+/**
+ * @brief Disable advertising.
+ *
+ * This function is available for system applications only. \n
+ *
+ * @param advId Indicates the pointer to the advertisement ID.
+ * @return Returns {@link OHOS_BT_STATUS_SUCCESS} if the operation is successful;
+ * returns an error code defined in {@link BtStatus} otherwise.
+ * @since 11
+ */
+int BleDisableAdvEx(int advId);
 
 /**
  * @brief Starts a scan with BleScanConfigs.
@@ -870,6 +932,12 @@ int SetLpDeviceParam(const BtLpDeviceParam *lpDeviceParam);
  * @since 6
  */
 int RemoveLpDeviceParam(BtUuid uuid);
+
+/**
+ * @brief Clear global resource when ble turn on or bluetooth_serivce unload.
+ * @since 11
+ */
+void ClearGlobalResource(void);
 
 #ifdef __cplusplus
 }

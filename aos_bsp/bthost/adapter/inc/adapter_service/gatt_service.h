@@ -64,7 +64,6 @@ typedef enum {
     ATT_ERROR_NOT_FOUND                 = 0x93,
     ATT_ERROR_IBRT_SLAVE_CANT_SEND      = 0x94,
     ATT_ERROR_PEER_SERVICE_CHANGED      = 0x95,
-    ATT_ERROR_DEFER_SEND_RSP_DATA       = 0x96,
     ATT_ERROR_COMMON_PROFILE_SERVICE    = 0xE0, // 0xE0 ~ 0xFF common profile and service error codes defined in CSS
     ATT_ERROR_COMMON_PROFILE_SERVICE_RFU= 0xFB, // 0xE0 ~ 0xFB reserved for future use
     ATT_ERROR_WRITE_REQ_REJECTED        = 0xFC,
@@ -333,6 +332,7 @@ typedef enum {
         ATT_16BIT_UUID(GATT_DESC_UUID_CHAR_SERVER_CONFIG, ATT_RD_PERM|ATT_WR_PERM|(write_sec_perm)), \
     }
 
+// Characteristic Presentation Format Descriptor (CPFD)
 #define GATT_DECL_CPFD_DESCRIPTOR(name) \
     static const uint8_t name[] = { \
         ATT_16BIT_UUID(GATT_DESC_UUID_EXT_REPORT_REFERENCE, ATT_RD_PERM), \
@@ -456,18 +456,12 @@ typedef struct {
 
 typedef struct {
     void *read_context;
+    uint32_t token;
 } gatt_server_read_ctx_t;
 
 typedef struct {
-    uint32_t defer_code;
-    uint8_t req_opcode;
-    uint16_t attr_handle;
-    uint16_t conn_handle;
-    uint32_t chan_handle;
-} gatt_server_defer_ctx_t;
-
-typedef struct {
     void *write_context;
+    uint32_t token;
 } gatt_server_write_ctx_t;
 
 typedef struct {
@@ -496,7 +490,6 @@ typedef struct {
     const gatt_attribute_t *char_attr;
     att_error_code_t rsp_error_code;
     gatt_server_read_ctx_t *ctx;
-    gatt_server_defer_ctx_t defer_ctx;
 } gatt_server_char_read_t;
 
 typedef struct {
@@ -522,7 +515,6 @@ typedef struct {
     att_error_code_t rsp_error_code;
     gatt_server_read_ctx_t *ctx;
     const uint8_t *descriptor;
-    gatt_server_defer_ctx_t defer_ctx;
 } gatt_server_desc_read_t;
 
 typedef struct {
@@ -624,7 +616,8 @@ bt_status_t gatts_unregister_service(const gatt_attribute_t *service);
 bt_status_t gatts_control_service(const gatt_attribute_t *service, uint16_t service_uuid_16, bool visible, uint16_t connhdl);
 bt_status_t gatts_write_read_rsp_data(gatt_server_read_ctx_t *ctx, const uint8_t *data, uint16_t len);
 bt_status_t gatts_send_write_rsp(gatt_server_write_ctx_t *write_ctx, uint16_t err_code);
-bt_status_t gatts_send_defer_read_rsp(const gatt_server_defer_ctx_t *defer_ctx, uint8_t error_code, const uint8_t *rsp_data, uint16_t data_len);
+bt_status_t gatts_send_defer_read_rsp(uint16_t connhdl, uint32_t token, uint8_t error_code, const uint8_t *rsp_data, uint16_t data_len);
+bt_status_t gatts_send_defer_write_rsp(uint16_t connhdl, uint32_t token, uint8_t error_code);
 bt_status_t gatts_send_indication(uint32_t con_bfs, const uint8_t *character, const uint8_t *data, uint16_t len);
 bt_status_t gatts_send_notification(uint32_t con_bfs, const uint8_t *character, const uint8_t *data, uint16_t len);
 bt_status_t gatts_send_multi_notifications(uint32_t con_bfs, gatt_multi_notify_item_t *notify, uint16_t count);
@@ -698,13 +691,9 @@ typedef struct {
     uint8_t peer_not_exist: 1;
     uint8_t desc_count;
     uint8_t char_index;
-    uint8_t count; // same uuid char count
-    uint16_t char_uuid; // set when 16-bit uuid
+    uint8_t end_hdl_offset;
     uint16_t char_prop;
-    uint16_t char_handle;
     uint16_t char_value_handle;
-    uint16_t char_end_handle;
-    uint16_t cccd_handle;
 } gatt_peer_character_t;
 
 typedef struct gatt_peer_service_t {
@@ -882,6 +871,9 @@ typedef enum {
     GATT_PROF_EVENT_NOTIFY, // profile shall check notify belong self or not
 } gatt_profile_event_t;
 
+#define GATTC_PEER_CHAR_END_HDL(peer_char)           (peer_char->char_value_handle != 0 ? \
+                                                            (peer_char->char_value_handle + peer_char->end_hdl_offset) : 0)
+
 typedef int (*gatt_profile_callback_t)(gatt_prf_t *prf, gatt_profile_event_t event, gatt_profile_callback_param_t param);
 
 uint8_t gattc_register_profile(gatt_profile_callback_t cb, const gattc_cfg_t *cfg);
@@ -893,6 +885,12 @@ bt_status_t gattc_get_service(gatt_prf_t *prf, uint16_t uuid_len, const uint8_t 
 bt_status_t gattc_get_character(gatt_peer_service_t *srv, uint16_t uuid_len, const uint8_t *uuid, gatt_peer_character_t** char_ptr);
 void gattc_get_character_uuid(const gatt_peer_character_t *c, gatt_peer_character_uuid_t *param);
 void gattc_get_service_uuid(const gatt_peer_service_t *s, gatt_peer_service_uuid_t *param);
+const uint8_t *gatt_srvc_128_uuid_le(const gatt_peer_service_t *s);
+uint16_t gatt_get_srvc_uuid_len(const gatt_peer_service_t *s);
+uint8_t gatt_get_same_uuid_char_count(const gatt_peer_character_t *c);
+uint16_t gatt_char_16_uuid_le(const gatt_peer_character_t *c);
+const uint8_t *gatt_char_128_uuid_le(const gatt_peer_character_t *c);
+uint16_t gatt_get_char_uuid_len(const gatt_peer_character_t *c);
 bt_status_t gatt_create_att_bearer(uint16_t connhdl);
 bt_status_t gatt_disconnect_att_bearers(uint16_t connhdl, bool include_no_initiator_att, uint8_t reason);
 bt_status_t gatt_create_eatt_bearer(uint16_t connhdl);
@@ -954,7 +952,6 @@ typedef struct {
     uint8_t is_mtu_exchanged: 1;
     uint8_t tx_pending: 1;
     uint8_t for_prep_write: 1;
-    uint8_t wait_prev_rsp_sent: 1;
 } __attribute__ ((packed)) att_bearer_flag_t;
 
 typedef struct att_bearer_t {
@@ -967,10 +964,7 @@ typedef struct att_bearer_t {
     uint16_t att_mtu;
     uint16_t connhdl;
     uint32_t l2cap_handle;
-    struct single_link_head_t rx_req_pendq;
-    struct single_link_head_t req_ind_tx_q;
-    struct single_link_head_t cmd_ntf_tx_q;
-    struct single_link_head_t cmd_ntf_tx_wait_done_q;
+    uint32_t defer_token;
 } att_bearer_t;
 
 typedef struct {
@@ -1025,6 +1019,8 @@ typedef struct {
 typedef struct gatt_peer_char_node_t {
     struct gatt_peer_char_node_t *next;
     gatt_peer_service_t *service;
+    uint8_t count; // same uuid char count
+    uint16_t char_uuid; // set when 16-bit uuid
     gatt_peer_character_t character[1];
 } gatt_peer_char_node_t;
 
@@ -1044,6 +1040,12 @@ typedef struct {
     att_prep_write_t *next;
 } att_prep_wr_q_t;
 
+typedef struct {
+    struct single_link_node_t node;
+    struct pp_buff *ppb;
+    uint8_t bearer_id;
+} att_rx_req_node_t;
+
 typedef struct att_conn_item_t {
     gap_conn_item_t head;
     gatt_prf_list_t prf_list;
@@ -1062,6 +1064,11 @@ typedef struct att_conn_item_t {
     uint8_t encrypt_wait_report: 1;
     uint8_t user_profile_started: 1;
     uint8_t profile_is_allocated: 1;
+    // Every proc in different queue own a bearer id
+    struct single_link_head_t rx_req_pendq;
+    struct single_link_head_t req_ind_tx_q;
+    struct single_link_head_t cmd_ntf_tx_q;
+    struct single_link_head_t cmd_ntf_tx_wait_done_q;
 } att_conn_item_t;
 
 typedef struct {
@@ -1072,7 +1079,6 @@ typedef struct {
     uint16_t local_cust_128bit_srvc_count;
     uint8_t prf_id_seed;
     uint8_t gatt_proc_seqn_seed;
-    uint8_t gatt_client_cache_seqn;
     bool is_initialized;
     bool has_user_profile_registered;
     gatt_prf_reg_list_t prf_reg_list;

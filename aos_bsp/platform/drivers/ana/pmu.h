@@ -181,6 +181,8 @@ void pmu_psram_freq_config(uint32_t freq);
 
 void pmu_psramuhs_freq_config(uint32_t freq);
 
+void pmu_apsram_freq_config(uint32_t freq);
+
 void pmu_fir_high_speed_config(int enable);
 
 void pmu_fir_freq_config(uint32_t freq);
