@@ -191,7 +191,7 @@ int hal_lcdc_lvsepxcount(int start, int end);
 /**
  * hal_lcdc_stby_vsync_calc - calculate the minimal value of vsync standby time.
  */
-int hal_lcdc_stby_vsync_calc(int width, int pixbit, int pixmhz, int dsimhz);
+int hal_lcdc_stby_vsync_calc(int width, int pixbit, int pixmhz, int dsimhz, int dsilanes);
 
 /**
  * hal_lcdc_stby_vsync_set - set stby vsync

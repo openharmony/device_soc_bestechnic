@@ -42,13 +42,19 @@ typedef void (*NVIC_DEFAULT_FAULT_HANDLER_T)(void);
 
 typedef void (*NVIC_IRQ_ENTRY_CB_T)(IRQn_Type irq);
 
+typedef void (*NVIC_IRQ_EXIT_CB_T)(IRQn_Type irq);
+
 void NVIC_DisableAllIRQs(void);
 
 void NVIC_DisableAllIRQs_Ram(void);
 
 void NVIC_RegisterIrqEntryCallback(NVIC_IRQ_ENTRY_CB_T cb);
 
+void NVIC_RegisterIrqExitCallback(NVIC_IRQ_EXIT_CB_T cb);
+
 void NVIC_RegisterIrqEntryCallback_cp(NVIC_IRQ_ENTRY_CB_T cb);
+
+void NVIC_RegisterIrqExitCallback_cp(NVIC_IRQ_EXIT_CB_T cb);
 
 void NVIC_InitCommonIrqEntry(void);
 

@@ -40,6 +40,8 @@ M33_DISP_PARAM=0
 TOOLCHAIN_10_2_1="/home/sh10/gcc/gcc-arm-none-eabi-10-2020-q4-major/bin"
 TOOLCHAIN_5_4_1="/home/toolchain/ali_5.4.1/gcc-arm-none-eabi/Linux64/bin"
 
+TOOLS_DIR=$(cd $(dirname $0); pwd)
+
 ####### FLASH TYPE & SECURE_TYPE #########
 SECURE_TYPE=1
 OTA_CODE_OFFSET=0x18000
@@ -155,6 +157,7 @@ BLE_AUDIO_DOLPHIN_COMPATIBLE_SUPPORT=0 \
 BLE_AUDIO_STARLORD_COMPATIBLE_SUPPORT=0 \
 BT_RAMRUN_NEW=0 \
 BLE=1 \
+A2DP_CP_ACCEL=0 \
 BLE_AUDIO_ENABLED=0 \
 AOB_MOBILE_ENABLED=0 \
 APP_TRACE_RX_ENABLE=0 \
@@ -224,7 +227,7 @@ make_best2600w="make T=$M33_BIN_NAME MODULE_KERNEL_STUB=1 OHOS_SUPPORT=1 \
                 $BUILD_BT_CONFIG INTERSYS_DEBUG=1 WIFI_APP_SUPPORT=1 JTAG_ENABLE=1 \
                 OTA_CODE_OFFSET=$OTA_CODE_OFFSET FLASH_REMAP=1 OTA_REMAP_OFFSET=0xC00000 OTA_ENABLE=1 OTA_BOOT_INFO_OFFSET=$BOOT_INFO_OFFSET \
                 CSI_DSI_LOOP=$CSI_DSI_LOOP_V TRACE_BUF_SIZE=32768 \
-                RF_TX_CONTROL_IO=$RF_TX_CONTROL_IO_PARAM \
+                RF_TX_CONTROL_IO=$RF_TX_CONTROL_IO_PARAM WIFI_BT_COEX_FDD=0 WIFI_BT_COEX_HYBRID=0 WIFI_DRV_KEY_FRAME_FILTER=0 \
                 NET_SUPPORT=1 CHIP_OCD=0 \
                 WIFI_RF_TEST_MODULE=1 WIFI_TEST=0 WIFI_NONSIGNALING_MODE=0 AIOT_FACTORY_EN=1 \
                 WIFI_FW_LZMA=$WIFI_FW_LZMA_PARAM \
@@ -438,7 +441,7 @@ function print_all_cmds()
 function release_sdk()
 {
    if [ "x$RELEASE_SDK" == "x1" ]; then
-      release_cmd="tools/relsw_$1 $1 WORKING $2 $WIFI_RELEASE_ORIGIN"
+      release_cmd="$TOOLS_DIR/relsw_$1 $1 WORKING $2 $WIFI_RELEASE_ORIGIN"
       echo -e "[release_sdk] $release_cmd\n"
       $release_cmd
    fi

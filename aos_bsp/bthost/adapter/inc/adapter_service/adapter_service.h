@@ -394,6 +394,73 @@ typedef int bt_status_t;
 #define BT_STS_GATT_DEFER_RSP               0x174
 #define BT_STS_INVALID_DEFER_CODE           0x175
 
+/*BT Link layer Error*/
+#define BT_LL_ERR_NO_ERROR                  0x00
+#define BT_LL_ERR_UNKNOWN_HCI_COMMAND       0x01
+#define BT_LL_ERR_UNKNOWN_CONNECTION_ID     0x02
+#define BT_LL_ERR_HARDWARE_FAILURE          0x03
+#define BT_LL_ERR_PAGE_TIMEOUT              0x04
+#define BT_LL_ERR_AUTH_FAILURE              0x05
+#define BT_LL_ERR_PIN_MISSING               0x06
+#define BT_LL_ERR_MEMORY_CAPA_EXCEED        0x07
+#define BT_LL_ERR_CON_TIMEOUT               0x08
+#define BT_LL_ERR_CON_LIMIT_EXCEED          0x09
+#define BT_LL_ERR_SYNC_CON_LIMIT_DEV_EXCEED 0x0A
+#define BT_LL_ERR_CON_ALREADY_EXISTS        0x0B
+#define BT_LL_ERR_COMMAND_DISALLOWED        0x0C
+#define BT_LL_ERR_CON_REJ_LIMITED_RES       0x0D
+#define BT_LL_ERR_CON_REJ_SECURITY_REASONS  0x0E
+#define BT_LL_ERR_CON_REJ_UNACCEPT_BDADDR   0x0F
+#define BT_LL_ERR_CON_ACCEPT_TIMEOUT_EXCEED 0x10
+#define BT_LL_ERR_UNSUPPORTED               0x11
+#define BT_LL_ERR_INVALID_HCI_PARAM         0x12
+#define BT_LL_ERR_REMOTE_USER_TERM_CON      0x13
+#define BT_LL_ERR_REMOTE_DEV_TERM_LOW_RES   0x14
+#define BT_LL_ERR_REMOTE_DEV_POWER_OFF      0x15
+#define BT_LL_ERR_CON_TERM_BY_LOCAL_HOST    0x16
+#define BT_LL_ERR_REPEATED_ATTEMPTS         0x17
+#define BT_LL_ERR_PAIRING_NOT_ALLOWED       0x18
+#define BT_LL_ERR_UNKNOWN_LMP_PDU           0x19
+#define BT_LL_ERR_UNSUPPORTED_REMOTE_FEAT   0x1A
+#define BT_LL_ERR_SCO_OFFSET_REJECTED       0x1B
+#define BT_LL_ERR_SCO_INTERVAL_REJECTED     0x1C
+#define BT_LL_ERR_SCO_AIR_MODE_REJECTED     0x1D
+#define BT_LL_ERR_INVALID_LMP_PARAM         0x1E
+#define BT_LL_ERR_UNSPECIFIED_ERROR         0x1F
+#define BT_LL_ERR_UNSUPPORTED_LMP_PARAM     0x20
+#define BT_LL_ERR_ROLE_CHANGE_NOT_ALLOWED   0x21
+#define BT_LL_ERR_LMP_RSP_TIMEOUT           0x22
+#define BT_LL_ERR_LMP_COLLISION             0x23
+#define BT_LL_ERR_LMP_PDU_NOT_ALLOWED       0x24
+#define BT_LL_ERR_ENC_MODE_NOT_ACCEPT       0x25
+#define BT_LL_ERR_LINK_KEY_CANT_CHANGE      0x26
+#define BT_LL_ERR_QOS_NOT_SUPPORTED         0x27
+#define BT_LL_ERR_INSTANT_PASSED            0x28
+#define BT_LL_ERR_PAIR_UNIT_KEY_NOT_SUP     0x29
+#define BT_LL_ERR_DIFF_TRANS_COLLISION      0x2A
+#define BT_LL_ERR_QOS_UNACCEPTABLE_PARAM    0x2C
+#define BT_LL_ERR_QOS_REJECTED              0x2D
+#define BT_LL_ERR_CHANNEL_CLASS_NOT_SUP     0x2E
+#define BT_LL_ERR_INSUFFICIENT_SECURITY     0x2F
+#define BT_LL_ERR_PARAM_OUT_OF_MAND_RANGE   0x30
+#define BT_LL_ERR_ROLE_SWITCH_PEND          0x32 /* LM_ROLE_SWITCH_PENDING               */
+#define BT_LL_ERR_RESERVED_SLOT_VIOLATION   0x34 /* LM_RESERVED_SLOT_VIOLATION           */
+#define BT_LL_ERR_ROLE_SWITCH_FAIL          0x35 /* LM_ROLE_SWITCH_FAILED                */
+#define BT_LL_ERR_EIR_TOO_LARGE             0x36 /* LM_EXTENDED_INQUIRY_RESPONSE_TOO_LARGE */
+#define BT_LL_ERR_SP_NOT_SUPPORTED_HOST     0x37
+#define BT_LL_ERR_HOST_BUSY_PAIRING         0x38
+#define BT_LL_ERR_CONTROLLER_BUSY           0x3A
+#define BT_LL_ERR_UNACCEPTABLE_CON_PARAM    0x3B
+#define BT_LL_ERR_ADV_TIMEOUT               0x3C
+#define BT_LL_ERR_TERMINATED_MIC_FAILURE    0x3D
+#define BT_LL_ERR_CON_FAILED_TO_BE_EST      0x3E
+#define BT_LL_ERR_CCA_REJ_USE_CLOCK_DRAG    0x40
+#define BT_LL_ERR_TYPE0_SUBMAP_NOT_DEFINED  0x41
+#define BT_LL_ERR_UNKNOWN_ADVERTISING_ID    0x42
+#define BT_LL_ERR_LIMIT_REACHED             0x43
+#define BT_LL_ERR_OP_CANCELED_BY_HOST       0x44
+#define BT_LL_ERR_PKT_TOO_LONG              0x45
+
 typedef enum {
     NEAR_STS_SUCCESS                      = 0x00,
     NEAR_STS_FAILED                       ,
@@ -1141,7 +1208,7 @@ typedef struct bes_aud_bt_t {
     bool (*aud_is_sco_prompt_play_mode)(void); // app_bt_manager.config.sco_prompt_play_mode
     uint8_t (*aud_get_max_sco_number)(void); // bt_get_max_sco_number
     uint8_t (*aud_get_a2dp_codec_type)(int device_id); // bt_sbc_player_get_codec_type
-    uint8_t (*aud_get_a2dp_sample_rate)(int device_id); // curr_device->sample_rate
+    uint32_t (*aud_get_a2dp_sample_rate)(int device_id); // curr_device->sample_rate
     int (*aud_switch_sco)(uint16_t sco_handle); // app_bt_Me_switch_sco
     void (*aud_report_hfp_speak_gain)(void); // btapp_hfp_report_speak_gain
     void (*aud_report_a2dp_speak_gain)(void); // btapp_a2dp_report_speak_gain

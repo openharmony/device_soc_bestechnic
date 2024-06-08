@@ -342,10 +342,12 @@ static int BleGattcNotifyCb(gatt_prf_t *prf, gatt_profile_callback_param_t param
         BleGattsUuidHexToChar(srv_info->Uuid, srv_info->UuidLen, BleGattcEnv.CharUuid1);
     notifyData.attribute.characteristic.serviceUuid.uuid    = BleGattcEnv.CharUuid1;
 
-    if (char_info->char_uuid)
+    uint16_t char_uuid = gatt_char_16_uuid_le(char_info);
+
+    if (char_uuid)
     {
         notifyData.attribute.characteristic.characteristicUuid.uuidLen =
-        BleGattsUuidHexToChar((uint8_t *)&char_info->char_uuid, 2, BleGattcEnv.CharUuid2);
+        BleGattsUuidHexToChar((uint8_t *)&char_uuid, 2, BleGattcEnv.CharUuid2);
     }
     else
     {

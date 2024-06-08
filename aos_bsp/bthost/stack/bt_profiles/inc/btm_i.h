@@ -444,6 +444,13 @@ struct command_status_data{
     uint32 emask;
 };
 
+struct bt_ibrt_event{
+	uint8  status;
+	uint16 cmd_opcode;
+	bt_bdaddr_t addr;
+    uint32 emask;
+};
+
 struct role_change_data{
     struct btm_conn_item_t *rem_dev;
 	uint8 new_role;
@@ -997,6 +1004,7 @@ void btm_process_cmd_complete_inquiry_cancel (uint8 *data);
 void btm_process_cmd_complete_remote_name_cancel(uint8 *data);
 void btm_process_cmd_complete_evt(struct hci_evt_packet_t *pkt);
 void btm_process_return_linkkeys_evt (struct hci_evt_packet_t *pkt);
+void btm_process_vendor_evt(uint8_t* pbuf, uint32_t length);
 void btm_acl_handle_nocopy(uint16 conn_handle, uint16 data_len, uint8 *data_p);
 
 struct btm_ctrl_t *btm_get_ctrl_ptr(void);
@@ -1089,6 +1097,17 @@ void btm_register_sco_request_handle_func(int (*cb)(uint8_t device_id, const uin
 
 void btm_accept_sync_conn_from_upper_layer(struct btm_conn_item_t *conn, bool accept);
 
+/**
+ ******************************************************************************************************
+ * @brief Check connecting request in pending buffuer after one ACL link connected or disconnected
+ *
+ * @param[in] remote                the (dis)connected device's addr
+ * @param[in] connected             if true, indicates the remote is connected
+ *
+ * @return true: will disc the remote to accept extra acl req
+ * @return false: no pending request, or resource is ready and will process the extra connection request
+ *******************************************************************************************************
+ */
 bool btm_conn_accept_extra_acl_req_check(struct bdaddr_t *remote, bool connected);
 
 void btm_register_check_to_accept_new_sco_callback(void (*cb)(uint8_t device_id));
@@ -1155,6 +1174,7 @@ bool btm_is_remote_feature_support(struct btm_conn_item_t* conn, uint8 page, uin
 void btm_conn_disconnect_process(uint16 handle, uint8 status, uint8 reason);
 int8 btlib_hcicmd_read_remote_name(struct bdaddr_t *bdaddr, uint8 page_scan_repetition_mode, uint16 clk_off);
 void btm_sco_conn_status_notify  (uint8_t device_id, struct bdaddr_t *remote_bdaddr, uint8 codec, enum conn_sco_stat_enum sco_conn_notify_type);
+void btm_role_switch_comp_notify(struct bdaddr_t *remote_bdaddr);
 int8 btm_conn_acl_send_ppb_done(uint8 device_id, uint16 conn_handle, struct pp_buff *ppb);
 void btm_register_event_report( void (*evt_cb)(uint16 evt_id, void *pdata));
 void btm_register_cmgr_event_report(void (*evt_cb)(uint16 evt_id, void* conn));

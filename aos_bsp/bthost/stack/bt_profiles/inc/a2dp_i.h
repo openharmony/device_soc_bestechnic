@@ -236,7 +236,9 @@ enum av_conn_state_enum
 #define A2DP_ALLOCATION_SNR		(1 << 1)
 #define A2DP_ALLOCATION_LOUDNESS	1
 
-
+#define AVDTP_MEDIA_TRANSPORT_CAP_LEN               (2)
+#define AVDTP_MEDIA_CODEC_CAP_HEADER_LEN            (4)
+#define AVDTP_L2HC_MEDIA_CODEC_SPEC_INFO_ELE_LEN    (12)
 typedef struct
 {
 	U8 version; /* RTP Version */
@@ -780,6 +782,49 @@ struct scalable_codec_cap {
     uint8 vendor_id[4]; //75 00 00 00
     uint8 codec_id[2];  //03 01
     uint8 sample_rate;
+} __attribute__ ((packed));
+
+#define L2HC_CODEC_RES_32   (0x04)
+#define L2HC_CODEC_RES_24   (0x02)
+#define L2HC_CODEC_RES_16   (0x01)
+#define L2HC_CODEC_SR_192000      (0x40)
+#define L2HC_CODEC_SR_176400      (0x20)
+#define L2HC_CODEC_SR_96000       (0x10)
+#define L2HC_CODEC_SR_88200       (0x08)
+#define L2HC_CODEC_SR_48000       (0x04)
+#define L2HC_CODEC_SR_44100       (0x02)
+#define L2HC_CODEC_SR_32000       (0x01)
+#define L2HC_CODEC_BR_1920              (0x40)
+#define L2HC_CODEC_BR_1600              (0x20)
+#define L2HC_CODEC_BR_1280              (0x10)
+#define L2HC_CODEC_BR_960               (0x08)
+#define L2HC_CODEC_BR_640               (0x04)
+#define L2HC_CODEC_BR_480               (0x02)
+#define L2HC_CODEC_BR_320               (0x01)
+#define L2HC_CODEC_BR_256               (0x80)
+#define L2HC_CODEC_BR_192               (0x40)
+#define L2HC_CODEC_BR_128               (0x20)
+#define L2HC_CODEC_BR_96                (0x10)
+#define L2HC_CODEC_BR_64                (0x08)
+#define L2HC_CODEC_FD_10    (0x02)
+#define L2HC_CODEC_FD_7D5   (0x01)
+#define L2HC_CODEC_FD_5     (0x80)
+#define L2HC_CODEC_CM_MONO          (0x04)
+#define L2HC_CODEC_CM_DUAL          (0x08)
+
+#define L2HC_CODEC_ALL_BIT_ZERO        (0x00)
+
+struct l2hc_codec_cap {
+    uint8 media_type; //Audio 0x00
+    uint8 media_codec_type; //Vendor-Specific Codec 0xff
+    uint8 vendor_id[4]; //CF; 0C 00 00
+    uint8 codec_id[2];  //01 CA
+    uint8 vers_res;
+    uint8 sample_rate;
+    uint8 br_msb;
+    uint8 br_lsb_fd;
+    uint8 fd_cm;
+    uint8 reserved;
 } __attribute__ ((packed));
 
 #define A2DP_OPEN_CTX_MAX_SIZE (SYS_MAX_A2DP_STREAMS+1)

@@ -108,6 +108,8 @@ BT_ACTIVITY_ID_E btm_ibrt_switch_result_handle(uint8_t err_code, uint16_t conhan
 
 BT_ACTIVITY_ID_E btm_page_result_handle(uint8_t err_code, bt_bdaddr_t* addr);
 
+bool btm_stop_pending_page_activity(const bt_bdaddr_t* addr);
+
 BT_ACTIVITY_ID_E btm_ibrt_disconnect_stop_all_activity(uint16_t conhandle);
 
 void btm_mediator_check_pending_activity(BT_ACTIVITY_ID_E stoppedActivity);

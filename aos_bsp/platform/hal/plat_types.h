@@ -108,7 +108,7 @@ typedef int64_t         s64;
 #define PACKED                          __attribute__((packed))
 
 /// To describe alignment
-//#define ALIGNED(a)                      __attribute__((aligned(a)))
+#define ALIGNED(a)                      __attribute__((aligned(a)))
 
 /// For possibly unused functions or variables (e.g., debugging stuff)
 #define POSSIBLY_UNUSED                 __attribute__((unused))

@@ -58,13 +58,20 @@ extern "C" {
 #define BTIF_CONFIG_A2DP_OPUS_ON 0
 #endif
 
+#if defined(A2DP_L2HC_ON)
+#define BTIF_CONFIG_A2DP_L2HC_ON 1
+#else
+#define BTIF_CONFIG_A2DP_L2HC_ON 0
+#endif
+
 #define SYS_MAX_A2DP_LOCAL_SEPS \
     (BTIF_CONFIG_A2DP_SBC_ON + \
         BTIF_CONFIG_A2DP_AAC_ON + \
         BTIF_CONFIG_A2DP_LHDC_ON + \
         BTIF_CONFIG_A2DP_LDAC_ON + \
         BTIF_CONFIG_A2DP_SCALABLE_ON + \
-        BTIF_CONFIG_A2DP_OPUS_ON + 1)
+        BTIF_CONFIG_A2DP_OPUS_ON + \
+        BTIF_CONFIG_A2DP_L2HC_ON + 1)
 
 #define SYS_MAX_A2DP_STREAMS (BT_DEVICE_NUM+BT_SOURCE_DEVICE_NUM)
 #define SYS_MAX_AVRCP_CHNS  (BT_DEVICE_NUM+BT_SOURCE_DEVICE_NUM)
@@ -288,6 +295,8 @@ typedef uint16_t btif_avdtp_codec_sample_rate_t;
 #define BT_A2DP_CODEC_NONE_TYPE_SCALABLE (0x04)
 
 #define BT_A2DP_CODEC_NONE_TYPE_LC3      (0x05)
+
+#define BT_A2DP_CODEC_NONE_TYPE_L2HC     (0x06)
 
 #define BT_A2DP_MAX_CODEC_ELEM_SIZE      10
 
@@ -641,42 +650,19 @@ typedef uint8_t avrcp_media_status_t;
 #define A2D_LHDC__IE_SAMP_FREQ_MSK    0xFF    /* b7-b0 sampling frequency */
 #endif
 
-#define A2D_STREAM_SAMP_FREQ_MSK    0xFF    /* b7-b4 sampling frequency */
+#define A2D_STREAM_SAMP_FREQ_MSK    0xFFFFFFFF    /* b7-b4 sampling frequency */
 
 #define A2D_SBC_IE_SAMP_FREQ_MSK    0xF0    /* b7-b4 sampling frequency */
 
-#define A2D_SBC_IE_SAMP_FREQ_16     0x80    /* b7:16  kHz */
-#define A2D_SBC_IE_SAMP_FREQ_32     0x40    /* b6:32  kHz */
-#define A2D_SBC_IE_SAMP_FREQ_44     0x20    /* b5:44.1kHz */
-#define A2D_SBC_IE_SAMP_FREQ_48     0x10    /* b4:48  kHz */
-
-#ifdef A2DP_SCALABLE_ON
-#define A2D_SBC_IE_SAMP_FREQ_96     0x08    /* b4:48  kHz */
-#endif
-
-#if defined(A2DP_LHDC_ON) || defined(A2DP_LHDCV5_ON)
-#ifndef A2D_SBC_IE_SAMP_FREQ_96
-#define A2D_SBC_IE_SAMP_FREQ_96     0x08    /* b3:96  kHz */
-#endif
-#endif
-
-#if defined(A2DP_LDAC_ON)
-#ifndef A2D_SBC_IE_SAMP_FREQ_96
-#define A2D_SBC_IE_SAMP_FREQ_96     0x08    /* b3:96  kHz */
-#endif
-#endif
-
-#ifdef A2DP_LHDCV5_ON
-#ifndef A2D_SBC_IE_SAMP_FREQ_192
-#define A2D_SBC_IE_SAMP_FREQ_192    0x04    /* b2:192  kHz */
-#endif
-#endif
-
-#ifdef A2DP_LC3_ON
-#ifndef A2D_SBC_IE_SAMP_FREQ_96
-#define A2D_SBC_IE_SAMP_FREQ_96     0x08    /* b4:48  kHz */
-#endif
-#endif
+// bit31-8: Reserved for Future Use
+#define A2D_SBC_IE_SAMP_FREQ_16         (0x00000080)    /* b7:16  kHz */
+#define A2D_SBC_IE_SAMP_FREQ_32         (0x00000040)    /* b6:32  kHz */
+#define A2D_SBC_IE_SAMP_FREQ_44         (0x00000020)    /* b5:44.1kHz */
+#define A2D_SBC_IE_SAMP_FREQ_48         (0x00000010)    /* b4:48  kHz */
+#define A2D_SBC_IE_SAMP_FREQ_96         (0x00000008)    /* b3:96  kHz */
+#define A2D_SBC_IE_SAMP_FREQ_192        (0x00000004)    /* b2:192  kHz */
+#define A2D_SBC_IE_SAMP_FREQ_88D2       (0x00000002)    /* b1:88.2  kHz */
+#define A2D_SBC_IE_SAMP_FREQ_176D4      (0x00000001)    /* b0:176.4 kHz */
 
 typedef struct {
 

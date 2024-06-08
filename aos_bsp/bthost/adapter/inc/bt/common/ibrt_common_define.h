@@ -96,7 +96,11 @@ typedef enum {
     RETRIGGER_BY_SYNC_MISMATCH                = 13,
     RETRIGGER_BY_SYNC_FAIL                    = 14,
     RETRIGGER_BY_SYS_BUSY                     = 15,
+#ifdef BT_SERVICE_ENABLE
+    RETRIGGER_BY_SYNC_TARGET_CNT_ERROR        = 16,
+#else
     RETRIGGER_BY_SYNC_TARGET_MS_ERROR         = 16,
+#endif
     RETRIGGER_BY_AI_STREAM                    = 17,
     RETRIGGER_BY_IN_SNIFF                     = 18,
     RETRIGGER_BY_UNKNOW                       = 19,

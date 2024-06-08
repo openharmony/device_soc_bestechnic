@@ -90,9 +90,14 @@ extern "C" {
 #elif defined(CP_AS_SUBSYS) || defined(CHIP_ROLE_CP)
 #define RAMCP_SUBSYS_BASE                       RAM0_BASE
 #if defined(NO_SUBSYS_RAM)
+#ifdef RAMCP_SUBSYS_SIZE
+#undef RAMCP_SUBSYS_SIZE
+#endif
 #define RAMCP_SUBSYS_SIZE                       (0)
 #else
+#ifndef RAMCP_SUBSYS_SIZE
 #define RAMCP_SUBSYS_SIZE                       (RAM2_BASE - RAM0_BASE)
+#endif
 #endif
 #define CP_SUBSYS_MAILBOX_SIZE                  0x20
 

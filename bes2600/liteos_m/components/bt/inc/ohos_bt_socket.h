@@ -29,6 +29,8 @@ extern "C" {
 #define BT_SOCKET_WRITE_FAILED (-1)
 #define BT_SOCKET_INVALID_ID (-1)
 #define BT_SOCKET_INVALID_PSM (-1)
+#define BT_SOCKET_INVALID_SCN (-1)
+#define BT_SOCKET_INVALID_TYPE (-2)
 
 typedef enum {
     OHOS_SOCKET_SPP_RFCOMM = 0x0,
@@ -43,6 +45,27 @@ typedef struct {
     /** encrypt require the connection to be encrypted */
     bool isEncrypt;
 } BluetoothCreateSocketPara;
+
+typedef struct {
+    int minInterval;
+    int maxInterval;
+    int peripheralLatency;
+    int supervisionTimeout;
+    int minConnEventLen;
+    int maxConnEventLen;
+} BluetoothCocUpdateSocketParam;
+
+/**
+ * @brief callback invoked when the socket connection state changed.
+ * @param bdAddr Indicates the ID of the GATT client.
+ * @param uuid This parameter is required when type is {@link OHOS_SOCKET_SPP_RFCOMM}.
+ * @param status Indicates the connection status {@link ConnStatus}.
+ * @param result Indicates the operation result.
+ */
+typedef void (*SocketConnectionStateChangedCallback)(const BdAddr *bdAddr, BtUuid uuid, int status, int result);
+typedef struct {
+    SocketConnectionStateChangedCallback connStateCb;
+} BtSocketConnectionCallback;
 
 /**
  * @brief Creates an server listening socket based on the service record.
@@ -76,6 +99,14 @@ int SocketServerAccept(int serverId);
 int SocketServerClose(int serverId);
 
 /**
+ * @brief Set fast connection flag
+ *
+ * @param bdAddr The remote device address to connect.
+ * @return Returns the operation result status {@link BtStatus}.
+ */
+int SocketSetFastConnection(const BdAddr *bdAddr);
+
+/**
  * @brief Connects to a remote device over the socket.
  * This method will block until a connection is made or the connection fails.
  *
@@ -86,6 +117,20 @@ int SocketServerClose(int serverId);
  * @return Returns a client ID, if connect fail return {@link BT_SOCKET_INVALID_ID}.
  */
 int SocketConnect(const BluetoothCreateSocketPara *socketPara, const BdAddr *bdAddr, int psm);
+
+/**
+ * @brief Connects to a remote device over the socket.
+ * This method will block until a connection is made or the connection fails.
+ *
+ * @param socketPara The param to create a client socket and connect to a remote device.
+ * @param bdAddr The remote device address to connect.
+ * @param psm BluetoothSocketType is {@link OHOS_SOCKET_L2CAP_LE} use dynamic PSM value from remote device.
+ * BluetoothSocketType is {@link OHOS_SOCKET_SPP_RFCOMM} use -1.
+ * @param callback Reference to the socket state observer.
+ * @return Returns a client ID, if connect fail return {@link BT_SOCKET_INVALID_ID}.
+ */
+int SocketConnectEx(const BluetoothCreateSocketPara *socketPara, const BdAddr *bdAddr, int psm,
+    BtSocketConnectionCallback *callback);
 
 /**
  * @brief Disables a connection and releases related resources.
@@ -137,7 +182,7 @@ int SocketRead(int clientId, uint8_t *buf, uint32_t bufLen);
 int SocketWrite(int clientId, const uint8_t *data, uint32_t len);
 
 /**
- * @brief Get dynamic PSM value.
+ * @brief Get dynamic PSM value for OHOS_SOCKET_L2CAP.
  *
  * @param serverId The relative ID used to identify the current server socket, obtain the value by calling
  * {@link SocketServerCreate}.
@@ -147,6 +192,16 @@ int SocketWrite(int clientId, const uint8_t *data, uint32_t len);
 int SocketGetPsm(int serverId);
 
 /**
+ * @brief Get server scm number for OHOS_SOCKET_RFCOMM.
+ *
+ * @param serverId The relative ID used to identify the current server socket, obtain the value by calling
+ * {@link SocketServerCreate}.
+ * @return Returns the scn number.
+ * Returns {@link BT_SOCKET_INVALID_SCN} if the operation failed.
+ */
+int SocketGetScn(int serverId);
+
+/**
  * @brief Adjust the socket send and recv buffer size, limit range is 4KB to 50KB
  *
  * @param clientId The relative ID used to identify the current client socket.
@@ -154,6 +209,14 @@ int SocketGetPsm(int serverId);
  * @return  Returns the operation result status {@link BtStatus}.
  */
 int SetSocketBufferSize(int clientId, uint32_t bufferSize);
+
+/**
+ * @brief Update the coc connection params.
+ *
+ * @param param CocUpdateSocketParam instance for carry params.
+ * @return Returns the operation result status {@link BtStatus}.
+ */
+int SocketUpdateCocConnectionParams(BluetoothCocUpdateSocketParam* param, const BdAddr *bdAddr);
 
 #ifdef __cplusplus
 }
