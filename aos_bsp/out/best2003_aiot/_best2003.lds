@@ -63,12 +63,9 @@ MEMORY
  RAM (rwx) : ORIGIN = ((0x00200000 + 0x20000 - 0x00200000 + 0x20000000) + 0x20000), LENGTH = 0x200000-0x20000-0x20000-0-0-0x80000 - 0x16000
  RAMX (rx) : ORIGIN = (((0x00200000 + 0x20000 - 0x00200000 + 0x20000000) + 0x20000) - 0x20000000 + 0x00200000), LENGTH = 0x200000-0x20000-0x20000-0-0-0x80000 - 0x16000
  FRAMX (rwx) : ORIGIN = (((0x00200000 + 0x20000 - 0x00200000 + 0x20000000) + 0x20000) - 0x20000000 + 0x00200000) + 0x200000-0x20000-0x20000-0-0-0x80000 - 0x16000, LENGTH = 0x16000
- PSRAM (rwx) : ORIGIN = 0x34000000, LENGTH = 0x2000000-0
- PSRAM_NC (rwx) : ORIGIN = (0x34000000 - 0x4000000), LENGTH = 0x2000000-0
- PSRAMX (rx) : ORIGIN = (0x34000000 - 0x20000000), LENGTH = 0x2000000-0
- PSRAMUHS (rwx) : ORIGIN = (0x3C000000 + 0x800000-0), LENGTH = 0
- PSRAMUHS_NC (rwx) : ORIGIN = (0x38000000 + 0x800000-0), LENGTH = 0
- PSRAMUHSX (rx) : ORIGIN = (0x1C000000 + 0x800000-0), LENGTH = 0
+ PSRAM (rwx) : ORIGIN = (0x34000000 + (0x34000000 - 0x34000000)), LENGTH = 0x2000000-0
+ PSRAM_NC (rwx) : ORIGIN = (((0x34000000 + (0x34000000 - 0x34000000))) - 0x34000000 + (0x34000000 - 0x4000000)), LENGTH = 0x2000000-0
+ PSRAMX (rwx) : ORIGIN = (((0x34000000 + (0x34000000 - 0x34000000))) - 0x34000000 + (0x34000000 - 0x20000000)), LENGTH = 0x2000000-0
  RAMCP (rwx) : ORIGIN = (0x00200000 + 0x20000 - 0x00200000 + 0x20000000), LENGTH = 0x20000
  RAMCPX (rwx) : ORIGIN = 0x00200000, LENGTH = 0x20000
 }
@@ -1640,7 +1637,7 @@ SECTIONS
   LONG(((ABSOLUTE(__flash_start)) - 0x2C000000 + 0x28000000));
  } > FLASH
  __flash_end = .;
- __flash_tail_sec_start = (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000 -
+ __flash_tail_sec_start = (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x2000 - 0x1000 -
   0 - 0x1000*2 - 0 - 0x1000 -
   0 - 0 - 0 -
   0x1000 - 0 - 0x0 - 0x0 -
@@ -1658,7 +1655,7 @@ SECTIONS
   . = 0;
   __combo_end = .;
  } > FLASH_NC
- .prompt (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000 -
+ .prompt (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x2000 - 0x1000 -
   0 - 0x1000*2 - 0 - 0x1000 -
   0 - 0 - 0 -
   0x1000 - 0 - 0x0 - 0x0) (NOLOAD):
@@ -1667,7 +1664,7 @@ SECTIONS
   . = 0x0;
   __prompt_end = .;
  } > FLASH_NC
- .hotword_model (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000 -
+ .hotword_model (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x2000 - 0x1000 -
   0 - 0x1000*2 - 0 - 0x1000 -
   0 - 0 - 0 -
   0x1000 - 0 - 0x0) (NOLOAD):
@@ -1676,7 +1673,7 @@ SECTIONS
   . = 0x0;
   __hotword_model_end = .;
  } > FLASH_NC
- .coredump_section (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000 -
+ .coredump_section (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x2000 - 0x1000 -
   0 - 0x1000*2 - 0 - 0x1000 -
   0 - 0 - 0 -
   0x1000 - 0) (NOLOAD) :
@@ -1685,7 +1682,7 @@ SECTIONS
   . = 0;
   __coredump_section_end = .;
  } > FLASH_NC
- .ota_upgrade_log (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000 -
+ .ota_upgrade_log (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x2000 - 0x1000 -
   0 - 0x1000*2 - 0 - 0x1000 -
   0 - 0 - 0 -
   0x1000) (NOLOAD) :
@@ -1694,7 +1691,7 @@ SECTIONS
   . = 0x1000;
   __ota_upgrade_log_end = .;
  } > FLASH_NC
- .log_dump (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000 -
+ .log_dump (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x2000 - 0x1000 -
   0 - 0x1000*2 - 0 - 0x1000 -
   0 - 0 - 0) (NOLOAD) :
  {
@@ -1702,7 +1699,7 @@ SECTIONS
   . = 0;
   __log_dump_end = .;
  } > FLASH_NC
- .crash_dump (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000 -
+ .crash_dump (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x2000 - 0x1000 -
   0 - 0x1000*2 - 0 - 0x1000 -
   0 - 0) (NOLOAD) :
  {
@@ -1710,7 +1707,7 @@ SECTIONS
   . = 0;
   __crash_dump_end = .;
  } > FLASH_NC
- .custom_parameter (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000 -
+ .custom_parameter (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x2000 - 0x1000 -
   0 - 0x1000*2 - 0 - 0x1000 -
   0) (NOLOAD) :
  {
@@ -1718,37 +1715,37 @@ SECTIONS
   . = 0x1000;
   __custom_parameter_end = .;
  } > FLASH_NC
- .lhdc_license (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000 -
+ .lhdc_license (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x2000 - 0x1000 -
   0 - 0x1000*2 - 0 - 0) (NOLOAD) :
  {
   __lhdc_license_start = .;
   . = 0;
   __lhdc_license_end = .;
  } > FLASH_NC
- .userdata (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000 -
+ .userdata (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x2000 - 0x1000 -
   0 - 0x1000*2) (NOLOAD) :
  {
   __userdata_start = .;
   . = 0x1000*2;
   __userdata_end = .;
  } > FLASH_NC
- .audio (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000 -
+ .audio (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x2000 - 0x1000 -
   0) (NOLOAD) :
  {
   __aud_start = .;
   . = 0;
   __aud_end = .;
  } > FLASH_NC
- .reserved (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000 - 0x1000) (NOLOAD) :
+ .reserved (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x2000 - 0x1000) (NOLOAD) :
  {
   __reserved_start = .;
   . = 0x1000;
   __reserved_end = .;
  } > FLASH_NC
- .factory (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x1000) (NOLOAD) :
+ .factory (ORIGIN(FLASH_NC) + LENGTH(FLASH_NC) - 0x2000) (NOLOAD) :
  {
   __factory_start = .;
-  . = 0x1000;
+  . = 0x2000;
   __factory_end = .;
  } > FLASH_NC
  __tail_section_start = __prompt_start;

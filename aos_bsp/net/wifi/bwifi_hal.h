@@ -1034,25 +1034,23 @@ struct bwifi_hal_ops {
 #ifdef __P2P_MODE_SUPPORT__
     /**
      * p2p_cmd - send string command to wifi p2p subsystem
-     * @vif_idx: virtual wifi inteface index
      * @cmd_buf: command string ended with '\0'
      * @cmd_len: the sizeof(cmd_buf) '\0'
      * @rsp_buf: response string ended with '\0'
      * @rsp_size: size of buffer to hold the rsp_buf's content
      * Returns: 0 - success, other - failure
      */
-    int (*p2p_cmd)(int vif_idx, uint8_t *cmd_buf, uint8_t cmd_len, char *rsp_buf, int *rsp_size);
+    int (*p2p_cmd)(uint8_t *cmd_buf, uint8_t cmd_len, char *rsp_buf, int *rsp_size);
 
     /**
      * p2p_cmd - send string command to wifi p2p subsystem
-     * @vif_idx: virtual wifi inteface index
      * @cmd_buf: command string ended with '\0'
      * @cmd_len: the sizeof(cmd_buf) '\0'
      * @rsp_buf: response string ended with '\0'
      * @rsp_size: size of buffer to hold the rsp_buf's content
      * Returns: 0 - success, other - failure
      */
-    int (*p2p_persistent_connect)(int vif_idx, uint8_t *ssid, uint8_t ssid_len, uint8_t *password, int pw_len);
+    int (*p2p_persistent_connect)(uint8_t *ssid, uint8_t ssid_len, uint8_t *password, int pw_len);
 #endif
 
     /**

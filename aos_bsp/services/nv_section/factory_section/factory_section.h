@@ -185,6 +185,7 @@ unsigned char factory_section_get_ble_power_control();
 int  factory_section_set_ble_power_control(unsigned char ble_power_control);
 int factory_section_get_wifi_band();
 uint32_t* factory_section_get_bt_tx_power(void);
+void factory_save_data_into_section(int id, uint8_t *data);
 
 #ifdef __cplusplus
 }

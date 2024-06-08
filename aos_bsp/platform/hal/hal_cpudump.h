@@ -46,10 +46,17 @@ enum HAL_CPUDUMP_ID_T {
     HAL_CPUDUMP_ID_QTY
 };
 
+enum HAL_CPUDUMP_REG_ID_T {
+    HAL_CPUDUMP_REG_PC,
+    HAL_CPUDUMP_REG_LR,
+    HAL_CPUDUMP_REG_QTY
+};
+
 void hal_cpudump_enable(enum HAL_CPUDUMP_ID_T id);
 void hal_cpudump_disable(enum HAL_CPUDUMP_ID_T id);
 void hal_cpudump_dump_pc(enum HAL_CPUDUMP_ID_T id);
 void hal_cpudump_dump_lr(enum HAL_CPUDUMP_ID_T id);
+void hal_cpudump_switch(enum HAL_CPUDUMP_ID_T id, enum HAL_CPUDUMP_REG_ID_T reg);
 
 int hal_cpudump_pc_read(enum HAL_CPUDUMP_ID_T id, uint32_t *buff, uint16_t size);
 int hal_cpudump_lr_read(enum HAL_CPUDUMP_ID_T id, uint32_t *buff, uint16_t size);

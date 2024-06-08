@@ -260,6 +260,7 @@ enum HAL_NORFLASH_RET_T hal_norflash_dec_disable(enum HAL_FLASH_ID_T id);
 #define hal_norflash_erase hal_norflash_erase_se
 #define hal_norflash_write hal_norflash_write_se
 #define hal_norflash_read hal_norflash_read_se
+#define hal_norflash_force_wakeup hal_norflash_force_wakeup_se
 #define hal_norflash_sleep hal_norflash_sleep_se
 #define hal_norflash_wakeup hal_norflash_wakeup_se
 #define hal_norflash_opened hal_norflash_opened_se
@@ -328,6 +329,7 @@ void hal_norflash_show_sfdp_check_param_se(enum HAL_FLASH_ID_T id);
 enum HAL_NORFLASH_RET_T hal_norflash_erase_se(enum HAL_FLASH_ID_T id, uint32_t start_address, uint32_t len);
 enum HAL_NORFLASH_RET_T hal_norflash_write_se(enum HAL_FLASH_ID_T id, uint32_t start_address, const uint8_t *buffer, uint32_t len);
 enum HAL_NORFLASH_RET_T hal_norflash_read_se(enum HAL_FLASH_ID_T id, uint32_t start_address, uint8_t *buffer, uint32_t len);
+void hal_norflash_force_wakeup_se(enum HAL_FLASH_ID_T id);
 void hal_norflash_sleep_se(enum HAL_FLASH_ID_T id, enum HAL_CMU_LPU_SLEEP_MODE_T mode);
 void hal_norflash_wakeup_se(enum HAL_FLASH_ID_T id, enum HAL_CMU_LPU_SLEEP_MODE_T mode);
 int hal_norflash_opened_se(enum HAL_FLASH_ID_T id);
