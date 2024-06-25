@@ -24,11 +24,12 @@ extern "C" {
 #include "plat_types.h"
 
 enum hal_lcdc_result_e {
-    LCDC_OK      = 0,
-    LCDC_FAILED  = -1,
-    LCDC_INVAL   = -2,
-    LCDC_ERROR   = -3,
-    LCDC_TIMEOUT = -4,
+    LCDC_OK             = 0,
+    LCDC_FAILED         = -1,
+    LCDC_INVAL          = -2,
+    LCDC_ERROR          = -3,
+    LCDC_TIMEOUT        = -4,
+    LCDC_NOT_SUPPORT    = -5,
 };
 
 enum hal_lcdc_layer_e {
@@ -54,13 +55,18 @@ enum hal_lcdc_color_format_e {
     LCDC_CFMT_RGB888        = 12,
     LCDC_CFMT_RGBA8888      = 13,
     LCDC_CFMT_ARGB8888      = 21,
-    LCDC_CFMT_YUV422_YUYV   = 45,
-    LCDC_CFMT_YUV422_PLANAR = 60,
-    LCDC_CFMT_YUV420_PLANAR = 51,
+    LCDC_CFMT_YUV422_UYVY   = 45,  /* Packed UYVY */
+    LCDC_CFMT_YUV422_I422   = 60,  /* Planar, Y:U:V */
+    LCDC_CFMT_YUV420_I420   = 51,  /* Planar, Y:U:V */
+    LCDC_CFMT_YUV420_NV12   = 52,  /* Semi-Planar, Y:UVUV */
+    LCDC_CFMT_YUV420_P16    = 61,  /* Planar, I420 with 16 bits color component. */
     LCDC_CFMT_BGR565        = 63,
     LCDC_CFMT_BGR888        = 64,
     LCDC_CFMT_BGRA8888      = 65,
     LCDC_CFMT_ABGR8888      = 66,
+
+    LCDC_CFMT_YUV422_PLANAR = LCDC_CFMT_YUV422_I422,
+    LCDC_CFMT_YUV420_PLANAR = LCDC_CFMT_YUV420_I420,
 };
 
 enum hal_lcdc_colorkey_mode_e {
@@ -132,16 +138,16 @@ int hal_lcdc_irqn(void);
 int hal_lcdc_write_clut(uint32_t citem, int n);
 
 /**
- * hal_lcdc_write_gamma - write gamma data into lcdc memory
- * @gitem   : gamma item
- * @n      :  item address index
+ * hal_lcdc_write_gamma - write gamma lut table into lcdc memory
+ * @index   : gamma index
+ * @value   : gamma value
  */
-int hal_lcdc_write_gamma(uint32_t citem, int n);
+int hal_lcdc_write_gamma(uint8_t index, uint32_t value);
 
 /**
- * hal_lcdc_lcadjcurves_enable - enable/disalbe  gamma curves function
+ * hal_lcdc_gamma_enable - enable/disalbe gamma curves function
  */
-int hal_lcdc_lcadjcurves_enable(int lid, bool enable);
+int hal_lcdc_gamma_enable(bool enable);
 
 /**
  * hal_lcdc_axifastmode_enable - enable/disalbe  axi bus fast mode function
@@ -175,11 +181,29 @@ uint32_t hal_lcdc_getcuraddr(int lid);
 uint32_t hal_lcdc_getcuraddr1(int lid);
 
 /**
- * hal_lcdc_lpitch - set lcdc vsync start/end pixes count
+ * hal_lcdc_lpitch - set lcdc rgb layer pitch (stride)
  * @lid    : Layer id
  * @pitch  : pitch in bytes
  */
 int hal_lcdc_lpitch(int lid, uint16_t pitch);
+
+/**
+ * hal_lcdc_yuv_lstartaddr1 - set lcdc yuv layer Y/U/V memory start addresses
+ * @lid    : Layer id, only support DMA layer
+ * @yaddr  : Y buffer address
+ * @uaddr  : U buffer address
+ * @vaddr  : V buffer address
+ */
+int hal_lcdc_yuv_lstartaddr(int lid, uint32_t yaddr, uint32_t uaddr, uint32_t vaddr);
+
+/**
+ * hal_lcdc_yuv_lpitch - set lcdc yuv layer Y/U/V pitchs
+ * @lid    : Layer id, only support DMA layer
+ * @ypitch : Y pitch in bytes
+ * @Upitch : U pitch in bytes
+ * @Vpitch : V pitch in bytes
+ */
+int hal_lcdc_yuv_lpitch(int lid, uint16_t ypitch, uint16_t upitch, uint16_t vpitch);
 
 /**
  * hal_lcdc_lvsepxcount - set lcdc vsync start/end pix count

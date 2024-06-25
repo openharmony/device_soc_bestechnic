@@ -601,6 +601,15 @@ static WifiErrorCode WiFiInit(void)
     return RegisterWifiEvent(&g_staEventHandler);
 }
 
+static void wifi_device_cb(WIFI_USER_EVT_ID event_id, void *arg)
+{
+    if (event_id == WIFI_USER_EVT_GOT_IP) {
+        TRACE(0, "%s event_id:%d GOT_IP\n", __func__, event_id);
+    } else if (event_id == WIFI_USER_EVT_DISCONNECTED) {
+        TRACE(0, "%s event_id:%d DISCONNECT\n", __func__, event_id);
+    }
+}
+
 WifiErrorCode EnableWifi(void)
 {
     WifiErrorCode ret = WIFI_SUCCESS;
@@ -612,6 +621,9 @@ WifiErrorCode EnableWifi(void)
         return ERROR_WIFI_BUSY;
 
     HalHmosWifiLock();
+
+    bwifi_reg_user_evt_handler(WIFI_USER_EVT_GOT_IP, wifi_device_cb);
+    bwifi_reg_user_evt_handler(WIFI_USER_EVT_DISCONNECTED, wifi_device_cb);
 
     // bwifi_reg_eth_input_handler(ethernetif_input);
     if (!bwifi_init_done()) {

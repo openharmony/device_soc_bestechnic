@@ -142,7 +142,7 @@ typedef struct {
 typedef struct {
     void *wpa;
     void *res;        /* struct p2p_go_neg_results res; we need os_free it */
-    uint8_t p2p_role; /**< enum WIFI_P2P_ROLE_ID */
+    int p2p_role;
     int stat;
 } BWIFI_EVENT_P2P_GO_NEG_COMP_T;
 
@@ -222,6 +222,14 @@ typedef struct {
     uint8_t reason;
 } BWIFI_EVENT_P2P_DISCONNECTED_T;
 
+typedef struct {
+    uint8_t mac[6];                      /**< MAC address of the station disconnects to GO */
+} BWIFI_EVENT_P2P_GC_DEAUTH_T;
+
+typedef BWIFI_EVENT_STAMODE_SCANDONE_T      BWIFI_EVENT_P2P_SCANDONE_T;
+typedef BWIFI_EVENT_STAMODE_CONNECTING_T    BWIFI_EVENT_P2P_CONNECTING_T;
+typedef BWIFI_EVENT_STAMODE_GOT_IP_T        BWIFI_EVENT_P2P_GOT_IP_T;
+
 typedef union {
     BWIFI_EVENT_P2P_FIND_STOP_T                 p2p_find_stop;
     BWIFI_EVENT_P2P_DEVICE_FIND_T               p2p_device_find;
@@ -238,11 +246,12 @@ typedef union {
     BWIFI_EVENT_P2P_GROUP_FORMATION_FAILURE_T   p2p_group_formation_fail;
     BWIFI_EVENT_P2P_WPS_FAIL_T                  p2p_wps_fail;
     BWIFI_EVENT_P2P_INVITAITON_RECV_T           p2p_invitation_recv;
-    BWIFI_EVENT_STAMODE_SCANDONE_T              scan_done;
-    BWIFI_EVENT_STAMODE_CONNECTING_T            connecting;
+    BWIFI_EVENT_P2P_SCANDONE_T                  scan_done;
+    BWIFI_EVENT_P2P_CONNECTING_T                connecting;
     BWIFI_EVENT_P2P_CONNECTED_T                 connected;
     BWIFI_EVENT_P2P_DISCONNECTED_T              disconnected;
-    BWIFI_EVENT_STAMODE_GOT_IP_T                got_ip;
+    BWIFI_EVENT_P2P_GOT_IP_T                    got_ip;
+    BWIFI_EVENT_P2P_GC_DEAUTH_T                 gc_deauth;
 } BWIFI_P2P_EVENT_INFO_U;
 
 /* modify this event, should adapt _p2p_event in the v1 and v2. */

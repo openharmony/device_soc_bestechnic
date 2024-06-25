@@ -489,9 +489,35 @@ extern "C" {
 #define DSP_PSRAMUHSX_BASE                      (PSRAMUHSX_BASE)
 #endif
 
-#define MCU_PSRAMUHS_BASE                       (PSRAMUHS_BASE + DSP_PSRAMUHS_SIZE)
-#define MCU_PSRAMUHS_NC_BASE                    (PSRAMUHS_NC_BASE + DSP_PSRAMUHS_SIZE)
-#define MCU_PSRAMUHSX_BASE                      (PSRAMUHSX_BASE + DSP_PSRAMUHS_SIZE)
+#ifdef CHIP_BEST2003_DSP
+#define PSRAM_REGION_OFFSET                     (PSRAMDSP_BASE - PSRAM_BASE)
+#define PSRAM_REGION_SIZE                       PSRAMDSP_SIZE
+
+#define PSRAMUHS_REGION_OFFSET                  (DSP_PSRAMUHS_BASE - PSRAMUHS_BASE)
+#define PSRAMUHS_REGION_SIZE                    DSP_PSRAMUHS_SIZE
+
+#if defined(PSRAMUHS_NC_SIZE) && (PSRAMUHS_NC_SIZE > 0)
+#define PSRAMUHS_NC_REGION_OFFSET               DSP_PSRAMUHS_SIZE
+#define PSRAMUHS_NC_REGION_SIZE                 PSRAMUHS_NC_SIZE
+#endif
+
+#else /* !CHIP_BEST2003_DSP */
+#ifdef CHIP_ROLE_CP
+#define PSRAM_REGION_OFFSET                     (MCU_PSRAM_BASE - PSRAM_BASE + MCU_PSRAM_SIZE)
+#define PSRAM_REGION_SIZE                       PSRAMCP_SIZE
+#else
+#define PSRAM_REGION_OFFSET                     (MCU_PSRAM_BASE - PSRAM_BASE)
+#define PSRAM_REGION_SIZE                       MCU_PSRAM_SIZE
+#endif
+
+#if defined(PSRAMUHS_NC_SIZE) && (PSRAMUHS_NC_SIZE > 0)
+#define PSRAMUHS_REGION_OFFSET                  (DSP_PSRAMUHS_SIZE + PSRAMUHS_NC_SIZE)
+#else
+#define PSRAMUHS_REGION_OFFSET                  DSP_PSRAMUHS_SIZE
+#endif
+#define PSRAMUHS_REGION_SIZE                    MCU_PSRAMUHS_SIZE
+
+#endif /* !CHIP_BEST2003_DSP */
 
 #define BT_INTESYS_MEM_OFFSET                   0x00004000
 
@@ -533,6 +559,10 @@ extern "C" {
 /* For boot struct version */
 #ifndef SECURE_BOOT_VER
 #define SECURE_BOOT_VER                         4
+#endif
+
+#ifndef MCU_PSRAM_BASE
+#define MCU_PSRAM_BASE                          PSRAM_BASE
 #endif
 
 #ifndef MCU_PSRAM_SIZE

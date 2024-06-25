@@ -269,6 +269,10 @@ int hal_cmu_timer_clock_enable(uint32_t timer_base);
 
 int hal_cmu_timer_clock_disable(uint32_t timer_base);
 
+int hal_cmu_xdma_clock_enable(uint32_t xdma_base);
+
+int hal_cmu_xdma_clock_disable(uint32_t xdma_base);
+
 int hal_cmu_periph_set_div(uint32_t div);
 
 int hal_cmu_uart0_set_div(uint32_t div);

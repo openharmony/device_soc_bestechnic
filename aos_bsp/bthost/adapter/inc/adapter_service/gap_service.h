@@ -410,7 +410,6 @@ typedef struct {
     // when using DHkey generation
     const uint8_t *secret_key_256;
     const uint8_t *public_key_256;
-    uint8_t ble_dev_name[32];
     uint32_t sign_counter;
     uint8_t irk[16];
     uint8_t csrk[16];
@@ -801,7 +800,6 @@ void gap_dump_ble_status(void);
 
 int gap_conn_foreach(gap_conn_foreach_func_t func, void *param);
 const char *gap_local_le_name(uint8_t *len);
-void gap_set_local_le_name(const char *name, uint8_t len_hint);
 const bt_bdaddr_t *gap_hci_bt_address(void);
 const bt_bdaddr_t *gap_hci_le_address(void);
 const bt_bdaddr_t *gap_factory_bt_address(void);

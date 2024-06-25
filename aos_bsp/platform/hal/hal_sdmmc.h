@@ -179,8 +179,8 @@ struct HAL_SDMMC_CSD_T {
     uint8_t  vdd_w_curr_min;        // max. write current @ VDD min
     uint8_t  vdd_w_curr_max;        // max. write current @ VDD max
     uint8_t  c_size_mult;           // device size multiplier
-    uint8_t  erase_grp_size;        // erase sector size
-    uint8_t  erase_grp_mult;        // erase group size
+    uint8_t  erase_grp_size;        // erase group size
+    uint8_t  erase_grp_mult;        // erase group size multiplier
     uint8_t  erase_blk_en;          // erase single block enable
     uint8_t  sector_size;           // erase sector size
     uint8_t  wp_grp_size;           // write protect group size
