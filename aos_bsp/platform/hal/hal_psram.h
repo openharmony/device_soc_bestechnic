@@ -106,6 +106,13 @@ enum HAL_PSRAM_DYN_FREQ_ID_T {
     HAL_PSRAM_DYN_FREQ_ID_SEC =  HAL_PSRAM_DYN_FREQ_ID_1,
 };
 
+enum PSRAM_MC_FSM_STATE {
+    PSRAM_MC_FSM_SREF_MODE = 1,
+    PSRAM_MC_FSM_PD_MODE = 2,
+    PSRAM_MC_FSM_SREF_PD_MODE = 3,
+    PSRAM_MC_FSM_IDLE_MODE = 4,
+};
+
 struct HAL_PSRAM_DQS_BOUNDARY_T {
     uint8_t l;
     uint8_t r;
@@ -164,7 +171,9 @@ uint32_t hal_psram_phy_get_dly_in_val(void);
 uint32_t hal_psram_phy_get_range_val(void);
 void hal_psram_change_speed(uint32_t psram_speed);
 void hal_psram_dump_mr(void);
-void hal_psram_dyn_freq_select(enum HAL_PSRAM_DYN_FREQ_ID_T freq_id);
+void hal_psram_dyn_freq_select(enum HAL_PSRAM_DYN_FREQ_ID_T freq_id, uint32_t sleep);
+void hal_psram_lowpower_enable(void);
+void hal_psram_lowpower_disable(void);
 
 #ifdef __cplusplus
 }

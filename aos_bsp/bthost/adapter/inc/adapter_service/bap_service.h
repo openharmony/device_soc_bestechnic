@@ -307,9 +307,6 @@ bt_status_t bap_register_cis_callback(uint16_t connhdl, bap_event_callback_t cb)
 bt_status_t bap_accept_cis_request(uint16_t cis_handle, bool accept);
 bt_status_t bap_disconnect_cis(uint16_t cis_handle);
 bt_status_t bap_disconnect_associated_cis(uint16_t connhdl);
-uint16_t bap_get_cis_handle_from_id(uint8_t cig_id, uint8_t cis_id);
-uint16_t bap_get_acl_handle_from_cis_id(uint8_t cig_id, uint8_t cis_id);
-uint16_t bap_get_acl_handle_from_cis_handle(uint16_t cis_handle);
 bap_cis_t *bap_get_cis_item(uint16_t cis_handle);
 
 typedef struct {
@@ -405,6 +402,7 @@ typedef struct
     uint8_t cig_id; // 0x00 to 0xEF
     uint8_t cig_op_id;
     uint8_t cig_op_cis_count;
+    uint16_t connhdl; // acl_handle only valid when peripheral, otherwise 0xFFFF
     bap_event_callback_t bap_callback;
     bap_cis_list_t cis_list;
     bap_cig_param_t cig_param;

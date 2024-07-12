@@ -169,7 +169,6 @@ struct PSRAM_DEVICE_FUNC_CFG_T {
     PSRAM_GET_MR_CB psram_get_mr;
     PSRAM_SHOW_MR_CB psram_show_mr;
 };
-
 #endif
 
 void hal_psram_phy_dll_reset_set_dr(enum HAL_PSRAM_ID_T id);
@@ -179,8 +178,10 @@ void hal_psram_phy_dll_clk_disable_dr(enum HAL_PSRAM_ID_T id);
 void hal_psram_phy_dll_clk_rdy_dr_clear(enum HAL_PSRAM_ID_T id);
 void hal_psram_phy_dll_reset_dr_clear(enum HAL_PSRAM_ID_T id);
 void hal_psram_phy_init(enum HAL_PSRAM_ID_T id, struct PSRAM_CFG_T *psram_cfg);
-void hal_psram_phy_sleep(void);
-void hal_psram_phy_wakeup(void);
+#if (CHIP_PSRAM_CTRL_VER == 10 || CHIP_PSRAM_CTRL_VER == 11)
+void hal_psram_phy_wakeup(enum HAL_CMU_LPU_SLEEP_MODE_T mode);
+void hal_psram_phy_sleep(enum HAL_CMU_LPU_SLEEP_MODE_T mode);
+#endif
 enum HAL_PSRAM_ANAPHY_LOCK_RESULT_T hal_psram_phy_dll_set_range(uint32_t range, uint32_t time_out_ms);
 uint32_t hal_psram_phy_dll_range_dyn_config(uint32_t clk);
 void hal_psram_anaphy_dll_range_init(uint32_t clk_freq);
@@ -222,6 +223,10 @@ void hal_psram_mc_wl_set(enum HAL_PSRAM_ID_T id, uint32_t val);
 void hal_psram_mc_var_lat_en(enum HAL_PSRAM_ID_T id, bool v);
 void hal_psram_phy_dll_dly_init(enum HAL_PSRAM_ID_T id, struct PSRAM_CFG_T *psram_cfg);
 void hal_psram_phy_init(enum HAL_PSRAM_ID_T id, struct PSRAM_CFG_T *psram_cfg);
+bool hal_psram_mc_force_sleep(enum HAL_PSRAM_ID_T id);
+uint32_t hal_psram_mc_mrs_pre_opration(enum HAL_PSRAM_ID_T id, struct PSRAM_CFG_T *psram_cfg);
+void hal_psram_mc_mrs_post_opration(enum HAL_PSRAM_ID_T id, struct PSRAM_CFG_T *psram_cfg, uint32_t wl);
+
 
 #endif /*__HAL_PSRAMIP_H_*/
 

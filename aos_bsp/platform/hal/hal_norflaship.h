@@ -316,6 +316,8 @@ void norflaship_rclk_dly_disable(enum HAL_FLASH_ID_T id, uint32_t map);
 
 uint32_t norflaship_get_rclk_dly_status(enum HAL_FLASH_ID_T id);
 
+void norflaship_set_rxfifo_ctrl(enum HAL_FLASH_ID_T id, uint32_t val);
+
 #ifdef __cplusplus
 }
 #endif

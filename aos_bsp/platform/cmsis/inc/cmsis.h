@@ -53,6 +53,15 @@ extern struct irq_masked_address irq_g_masked_addr;
 
 extern uint32_t __got_info_start[];
 
+/* #define DEBUG_IRQ_LATENCY */
+#ifdef DEBUG_IRQ_LATENCY
+extern void irq_lock_save_ts(int global);
+extern void irq_lock_check_ts(int global);
+#else
+__STATIC_FORCEINLINE void irq_lock_save_ts(int global) {}
+__STATIC_FORCEINLINE void irq_lock_check_ts(int global) {}
+#endif
+
 __STATIC_FORCEINLINE uint32_t int_lock_global(void)
 {
 #ifdef __ARM_ARCH_ISA_ARM
@@ -71,6 +80,7 @@ __STATIC_FORCEINLINE uint32_t int_lock_global(void)
     uint32_t pri = __get_PRIMASK();
     uint32_t pc;
     if ((pri & 0x1) == 0) {
+        irq_lock_save_ts(1);
         __disable_irq();
         __ASM volatile ("mov %0, PC" : "=r"(pc));
         irq_g_masked_addr.pc = pc;
@@ -94,6 +104,7 @@ __STATIC_FORCEINLINE void int_unlock_global(uint32_t pri)
     }
 #else
     if ((pri & 0x1) == 0) {
+        irq_lock_check_ts(1);
         irq_g_masked_addr.pc = -1U;
         __enable_irq();
     }
@@ -158,6 +169,7 @@ __STATIC_FORCEINLINE uint32_t int_lock(void)
 
     if (pri != ((IRQ_PRIORITY_HIGHPLUS << (8 - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL)) {
         uint32_t pc;
+        irq_lock_save_ts(0);
         // Only allow IRQs with priority IRQ_PRIORITY_HIGHPLUSPLUS and IRQ_PRIORITY_REALTIME
         __set_BASEPRI(((IRQ_PRIORITY_HIGHPLUS << (8 - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL));
         __ASM volatile ("mov %0, PC" : "=r"(pc));
@@ -179,6 +191,7 @@ __STATIC_FORCEINLINE void int_unlock(uint32_t pri)
     GIC_SetInterfacePriorityMask(pri);
 #else
     if (pri == 0) {
+        irq_lock_check_ts(0);
         irq_masked_addr.pc = -1U;
     }
     __set_BASEPRI(pri);

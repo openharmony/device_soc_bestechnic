@@ -145,7 +145,7 @@ typedef void (*PMU_CAP_IRQ_HANDLER_T)(void);
 
 typedef void (*PMU_IRQ_UNIFIED_HANDLER_T)(uint16_t irq_status);
 
-void pmu_boot_init(void);
+void pmu_boot_init(int usb_reopen);
 
 int pmu_open(void);
 
@@ -301,6 +301,8 @@ int pmu_gpadc_div_ctrl(enum HAL_GPADC_CHAN_T channel, int enable);
 
 enum PMU_BOOT_CAUSE_T pmu_boot_cause_get(void);
 
+bool pmu_boot_first_power_up(void);
+
 void pmu_power_key_hw_reset_enable(uint8_t seconds);
 
 void pmu_power_key_hw_reset_disable(void);
@@ -324,6 +326,8 @@ void pmu_capsensor_close(void);
 void pmu_capsensor_open(uint8_t clk_cap_div);
 
 int pmu_capsensor_set_irq_handler(PMU_CAP_IRQ_HANDLER_T handler);
+
+void pmu_reg_val_print(void);
 
 #ifdef __cplusplus
 }

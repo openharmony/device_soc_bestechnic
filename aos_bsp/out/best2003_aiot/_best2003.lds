@@ -1632,7 +1632,6 @@ SECTIONS
  /* The following section MUST be the last loaded section */
  .code_start_addr (.) :
  {
-  LONG(0);
   LONG(0xBE57341D);
   LONG(((ABSOLUTE(__flash_start)) - 0x2C000000 + 0x28000000));
  } > FLASH

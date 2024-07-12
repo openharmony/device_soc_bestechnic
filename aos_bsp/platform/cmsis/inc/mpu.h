@@ -72,36 +72,111 @@ typedef struct
 #endif
 } mpu_regions_t;
 
+/**
+ * @brief Open the MPU.
+ *
+ * @return 0 on success, negative error code on failure.
+ */
 int mpu_open(void);
 
+/**
+ * @brief Close the MPU.
+ *
+ * @return 0 on success, negative error code on failure.
+ */
 int mpu_close(void);
 
-// VALID LENGTH: 32, 64, 128, 256, 512, 1K, 2K, ..., 4G
-// ADDR must be aligned to len
+/**
+ * @brief Set MPU region.
+ *
+ * @param addr The base address of the MPU region. Must be aligned to 32 bytes for armv8m.
+ * @param len The length of the MPU region. Valid lengths: 32, 64, 128, 256, 512, 1K, 2K, ..., 4G.
+ * @param attr MPU attributes.
+ * @param mem_attr Memory attributes.
+ * @return 0 on success, negative error code on failure.
+ */
 int mpu_set(uint32_t addr, uint32_t len, enum MPU_ATTR_T attr, enum MEM_ATTR_T mem_attr);
 
+/**
+ * @brief Clear MPU region.
+ *
+ * @param addr The base address of the MPU region to clear.
+ * @param len The length of the MPU region to clear.
+ * @return 0 on success, negative error code on failure.
+ */
 int mpu_clear(uint32_t addr, uint32_t len);
 
+/**
+ * @brief Setup MPU regions during boot.
+ *
+ * @param mpu_table Pointer to the table of MPU regions.
+ * @param region_num Number of regions in the table.
+ * @return 0 on success, negative error code on failure.
+ */
 int mpu_boot_setup(const mpu_regions_t *mpu_table, uint32_t region_num);
 
-/*mpu setup for mcu */
+/**
+ * @brief Setup MPU regions.
+ *
+ * @param mpu_table Pointer to the table of MPU regions.
+ * @param region_num Number of regions in the table.
+ * @return 0 on success, negative error code on failure.
+ * NOTE: this function must be called before other mpu operations, if
+ *       there are no real mpu regions, just set the table to NULL.
+ */
 int mpu_setup(const mpu_regions_t *mpu_table, uint32_t region_num);
 
-/*mpu setup for cp mcu */
-int mpu_setup_cp(const mpu_regions_t *mpu_table, uint32_t region_num);
+/**
+ * @brief Allocate an MPU region.
+ *
+ * @return Region number on success, MPU_INVALID_ID on failure.
+ */
+uint8_t mpu_alloc_region(void);
 
+/**
+ * @brief Dump MPU region information.
+ */
 void mpu_region_dump(void);
 
+/**
+ * @brief Put the MPU to sleep.
+ */
 void mpu_sleep(void);
 
+/**
+ * @brief Wake the MPU up from sleep.
+ */
 void mpu_wakeup(void);
 
+/**
+ * @brief Disable the MPU.
+ *
+ * @return 0 on success, negative error code on failure.
+ */
 int mpu_disable(void);
 
+/**
+ * @brief Enable the MPU.
+ *
+ * @return 0 on success, negative error code on failure.
+ */
 int mpu_enable(void);
 
+/**
+ * @brief Set a no-access region in the MPU.
+ *
+ * @param addr The base address of the no-access region. Must be aligned to 32 bytes for armv8m.
+ * @param len The length of the no-access region.
+ * @return 0 on success, negative error code on failure.
+ */
 int mpu_no_access_set(uint32_t addr, uint32_t len);
 
+/**
+ * @brief Clear a no-access region in the MPU.
+ *
+ * @param no_access_id The ID of the no-access region to clear.
+ * @return 0 on success, negative error code on failure.
+ */
 int mpu_no_access_clear(int no_access_id);
 
 #ifdef __cplusplus

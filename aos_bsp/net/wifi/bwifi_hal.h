@@ -325,6 +325,8 @@ enum EXT_VENDOR_CMD {
     SOFTAP_PERFORM_PS,
     SET_CSA_MODE,
     SET_NARROW_BW,
+    SET_WIFI_DIAG_CMD,
+    SET_LISTEN_INTERVAL,
 };
 
 struct ext_vendor_cmd_info_hdr {
@@ -376,6 +378,12 @@ struct lmac_log_level {
     int level;
 };
 #endif
+
+#define WIFI_DIAG_CMD_BUF_LEN     20
+struct wifi_drv_diag {
+    struct ext_vendor_cmd_info_hdr hdr;
+    char cmd_buf[WIFI_DIAG_CMD_BUF_LEN + 1];
+};
 
 struct lmac_log_mode {
     struct ext_vendor_cmd_info_hdr hdr;
@@ -444,6 +452,12 @@ struct narrow_bw_cfg {
     struct ext_vendor_cmd_info_hdr hdr;
     uint8_t bw;
 };
+
+struct set_listen_itv_cfg {
+    struct ext_vendor_cmd_info_hdr hdr;
+    uint32_t value;
+};
+
 /* End of ext vendor command struct defines */
 
 #define WIFI_CUSTOM_IE_TRANS_BEACON         1

@@ -16,6 +16,8 @@
 #ifndef __WIFI_DRV_H__
 #define __WIFI_DRV_H__
 
+#include "wifi_drv_diag.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -179,7 +181,7 @@ int config_epta(void);
 //random_data:
 
 
-
+#define  WIFI_SUPPORT_TX_CALIB_40M   (1 << 0)
 
 #define  WIFI_LOW_POWER_MODE  1
 #define  WIFI_HIGH_PERFORMANCE_MODE   2
@@ -259,7 +261,7 @@ typedef int (*HOOK_FUNC_T)(void *);
 #define  LMAC_LOW_POWER_MODE_ANA                    (1<<20)
 #define  LMAC_MASK_TRANSQ_INSCANNING                (1<<21)
 #define  LMAC_COEX_PROTECT_BT_TXRX                  (1<<22)
-
+#define  STA_RECV_MULTICAST_PROBE_REQ               (1<<23)
 #define  LMAC_SLEEP                                 (1<<24)
 #define  LMAC_COEX_TDD_PS_EN                        (1<<25)
 #define  LMAC_TDD_TSQ_WIN_PROCESS                   (1<<26)
@@ -367,22 +369,23 @@ typedef struct HOOK_CFG_S
 
     uint32 powerlevel_offset_val_en;   //84
     uint32 powerlevel_offset_val_addr; //85
+    uint32 powerlevel_40M_offset_val_addr;//86
 
-    uint16 tx_dig_gian_calib_5g[52];   //used 111
+    uint16 tx_dig_gian_calib_5g[52];   //used 112
 
     uint32 iq_calib_rst_068_5g[WIFI_DPD_CALI_NUM_5G]; //function: 0x90138068
     uint16 dc_calib_rst_11e_5g[WIFI_DPD_CALI_NUM_5G]; //function: 0x11e
-    uint16 dc_calib_rst_11f_5g[WIFI_DPD_CALI_NUM_5G]; //function: 0x11f       used 139
+    uint16 dc_calib_rst_11f_5g[WIFI_DPD_CALI_NUM_5G]; //function: 0x11f       used 140
 
     uint16 iq_calib_rst_118_2g[WIFI_DPD_CALI_NUM_2G]; //function: 0x118
     uint16 iq_calib_rst_119_2g[WIFI_DPD_CALI_NUM_2G]; //function: 0x119
     uint16 dc_calib_rst_11e_2g[WIFI_DPD_CALI_NUM_2G]; //function: 0x11e
-    uint16 dc_calib_rst_11f_2g[WIFI_DPD_CALI_NUM_2G]; //function: 0x11f       used 145
+    uint16 dc_calib_rst_11f_2g[WIFI_DPD_CALI_NUM_2G]; //function: 0x11f       used 146
 
     uint16 wifi_lp_mode_index;
-    uint16 reserv16;           //used 146
+    uint16 wifi_support_tx_cali_40;        //used 147
 
-    uint32 reserved32[110];//resevred
+    uint32 reserved32[109];//resevred
 }HOOK_CFG;
 
 

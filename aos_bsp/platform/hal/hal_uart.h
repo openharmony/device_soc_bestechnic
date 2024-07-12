@@ -195,6 +195,8 @@ uint8_t hal_uart_blocked_getc(enum HAL_UART_ID_T id);
 
 int hal_uart_blocked_putc(enum HAL_UART_ID_T id, uint8_t c);
 
+int hal_uart_busy(enum HAL_UART_ID_T id);
+
 union HAL_UART_FLAG_T hal_uart_get_flag(enum HAL_UART_ID_T id);
 
 union HAL_UART_STATUS_T hal_uart_get_status(enum HAL_UART_ID_T id);

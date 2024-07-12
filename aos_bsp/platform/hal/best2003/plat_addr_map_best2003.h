@@ -482,7 +482,7 @@ extern "C" {
 #if defined(__NuttX__) && defined(CHIP_BEST2003_DSP)
 #define DSP_PSRAMUHS_BASE                       (PSRAMUHS_NC_BASE)
 #define DSP_PSRAMUHS_NC_BASE                    (PSRAMUHS_NC_BASE)
-#define DSP_PSRAMUHSX_BASE                      (PSRAMUHSX_NC_BASE)
+#define DSP_PSRAMUHSX_BASE                      (PSRAMUHS_NC_BASE)
 #else
 #define DSP_PSRAMUHS_BASE                       (PSRAMUHS_BASE)
 #define DSP_PSRAMUHS_NC_BASE                    (PSRAMUHS_NC_BASE)

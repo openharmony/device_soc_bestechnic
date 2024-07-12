@@ -81,7 +81,6 @@ enum NORFLASH_API_OPRATION_TYPE
     NORFLASH_API_ALL    = 0x03
 };
 
-
 typedef struct
 {
     enum NORFLASH_API_OPRATION_TYPE type;
@@ -229,20 +228,30 @@ uint32_t norflash_api_get_sector_size(enum HAL_FLASH_ID_T dev_id);
 uint32_t norflash_api_get_page_size(enum HAL_FLASH_ID_T dev_id);
 bool norflash_api_dev_opened(enum HAL_FLASH_ID_T dev_id);
 
-enum NORFLASH_API_RET_T norflash_api_remap_start(
-                         enum NORFLASH_API_MODULE_ID_T mod_id,
+enum NORFLASH_API_RET_T norflash_api_remap_config(
+                          enum HAL_FLASH_ID_T dev_id,
+                          enum HAL_NORFLASH_REMAP_ID_T remap_id,
+                          uint32_t addr,
+                          uint32_t len,
+                          uint32_t remap_offset);
+enum NORFLASH_API_RET_T norflash_api_remap_enable(
+                          enum HAL_FLASH_ID_T dev_id,
+                          enum HAL_NORFLASH_REMAP_ID_T remap_id);
+enum NORFLASH_API_RET_T norflash_api_remap_disable(
+                          enum HAL_FLASH_ID_T dev_id,
+                          enum HAL_NORFLASH_REMAP_ID_T remap_id);
+enum NORFLASH_API_RET_T norflash_api_remap_pre(
+                         enum HAL_FLASH_ID_T dev_id,
                          uint32_t start_addr,
                          uint32_t len);
-enum NORFLASH_API_RET_T norflash_api_remap_done(
-                         enum NORFLASH_API_MODULE_ID_T mod_id,
-                         uint32_t start_addr,
-                         uint32_t len);
-enum NORFLASH_API_RET_T norflash_api_get_remap_info(
-                         enum NORFLASH_API_MODULE_ID_T mod_id,
-                         uint8_t *remap_opened,
-                         uint8_t *remap_status,
-                         uint32_t *remap_addr,
-                         uint32_t *remap_len);
+enum NORFLASH_API_RET_T norflash_api_remap_post(enum HAL_FLASH_ID_T dev_id);
+enum NORFLASH_API_RET_T norflash_api_get_remap_config(
+                         enum HAL_FLASH_ID_T dev_id,
+                         enum HAL_NORFLASH_REMAP_ID_T remap_id,
+                         uint8_t *is_used,
+                         uint32_t *addr,
+                         uint32_t *len,
+                         uint32_t *offset);
 void norflash_api_protection_bp_init(
                          enum HAL_FLASH_ID_T dev_id,
                          uint32_t total_size);
@@ -250,7 +259,7 @@ void norflash_api_get_pb_map(
                          enum HAL_FLASH_ID_T dev_id,
                          FLASH_BP_MAP_T **pb_map,
                          uint32_t       *pb_count);
-uint32_t noflash_api_to_nc_addr(enum HAL_FLASH_ID_T dev_id,
+uint32_t norflash_api_to_nc_addr(enum HAL_FLASH_ID_T dev_id,
                                         uint32_t addr);
 bool norflash_api_flush_is_in_task(void);
 enum NORFLASH_API_RET_T norflash_api_get_dual_chip_mode(enum NORFLASH_API_MODULE_ID_T mod_id, int *dual_flash, int *dual_sec_reg);

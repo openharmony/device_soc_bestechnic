@@ -73,6 +73,7 @@ void config_dig_gain_no_signal(int mode);
 void dig_test_config(void);
 void ana_and_dig_config(void);
 int wifi_rf_set_tpc_table(double table_a [][39], double table_b [][39], int table_size);
+int wifi_rf_set_tpc_table_40M(double table_c [][12], double table_d [][12], int table_size);
 int stop_11n_cont_mode(void);
 int stop_11b_cont_mode(void);
 int stop_cntinue_test_mode(void);

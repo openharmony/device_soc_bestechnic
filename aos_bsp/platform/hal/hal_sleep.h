@@ -250,6 +250,8 @@ void hal_sleep_start_stats(uint32_t stats_interval_ms, uint32_t trace_interval_m
 
 int hal_sleep_get_stats(struct CPU_USAGE_T *usage);
 
+void hal_sleep_print_cpu_usage(void);
+
 SYSTEM_SLEEP_STAT_T* system_sleep_stat_get(void);
 
 void system_sleep_stat_update(uint8_t cpu_sleep, uint8_t bus_sleep, uint8_t subsys_sleep);
