@@ -157,6 +157,12 @@ lwip_netif_is_link_up(struct netif *netif)
 }
 
 int
+lwip_netif_is_up(struct netif *netif)
+{
+    return (((netif)->flags & NETIF_FLAG_UP) ? (u8_t)1 : (u8_t)0);
+}
+
+int
 lwip_netif_ip_addr_isany(struct netif *netif)
 {
 #if LWIP_IPV4

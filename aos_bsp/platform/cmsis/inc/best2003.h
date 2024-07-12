@@ -205,6 +205,7 @@ typedef enum IRQn
 #define __CM33_REV                0x0000U   /* Core revision r0p1 */
 #define __SAUREGION_PRESENT       1U        /* SAU regions present */
 #define __MPU_PRESENT             1U        /* MPU present */
+#define __MPU_REGION_NUM          16U       /* MPU region number */
 #define __VTOR_PRESENT            1U        /* VTOR present */
 #define __NVIC_PRIO_BITS          3U        /* Number of Bits used for Priority Levels */
 #define __Vendor_SysTickConfig    0U        /* Set to 1 if different SysTick Config is used */

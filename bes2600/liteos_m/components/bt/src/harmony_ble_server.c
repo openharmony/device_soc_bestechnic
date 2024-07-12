@@ -172,7 +172,7 @@ static int BleGattsCharReadCb(gatt_svc_t *svc, gatt_server_callback_param_t para
     OhosBleConnInfo_t* ConnInfo = NULL;
 
     osMutexWait(BleGattsEnv.mutex_id, osWaitForever);
-    ConnInfo = BleGattsGetBleConnInfo(param.closed->conn->connhdl);
+    ConnInfo = BleGattsGetBleConnInfo(param.char_read->conn->connhdl);
     osMutexRelease(BleGattsEnv.mutex_id);
 
     if (ConnInfo)
@@ -192,7 +192,7 @@ static int BleGattsCharReadCb(gatt_svc_t *svc, gatt_server_callback_param_t para
         BleGattsEnv.EventCb->requestReadCb(readCbPara);
     }
 
-    return BT_STS_SUCCESS;
+    return true;
 }
 
 static int BleGattsDescReadCb(gatt_svc_t *svc, gatt_server_callback_param_t param)
@@ -202,7 +202,7 @@ static int BleGattsDescReadCb(gatt_svc_t *svc, gatt_server_callback_param_t para
     OhosBleConnInfo_t* ConnInfo = NULL;
 
     osMutexWait(BleGattsEnv.mutex_id, osWaitForever);
-    ConnInfo = BleGattsGetBleConnInfo(param.closed->conn->connhdl);
+    ConnInfo = BleGattsGetBleConnInfo(param.desc_read->conn->connhdl);
     osMutexRelease(BleGattsEnv.mutex_id);
 
     if (ConnInfo)
@@ -224,9 +224,15 @@ static int BleGattsDescReadCb(gatt_svc_t *svc, gatt_server_callback_param_t para
 
             BleGattsEnv.EventCb->requestReadCb(readCbPara);
         }
+        else
+        {
+            LOG_I("[%s][%d]: uuid16=0x%x", __func__, __LINE__, uuid16);
+            param.desc_write->rsp_error_code = ATT_ERROR_REQ_NOT_SUPPORT;
+            return false;
+        }
     }
 
-    return BT_STS_SUCCESS;
+    return true;
 }
 
 static int BleGattsCharWriteCb(gatt_svc_t *svc, gatt_server_callback_param_t param)
@@ -235,7 +241,7 @@ static int BleGattsCharWriteCb(gatt_svc_t *svc, gatt_server_callback_param_t par
     OhosBleConnInfo_t* ConnInfo = NULL;
 
     osMutexWait(BleGattsEnv.mutex_id, osWaitForever);
-    ConnInfo = BleGattsGetBleConnInfo(param.closed->conn->connhdl);
+    ConnInfo = BleGattsGetBleConnInfo(param.char_write->conn->connhdl);
     osMutexRelease(BleGattsEnv.mutex_id);
     if (ConnInfo)
     {
@@ -246,7 +252,7 @@ static int BleGattsCharWriteCb(gatt_svc_t *svc, gatt_server_callback_param_t par
         writeCbPara.attrHandle = BleGattsGetUserAttHdl(param.char_write->char_attr);
         writeCbPara.offset   = param.char_write->value_offset;
         writeCbPara.length   = param.char_write->value_len;
-        writeCbPara.needRsp  = false;
+        writeCbPara.needRsp  = true;
         writeCbPara.isPrep   = false;
         writeCbPara.value    = (unsigned char *)param.char_write->value;
 
@@ -256,7 +262,7 @@ static int BleGattsCharWriteCb(gatt_svc_t *svc, gatt_server_callback_param_t par
 
         BleGattsEnv.EventCb->requestWriteCb(writeCbPara);
     }
-    return BT_STS_SUCCESS;
+    return true;
 }
 
 static int BleGattsDescWriteCb(gatt_svc_t *svc, gatt_server_callback_param_t param)
@@ -266,7 +272,7 @@ static int BleGattsDescWriteCb(gatt_svc_t *svc, gatt_server_callback_param_t par
     OhosBleConnInfo_t* ConnInfo = NULL;
 
     osMutexWait(BleGattsEnv.mutex_id, osWaitForever);
-    ConnInfo = BleGattsGetBleConnInfo(param.closed->conn->connhdl);
+    ConnInfo = BleGattsGetBleConnInfo(param.desc_write->conn->connhdl);
     osMutexRelease(BleGattsEnv.mutex_id);
     if (ConnInfo)
     {
@@ -280,7 +286,7 @@ static int BleGattsDescWriteCb(gatt_svc_t *svc, gatt_server_callback_param_t par
             writeCbPara.attrHandle = BleGattsGetUserAttHdl(param.desc_write->char_attr);
             writeCbPara.offset   = param.desc_write->value_offset;
             writeCbPara.length   = param.desc_write->value_len;
-            writeCbPara.needRsp  = false;
+            writeCbPara.needRsp  = true;
             writeCbPara.isPrep   = false;
             writeCbPara.value    = (unsigned char *)param.desc_write->value;
 
@@ -299,7 +305,7 @@ static int BleGattsDescWriteCb(gatt_svc_t *svc, gatt_server_callback_param_t par
         }
     }
 
-    return BT_STS_SUCCESS;
+    return true;
 }
 
 static int BleGattsNtfTxDoneCb(gatt_svc_t *svc, gatt_server_callback_param_t param)
@@ -672,7 +678,6 @@ int BleGattsSendIndication(int serverId, GattsSendIndParam *param)
     character.character = &BleGattsEnv.AttrData[param->attrHandle-1][0];
     character.service_inst_id  = 0;
     character.char_instance_id = 0;
-    character.force_send_value = true;
     osMutexRelease(BleGattsEnv.mutex_id);
 
     if (param->confirm)

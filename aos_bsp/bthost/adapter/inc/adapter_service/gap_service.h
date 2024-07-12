@@ -240,12 +240,6 @@ typedef struct {
 #define GATT_MAX_CACHE_128_CHARS 8
 
 typedef struct {
-    uint8_t cccd_seqn: 6; // max 63 cccd
-    uint8_t notify: 1;
-    uint8_t indicate: 1;
-} __attribute__ ((packed)) gatt_server_cccd_t;
-
-typedef struct {
     uint16_t char_end_handle;
     uint16_t char_value_handle;
     uint16_t char_cccd_handle;
@@ -290,7 +284,6 @@ typedef struct {
     uint8_t gatt_server_supp_eatt_bearer: 1;
     uint8_t gatt_server_has_service_changed_char: 1;
     uint8_t gatt_server_has_database_hash_char: 1;
-    gatt_server_cccd_t server_cccd[GATT_MAX_SERVER_CCCD];
 }  __attribute__ ((packed)) gatt_server_cache_t;
 
 typedef struct {
@@ -435,7 +428,7 @@ typedef struct {
     uint16_t use_random_identity_address: 1;
     uint16_t reso_address_by_host: 1;
     uint16_t address_reso_support: 1;
-    uint16_t total_cccd_count;
+    uint16_t address_reso_enable_forever: 1;
     gap_security_levels_t sec_levels;
     gap_encrypted_data_key_material_t key_material;
 } gap_local_info_t;
@@ -775,6 +768,7 @@ typedef struct
 {
     bt_l2cap_config_t cfg;
     uint8_t address_reso_support: 1;
+    uint8_t address_reso_enable_forever: 1;
     uint8_t use_random_identity_address: 1;
     uint8_t server_database_hash_support: 1;
 } gap_config_t;

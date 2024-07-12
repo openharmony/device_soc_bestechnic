@@ -175,6 +175,9 @@ extern "C" {
 #define WIFI_NONSIG_TX_MEM_TEST      0 //nonsigling tx memory test; srrc;
 #endif
 
+#ifdef __NET_WIFI_STA_RECV_PROBE__
+#define WIFI_STA_RECV_PROBE          1
+#endif
 //debug log macro
 #define WIFI_IQ_DEBUG                0 //IQ debug
 

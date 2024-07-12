@@ -25,6 +25,13 @@ extern "C" {
 #include "plat_addr_map.h"
 #include "plat_types.h"
 
+#define MAX_CACHE_LINE_SIZE             32U
+
+#define LEN_ALIGN_TO_CACHE(len, addr)   (((uint32_t)(len) + \
+                                          ((uint32_t)(addr) & (MAX_CACHE_LINE_SIZE - 1)) + \
+                                          (MAX_CACHE_LINE_SIZE - 1)) & ~(MAX_CACHE_LINE_SIZE - 1))
+#define ADDR_ALIGN_TO_CACHE(addr)       ((uint32_t)(addr) & ~(MAX_CACHE_LINE_SIZE - 1))
+
 #if (defined(ICACHE_CTRL_BASE) || defined(DCACHE_CTRL_BASE)) || \
         (defined(__ICACHE_PRESENT) && (__ICACHE_PRESENT == 1U)) || \
         (defined(__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U))
@@ -43,6 +50,18 @@ extern "C" {
 #define BESCACHE_FUNC_DECLARE(d, r)     d
 #else
 #define BESCACHE_FUNC_DECLARE(d, r)     __STATIC_FORCEINLINE d { r; }
+#endif
+
+#if (defined(ICACHE_CTRL_BASE) || defined(DCACHE_CTRL_BASE)) && !defined(CHIP_BEST2001)
+#define HAL_CACHE_ID_FLASH_EXEC         HAL_CACHE_ID_I_CACHE
+#define HAL_CACHE_ID_FLASH_DATA         HAL_CACHE_ID_I_CACHE
+#define HAL_CACHE_ID_PSRAM_EXEC         HAL_CACHE_ID_D_CACHE
+#define HAL_CACHE_ID_PSRAM_DATA         HAL_CACHE_ID_D_CACHE
+#else
+#define HAL_CACHE_ID_FLASH_EXEC         HAL_CACHE_ID_I_CACHE
+#define HAL_CACHE_ID_FLASH_DATA         HAL_CACHE_ID_D_CACHE
+#define HAL_CACHE_ID_PSRAM_EXEC         HAL_CACHE_ID_I_CACHE
+#define HAL_CACHE_ID_PSRAM_DATA         HAL_CACHE_ID_D_CACHE
 #endif
 
 enum HAL_CACHE_ID_T {
@@ -93,8 +112,12 @@ CACHECP_FUNC_DECLARE(uint8_t hal_cachecp_writeback_enable(enum HAL_CACHE_ID_T id
 CACHECP_FUNC_DECLARE(uint8_t hal_cachecp_writeback_disable(enum HAL_CACHE_ID_T id), return 0);
 CACHECP_FUNC_DECLARE(uint8_t hal_cachecp_double_linefill_enable(enum HAL_CACHE_ID_T id), return 0);
 CACHECP_FUNC_DECLARE(uint8_t hal_cachecp_double_linefill_disable(enum HAL_CACHE_ID_T id), return 0);
+CACHECP_FUNC_DECLARE(uint8_t hal_cachecp_invalidate_all(enum HAL_CACHE_ID_T id), return 0);
 CACHECP_FUNC_DECLARE(uint8_t hal_cachecp_invalidate(enum HAL_CACHE_ID_T id, uint32_t start_address, uint32_t len), return 0);
 CACHECP_FUNC_DECLARE(uint8_t hal_cachecp_sync_all(enum HAL_CACHE_ID_T id), return 0);
+CACHECP_FUNC_DECLARE(uint8_t hal_cachecp_sync(enum HAL_CACHE_ID_T id, uint32_t start_address, uint32_t len), return 0);
+CACHECP_FUNC_DECLARE(uint8_t hal_cachecp_sync_invalidate_all(enum HAL_CACHE_ID_T id), return 0);
+CACHECP_FUNC_DECLARE(uint8_t hal_cachecp_sync_invalidate(enum HAL_CACHE_ID_T id, uint32_t start_address, uint32_t len), return 0);
 CACHECP_FUNC_DECLARE(uint8_t hal_cachecp_monitor_enable(enum HAL_CACHE_ID_T id), return 0);
 CACHECP_FUNC_DECLARE(uint8_t hal_cachecp_monitor_disable(enum HAL_CACHE_ID_T id), return 0);
 CACHECP_FUNC_DECLARE(uint8_t hal_cachecp_get_monitor_data(enum HAL_CACHE_ID_T id, struct HAL_CACHE_MON_DATA_T *md), return 0);

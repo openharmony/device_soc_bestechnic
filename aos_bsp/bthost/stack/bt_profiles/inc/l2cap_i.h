@@ -285,10 +285,7 @@ struct l2cap_sig_fcs_rsp {
 #if mHDT_SUPPORT
 #define L2CAP_SIG_CFG_TYPE_MHDT                (0x7F)
 // 
-#define L_BTC_MHDT_SPT    0X01
-#define L_BTH_MHDT_SPT    0X02
-#define P_BTC_MHDT_SPT    0X04
-#define P_BTH_MHDT_SPT    0X08
+
 struct l2cap_sig_cfg_opt_mhdt 
 {
     byte mhdt_support;
@@ -463,6 +460,7 @@ bt_proto_conn_t *l2cap_get_att_conn_by_idx(hci_conn_type_t conn_type, uint8_t co
 bt_proto_conn_t *l2cap_get_att_conn_by_address(hci_conn_type_t conn_type, bt_addr_type_t peer_type, const bt_bdaddr_t *peer_addr);
 typedef bool (*att_proto_conn_foreach_t)(bt_proto_conn_t *conn, void *priv);
 int l2cap_foreach_att_proto_conn(att_proto_conn_foreach_t cb, void *priv);
+void l2cap_set_att_expected_mtu_to_port(hci_conn_type_t conn_type, uint16_t expected_mtu);
 uint16_t l2cap_get_att_mtu_from_port(hci_conn_type_t conn_type);
 bt_status_t l2cap_send_packet(uint32_t connhdl_len, uint32_t l2cap_handle, const uint8_t *data, void *context);
 bt_status_t l2cap_send_att_packet(uint16_t connhdl, uint32_t l2cap_handle, struct pp_buff *ppb, void *context);

@@ -28,6 +28,8 @@ extern "C" {
 
 #define FORMULA_POWERLEVEL_OFFSET   1
 
+#define SUPPORT_BW_40M               1
+
 #if USE_TX_DIG_GAIN_CFG
 #define RATE_POWER_MAP_2G      (0<<0 | 8<<4 | 8<<8 | 8<<12 | 8<<16 | 4<<20 | 4<<24 | 0<<28);
 #define RATE_POWER_MAP_5G      (0<<0 | 8<<4 | 8<<8 | 8<<12 | 8<<16 | 4<<20 | 4<<24 | 0<<28);

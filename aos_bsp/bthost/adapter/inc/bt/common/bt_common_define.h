@@ -419,6 +419,14 @@ U32 be_to_host32(const U8* ptr);
 #define LEtoHost16(ptr)  (U16)(((U16) *((U8*)(ptr)+1) << 8) | \
         (U16) *((U8*)(ptr)))
 
+#define LETOHOST16(ptr)  (uint16_t)( ((uint16_t) *((uint8_t*)(ptr)+1) << 8) | \
+                                ((uint16_t) *((uint8_t*)(ptr))) )
+
+#define LETOHOST32(ptr)  (uint32_t)( ((uint32_t) *((uint8_t*)(ptr)+3) << 24) | \
+                                ((uint32_t) *((uint8_t*)(ptr)+2) << 16) | \
+                                ((uint32_t) *((uint8_t*)(ptr)+1) << 8)  | \
+                                ((uint32_t) *((uint8_t*)(ptr))) )
+
 /**
  * list node
  */

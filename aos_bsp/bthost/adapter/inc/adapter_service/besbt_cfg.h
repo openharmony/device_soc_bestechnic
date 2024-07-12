@@ -29,6 +29,7 @@ struct besbt_cfg_t{
     uint16_t dip_vendor_id;
     uint16_t dip_product_id;
     uint16_t dip_product_version;
+    uint16_t dip_vendor_id_source;
     bool apple_hf_at_support;
     bool hf_dont_support_cli_feature;
     bool hf_dont_support_enhanced_call;

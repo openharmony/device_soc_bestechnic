@@ -447,7 +447,6 @@ typedef struct {
     uint8_t char_instance_id;
     const uint8_t *service;
     uint8_t service_inst_id;
-    bool force_send_value;
     /* below is for internal use */
     uint16_t cccd_config;
     gatt_service_t *s;
@@ -599,14 +598,12 @@ typedef struct {
     const uint8_t *character;
     uint8_t service_inst_id;
     uint8_t char_instance_id;
-    bool force_send_value;
 } gatt_char_notify_t;
 
 typedef struct {
     uint16_t char_value_handle;
     uint16_t value_len;
     const uint8_t *value;
-    bool force_send_value;
 } gatt_char_notify_by_handle_t;
 
 typedef int (*gatt_server_callback_t)(gatt_svc_t *svc, gatt_server_event_t event, gatt_server_callback_param_t param);
@@ -628,7 +625,6 @@ bt_status_t gatts_send_indication_by_handle(uint32_t con_bfs, const gatt_char_no
 bt_status_t gatts_send_notification_by_handle(uint32_t con_bfs, const gatt_char_notify_by_handle_t *character);
 bt_status_t gatts_send_multi_notifications_by_handle(uint32_t con_bfs, const gatt_char_notify_by_handle_t *character, uint16_t count);
 uint16_t gatts_get_char_value_handle(const uint8_t *service, uint8_t service_inst_id, const uint8_t *character, uint8_t char_inst_id);
-uint16_t gatts_get_curr_cccd_config(uint16_t connhdl, const uint8_t *service, uint8_t service_inst_id, const uint8_t *character, uint8_t char_inst_id);
 uint16_t gatts_get_char_byte_16_bit_uuid(const uint8_t *character);
 uint16_t gatts_get_char_byte_16_bit_part_uuid(const uint8_t *character);
 uint16_t gatts_get_character_16_bit_part_uuid(const gatt_attribute_t *attr);
@@ -638,7 +634,6 @@ uint8_t *gatts_put_read_rsp_buffer(gatt_server_read_ctx_t *ctx, uint16_t len);
 void gatts_gen_local_database_hash(void (*cb)(void *priv, int error_code, const uint8_t *hash));
 void gatts_gen_visible_svc_database_hash(uint16_t connhdl, void (*cb)(void *priv, int error_code, const uint8_t *hash));
 bt_status_t gatts_server_cache_restore(uint16_t connhdl, const gatt_server_cache_t *server_cache);
-void gatt_start_att_mtu_exchange(uint16_t connhdl);
 
 #define GATT_PRF_NONE 0x00
 #define GATT_PRF_LAST_ID 0x7E
@@ -878,7 +873,7 @@ typedef int (*gatt_profile_callback_t)(gatt_prf_t *prf, gatt_profile_event_t eve
 
 uint8_t gattc_register_profile(gatt_profile_callback_t cb, const gattc_cfg_t *cfg);
 bool gatt_is_user_profile_registered(void);
-void gatt_start_att_mtu_exchange(uint16_t connhdl);
+void gatt_start_att_mtu_exchange(uint16_t connhdl, uint16_t pref_mtu_size);
 gatt_prf_t *gattc_get_profile(uint8_t prf_id, uint16_t connhdl);
 bool gattc_has_profile_eatt_preferred(uint16_t connhdl);
 bt_status_t gattc_get_service(gatt_prf_t *prf, uint16_t uuid_len, const uint8_t *uuid, gatt_peer_service_t ** srv_ptr);
@@ -980,6 +975,7 @@ typedef struct gatt_prf_reg_t {
     uint8_t connected_count;
     uint8_t prf_id;
     uint8_t prf_size_div_4;
+    uint16_t preferred_mtu;
     gatt_profile_callback_t profile_callback;
 } gatt_prf_reg_t;
 
@@ -1009,12 +1005,6 @@ typedef struct gatt_svc_node_t {
 typedef struct {
     gatt_svc_node_t *next;
 } gatt_svc_list_t;
-
-typedef struct {
-    void *character; // gatt_character_t or gatt_peer_character_t
-    uint16_t cccd_config;
-    uint16_t prf_id_service_handle;
-} att_notify_reg_t;
 
 typedef struct gatt_peer_char_node_t {
     struct gatt_peer_char_node_t *next;
@@ -1052,8 +1042,6 @@ typedef struct att_conn_item_t {
     gatt_svc_list_t svc_list;
     att_bearer_q_t bearer_q;
     att_prep_wr_q_t prep_wr_q;
-    att_notify_reg_t *server_tx_ntf;
-    uint16_t tx_reg_count;
     uint8_t bearer_id_seed;
     uint8_t last_tx_bearer;
     uint8_t bredr_att_added: 1;

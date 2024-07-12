@@ -88,12 +88,12 @@ enum hal_lcdc_dsi_cfmt_e {
 };
 
 enum hal_lcdc_dsi_dswap_e {
-    DSI_BD_BGR = 0,
-    DSI_BD_BRG = 1,
-    DSI_BD_GBR = 2,
-    DSI_BD_RBG = 3,
-    DSI_BD_GRB = 4,
-    DSI_BD_RGB = 5,
+    DSI_BD_RGB = 0,
+    DSI_BD_GRB = 1,
+    DSI_BD_RBG = 2,
+    DSI_BD_GBR = 3,
+    DSI_BD_BRG = 4,
+    DSI_BD_BGR = 5,
 };
 
 enum hal_lcdc_dec_tile_mode_e {
@@ -516,11 +516,6 @@ int hal_lcdc_error_irqstat_clr(void);
  * hal_cmu_disp_pn_reset   - reset display pannel
  */
 int hal_lcdc_disp_pn_reset(void);
-
-/**
- * hal_lcdc_reset - reset lcd configuration
- */
-int hal_lcdc_reset(void);
 
 /**
  * hal_lcdc_smpn_enable - lcdc smpn module enable.

@@ -856,6 +856,21 @@ int bwifi_set_csa_mode(uint8_t csa_mode, uint32_t sched_time);
 int bwifi_vendor_set_narrow_bw(uint8_t bw);
 #endif
 
+/*
+ * Set wifi listen interval
+ * @value: n of tbtt
+ * Returns: 0 on success or negtive on failure
+ */
+int bwifi_set_listen_interval(uint32_t value);
+
+/**
+ * bwifi_diag- bwifi diagnose module
+ * @cmd_buf: cmd string
+ *          example "tport pta"
+ *          example "fw 1" or "fw 0"
+ */
+int bwifi_diag(char *cmd_buf);
+
 #ifdef __cplusplus
 }
 #endif

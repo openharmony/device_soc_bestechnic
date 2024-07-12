@@ -74,7 +74,11 @@ extern "C" {
 #if defined(OSTICK_USE_FAST_TIMER)
 #define OS_SYS_CLOCK            (6000000UL)
 #else
+#if defined(CHIP_BEST2009)
+#define OS_SYS_CLOCK            (6000000UL)
+#else
 #define OS_SYS_CLOCK            CONFIG_SYSTICK_HZ
+#endif
 #endif
 #endif
 

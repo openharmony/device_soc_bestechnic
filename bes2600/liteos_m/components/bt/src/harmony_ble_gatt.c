@@ -374,6 +374,7 @@ static int BleAdvConnUpdateCb(uintptr_t adv, gap_adv_callback_param_t param)
 {
     LOG_I("[%s][%d]: id=%d, hdl=%d", __FUNCTION__, __LINE__,
         param.conn_update_req->con_idx, param.conn_update_req->connhdl);
+    gap_accept_le_conn_parameters(adv, &param.conn_update_req->params_req, true);
 
     return BT_STS_SUCCESS;
 }

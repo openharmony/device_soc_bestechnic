@@ -26,7 +26,11 @@ extern "C" {
 
 #define HAL_DMA_CHAN_NONE               0xFF
 
+#ifdef XDMA0_BASE
+#define HAL_DMA_MAX_DESC_XFER_SIZE      0x3FFFFF
+#else
 #define HAL_DMA_MAX_DESC_XFER_SIZE      0xFFF
+#endif
 
 enum HAL_DMA_RET_T {
     HAL_DMA_OK              = 0,
@@ -97,6 +101,9 @@ enum HAL_DMA_WIDTH_T {
     HAL_DMA_WIDTH_BYTE        = 0,    /* Width = 1 byte */
     HAL_DMA_WIDTH_HALFWORD    = 1,    /* Width = 2 bytes */
     HAL_DMA_WIDTH_WORD        = 2,    /* Width = 4 bytes */
+#ifdef XDMA0_BASE
+    HAL_DMA_WIDTH_DBL_WORD    = 3,    /* Width = 8 bytes */
+#endif
 };
 
 enum HAL_DMA_MASTER_T {
@@ -219,7 +226,11 @@ struct HAL_DMA_CH_CFG_T {
     uint8_t ch;                         /* DMA channel number */
     enum HAL_DMA_MASTER_T master : 4;
     uint8_t try_burst : 4;
+#ifdef XDMA0_BASE
+    uint32_t src_tsize;                 /* Length/Size of transfer */
+#else
     uint16_t src_tsize;                 /* Length/Size of transfer */
+#endif
     enum HAL_DMA_WIDTH_T src_width;
     enum HAL_DMA_WIDTH_T dst_width;
     enum HAL_DMA_BSIZE_T src_bsize;
@@ -233,13 +244,34 @@ struct HAL_DMA_CH_CFG_T {
     HAL_DMA_START_CALLBACK_T start_cb;
 };
 
-// Transfer Descriptor structure typedef
 struct HAL_DMA_DESC_T {
-    uint32_t src;       /* Source address */
-    uint32_t dst;       /* Destination address */
-    uint32_t lli;       /* Pointer to next descriptor structure */
-    uint32_t ctrl;      /* Control word that has transfer size, type etc. */
-};
+#ifdef XDMA0_BASE
+    uint32_t src;                       /* source address low 32 bits */
+    uint32_t sar_hi;                    /* source address high 32 bits */
+    uint32_t dst;                       /* destination address low 32 bits */
+    uint32_t dar_hi;                    /* destination address high 32 bits  */
+    uint32_t block_ts;                  /* block tsize */
+    uint32_t reserved_0;
+    uint32_t lli;                       /* link list low 32 bits */
+    uint32_t llp_hi;                    /* link list high 32 bits */
+    uint32_t ctrl;                      /* ctrl register low 32 bits */
+    uint32_t ctl_hi;                    /* ctrl register high 32 bits */
+    uint32_t sstat;                     /* src status */
+    uint32_t dstat;                     /* dst status */
+    uint32_t llp_status_lo;             /* link list status low 32 bits */
+    uint32_t llp_status_hi;             /* link list status high 32 bits */
+    uint32_t reserved_1[2];
+#else
+    uint32_t src;                       /* Source address */
+    uint32_t dst;                       /* Destination address */
+    uint32_t lli;                       /* Pointer to next descriptor structure */
+    uint32_t ctrl;                      /* Control word that has transfer size, type etc. */
+#endif
+}
+#ifdef XDMA0_BASE
+    __attribute__((aligned(64)))
+#endif
+;
 
 // DMA 2D configuration structure
 struct HAL_DMA_2D_CFG_T {

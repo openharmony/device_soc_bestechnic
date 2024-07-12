@@ -14,5 +14,12 @@
  *
  ****************************************************************************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void net_system_init(void);
+
+#ifdef __cplusplus
+}
+#endif

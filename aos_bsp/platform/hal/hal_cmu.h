@@ -477,25 +477,23 @@ int hal_cmu_spdif_clock_disable(enum HAL_SPDIF_ID_T id);
 
 int hal_cmu_spdif_set_div(enum HAL_SPDIF_ID_T id, uint32_t div);
 
-void hal_cmu_emmc_clock_enable(uint32_t freq);
+void hal_cmu_emmc0_clock_enable(uint32_t freq);
 
-void hal_cmu_emmc_clock_disable(void);
+void hal_cmu_emmc0_clock_disable(void);
 
-void hal_cmu_emmc_clock_continue(void);
+void hal_cmu_emmc0_clock_continue(void);
 
-void hal_cmu_emmc_clock_pause(void);
+void hal_cmu_emmc0_clock_pause(void);
 
-void hal_cmu_emmc_clock_switch(uint32_t freq);
+void hal_cmu_emmc0_clock_switch(uint32_t freq);
 
-void hal_cmu_emmc_phy_open(void);
+void hal_cmu_emmc0_phy_open(int io_enable);
 
-void hal_cmu_emmc_phy_close(void);
+void hal_cmu_emmc0_phy_close(void);
 
-void hal_cmu_emmc_phy_start(int on);
+void hal_cmu_emmc0_phy_sleep(void);
 
-void hal_cmu_emmc_phy_sleep(void);
-
-void hal_cmu_emmc_phy_wakeup(void);
+void hal_cmu_emmc0_phy_wakeup(void);
 
 void hal_cmu_sdmmc0_clock_enable(void);
 
@@ -613,7 +611,7 @@ void hal_cmu_init_pll_selection(void);
 
 void hal_cmu_rom_setup(void);
 
-void hal_cmu_programmer_setup(void);
+void hal_cmu_programmer_setup(int usb_reopen);
 
 void hal_cmu_fpga_setup(void);
 

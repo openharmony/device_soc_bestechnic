@@ -271,6 +271,15 @@ static void OhosServiceDeleteCb(int status, int serverId, int srvcHandle)
 static void OhosRequestReadCb(BtReqReadCbPara readCbPara)
 {
     LOG_I("[%s][%d]: conn=%d,attr_hdl=%d", __func__, __LINE__, readCbPara.connId, readCbPara.attrHandle);
+    char rsp_data[] = {1,3,5,7,9};
+    GattsSendRspParam rsp_param = {0};
+
+    rsp_param.connectId = readCbPara.connId;
+    rsp_param.status    = BT_STS_SUCCESS;
+    rsp_param.attrHandle = readCbPara.attrHandle;
+    rsp_param.valueLen = sizeof(rsp_data);
+    rsp_param.value    = rsp_data;
+    BleGattsSendResponse(ohos_test_env.service_id, &rsp_param);
 }
 
 static void OhosRequestWriteCb(BtReqWriteCbPara writeCbPara)
@@ -737,7 +746,7 @@ static void bt_ble_srv_add_srv(int argc, char *argv[])
     properties = SOFTBUS_GATT_CHARACTER_PROPERTY_BIT_READ | SOFTBUS_GATT_CHARACTER_PROPERTY_BIT_WRITE_NO_RSP |
             SOFTBUS_GATT_CHARACTER_PROPERTY_BIT_WRITE | SOFTBUS_GATT_CHARACTER_PROPERTY_BIT_NOTIFY |
             SOFTBUS_GATT_CHARACTER_PROPERTY_BIT_INDICATE;
-    permissions = SOFTBUS_GATT_PERMISSION_WRITE, SOFTBUS_CHARA_BLECONN_UUID;
+    permissions = SOFTBUS_GATT_PERMISSION_READ | SOFTBUS_GATT_PERMISSION_WRITE;
     BleGattsAddCharacteristic(ohos_test_env.service_id, ohos_test_env.srvcHandle, Uuid, properties, permissions);
 
     // add Descriptor
@@ -752,7 +761,7 @@ static void bt_ble_srv_add_srv(int argc, char *argv[])
     properties = SOFTBUS_GATT_CHARACTER_PROPERTY_BIT_READ | SOFTBUS_GATT_CHARACTER_PROPERTY_BIT_WRITE_NO_RSP |
             SOFTBUS_GATT_CHARACTER_PROPERTY_BIT_WRITE | SOFTBUS_GATT_CHARACTER_PROPERTY_BIT_NOTIFY |
             SOFTBUS_GATT_CHARACTER_PROPERTY_BIT_INDICATE;
-    permissions = SOFTBUS_GATT_PERMISSION_WRITE, SOFTBUS_CHARA_BLECONN_UUID;
+    permissions = SOFTBUS_GATT_PERMISSION_READ | SOFTBUS_GATT_PERMISSION_WRITE;
     BleGattsAddCharacteristic(ohos_test_env.service_id, ohos_test_env.srvcHandle, Uuid, properties, permissions);
 
     // add Descriptor

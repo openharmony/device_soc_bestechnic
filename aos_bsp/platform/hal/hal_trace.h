@@ -388,6 +388,8 @@ TRACE_FUNC_DECLARE(void hal_trace_app_custom_register(enum HAL_TRACE_APP_REG_ID_
 
 TRACE_FUNC_DECLARE(void hal_trace_global_tag_register(HAL_TRACE_GLOBAL_TAG_CB_T tag_cb), return);
 
+TRACE_FUNC_DECLARE(void hal_trace_global_tag_deregister(HAL_TRACE_GLOBAL_TAG_CB_T tag_cb), return);
+
 TRACE_FUNC_DECLARE(int hal_trace_open_cp(HAL_TRACE_BUF_CTRL_T buf_cb, HAL_TRACE_APP_NOTIFY_T notify_cb), return 0);
 
 TRACE_FUNC_DECLARE(int hal_trace_close_cp(void), return 0);

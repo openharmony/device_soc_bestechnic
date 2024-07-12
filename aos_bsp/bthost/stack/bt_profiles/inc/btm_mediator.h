@@ -84,37 +84,16 @@ typedef struct {
 
 void btm_me_mediator_init(void);
 
+bool btm_mediator_event_handler(uint16_t evt_id, void* pdata);
+
+bool btm_stop_pending_page_activity(const bt_bdaddr_t* addr);
+
 btm_activity_mediator_t *btm_me_get_activity(void);
 
 bt_status_t btm_activity_start(BT_ACTIVITY_ID_E activity, btm_activity_para_t* activityPara);
 
-bt_status_t btm_page_activity_start(btm_page_para_t* pagePara);
-
-bt_status_t btm_start_ibrt_activity_start(btm_start_ibrt_para_t* startIbrtPara);
-
-bt_status_t btm_ibrt_switch_activity_start(btm_ibrt_switch_para_t* ibrtSwitchPara);
-
-btm_activity_env_t* btm_get_free_activity_env(BT_ACTIVITY_ID_E activity);
-
-bool btm_check_is_activity_exist(BT_ACTIVITY_ID_E activity,btm_activity_para_t* activityPara);
-
-uint8_t btm_get_activity_ongoing_cnt(BT_ACTIVITY_ID_E activity);
-
-bool btm_mediator_event_handler(uint16_t evt_id, void* pdata);
-
-BT_ACTIVITY_ID_E btm_start_ibrt_result_handle(uint8_t err_code, uint16_t conhandle, bool *isNeedRetry);
-
-BT_ACTIVITY_ID_E btm_ibrt_switch_result_handle(uint8_t err_code, uint16_t conhandle, bool *isNeedRetry);
-
-BT_ACTIVITY_ID_E btm_page_result_handle(uint8_t err_code, bt_bdaddr_t* addr);
-
-bool btm_stop_pending_page_activity(const bt_bdaddr_t* addr);
-
-BT_ACTIVITY_ID_E btm_ibrt_disconnect_stop_all_activity(uint16_t conhandle);
-
-void btm_mediator_check_pending_activity(BT_ACTIVITY_ID_E stoppedActivity);
-
 #ifdef __cplusplus
 }
 #endif
+
 #endif              /* __BTM_MEDIATOR__H__ */
