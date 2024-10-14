@@ -40,9 +40,12 @@
 #include "plat_addr_map.h"
 #include _TO_STRING(CONCAT_SUFFIX(CHIP_ID_LITERAL, h))
 
+uint32_t hal_sys_timer_systick_hz(void);
+#define CONFIG_SYSTICK_HZ           hal_sys_timer_systick_hz()
+
 #include "cmsis.h"
 #include "los_compiler.h"
-#include "hal_timer.h"
+// #include "hal_timer.h"
 #ifdef __cplusplus
 #if __cplusplus
 extern "C" {
